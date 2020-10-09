@@ -11,3 +11,8 @@
 |Slot|Type|Default|Description|
 |-|-|-|-|
 |default|`({ item, index }) => VNode`|required||
+## Instance Property
+|Name|Type|Default|Description|
+|-|-|-|-|
+|listRef|`null \| Element`|`null`||
+|itemsRef|`null \| Element`|`null`||

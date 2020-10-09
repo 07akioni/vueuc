@@ -76,7 +76,6 @@ export default defineComponent({
       }
       return viewportItems
     })
-    const listRef = ref<null | Element>(null)
     return {
       listHeight: listHeightRef,
       scrollTop: scrollTopRef,
@@ -96,7 +95,8 @@ export default defineComponent({
         }
       }),
       viewportItems: viewportItemsRef,
-      listRef,
+      listRef: ref<null | Element>(null),
+      itemsRef: ref<null | Element>(null),
       rafFlag: {
         value: false
       }
@@ -138,6 +138,7 @@ export default defineComponent({
           ref: 'listRef'
         }, [
           h('div', {
+            ref: 'itemsRef',
             class: 'v-vl-items',
             style: this.itemsStyle
           }, [
