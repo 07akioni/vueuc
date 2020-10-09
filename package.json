@@ -1,14 +1,15 @@
 {
-  "name": "vtools",
-  "version": "0.0.0-alpha.0",
-  "description": "Tool Components for Vue",
+  "name": "vueuc",
+  "version": "0.1.0-alpha.0",
+  "description": "Util Components for Vue",
   "main": "lib/index.js",
   "module": "es/index.js",
   "scripts": {
     "start": "vite",
     "build:site": "vite build",
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
-    "clean": "rm -rf lib es site"
+    "clean": "rm -rf lib es site",
+    "release": "npm run clean && npm run build && npm publish"
   },
   "author": "07akioni",
   "license": "MIT",

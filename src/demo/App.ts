@@ -2,7 +2,7 @@ import { defineComponent, h } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 
 export default defineComponent({
-  name: 'VtoolsDemo',
+  name: 'VueucDemo',
   setup () {
     return () => {
       return h('main', {

@@ -37,7 +37,7 @@ export default defineComponent({
   setup (props) {
     onMounted(() => {
       styles.mount({
-        target: 'vtools/virtual-list'
+        target: 'vueuc/virtual-list'
       })
     })
     const listHeightRef = ref<undefined | number>(undefined)
