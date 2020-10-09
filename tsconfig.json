@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "esnext",
     "strict": true,
-    "importHelpers": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -23,9 +22,9 @@
     ]
   },
   "include": [
-    "packages/**/*.ts",
-    "packages/**/*.vue",
-    "packages/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "src/**/*.ts",
   ],
   "exclude": [
     "node_modules"

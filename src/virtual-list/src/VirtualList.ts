@@ -9,16 +9,16 @@ import {
   renderList
 } from 'vue'
 import { ItemData } from './type'
-import { nextFrame } from './utils'
-import { CssRender } from 'css-render'
-
-const { c } = CssRender()
+import { nextFrame, c } from '../../shared'
+import VResizeObserver from '../../resize-observer/src'
 
 const styles = c([
   `.vvl {
     border: 1px solid cornflowerblue;
     width: 400px;
     overflow: scroll;
+    height: 350px;
+    resize: both;
   }`
 ])
 
@@ -32,18 +32,16 @@ export default defineComponent({
     itemHeight: {
       type: Number,
       required: true
-    },
-    height: {
-      type: Number,
-      required: true
     }
   },
   setup (props) {
     onMounted(() => {
       styles.mount({
-        target: '@vtools/virtual-list'
+        target: 'vtools/virtual-list'
       })
     })
+    const listHeightRef = ref<undefined | number>(undefined)
+    const preparedRef = computed(() => listHeightRef.value !== undefined)
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
       return Math.max(
@@ -52,9 +50,10 @@ export default defineComponent({
       )
     })
     const viewportItemsRef = computed(() => {
+      if (!preparedRef.value) return []
       const startIndex = startIndexRef.value
       const endIndex = Math.min(
-        startIndex + Math.ceil(props.height / props.itemHeight) + 1,
+        startIndex + Math.ceil(listHeightRef.value as number / props.itemHeight) + 1,
         props.items.length - 1
       )
       const viewportItems = []
@@ -66,15 +65,11 @@ export default defineComponent({
     })
     const listRef = ref<null | Element>(null)
     return {
+      listHeight: listHeightRef,
       scrollTop: scrollTopRef,
-      listStyle: computed(() => {
-        return {
-          height: props.height + 'px'
-        }
-      }),
       itemsWrapperStyle: computed(() => {
         return {
-          height: props.itemHeight * props.items.length + 'px'
+          height: `${props.itemHeight * props.items.length}px`
         }
       }),
       itemsViewportStyle: computed(() => {
@@ -97,31 +92,38 @@ export default defineComponent({
         rafFlag.value = true
       }
     },
+    handleListResize (entry: ResizeObserverEntry) {
+      this.listHeight = entry.contentRect.height
+    },
     syncViewport () {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.scrollTop = this.listRef!.scrollTop
+      this.scrollTop = (this.listRef as Element).scrollTop
       this.rafFlag.value = false
     }
   },
   render () {
-    return h("div", {
-      class: "vvl",
-      style: this.listStyle,
-      onScroll: this.handleListScroll,
-      ref: "listRef"
-    }, [
-      h("div", {
-        class: "vvl-items",
-        style: this.itemsWrapperStyle
-      }, [
-        h("div", {
-          class: "vvl-visible-items",
-          style: this.itemsViewportStyle
-        }, 
-        renderList(this.viewportItems, (item) => {
-          return renderSlot(this.$slots, "default", item)
-        }))
-      ])
-    ])
+    return h(VResizeObserver, {
+      onResize: this.handleListResize
+    }, {
+      default: () => {
+        return h('div', {
+          class: 'vvl',
+          onScroll: this.handleListScroll,
+          ref: 'listRef'
+        }, [
+          h('div', {
+            class: 'vvl-items',
+            style: this.itemsWrapperStyle
+          }, [
+            h('div', {
+              class: 'vvl-visible-items',
+              style: this.itemsViewportStyle
+            },
+            renderList(this.viewportItems, (item) => {
+              return renderSlot(this.$slots, 'default', item)
+            }))
+          ])
+        ])
+      }
+    })
   }
 })
