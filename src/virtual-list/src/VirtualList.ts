@@ -36,9 +36,15 @@ export default defineComponent({
       type: Array as PropType<ItemData[]>,
       default: () => []
     },
-    itemHeight: {
+    itemSize: {
       type: Number,
       required: true
+    },
+    onScroll: {
+      type: Function as PropType<(event: UIEvent) => any>
+    },
+    onResize: {
+      type: Function as PropType<(entry: ResizeObserverEntry) => any>
     }
   },
   setup (props) {
@@ -52,7 +58,7 @@ export default defineComponent({
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
       return Math.max(
-        Math.floor(scrollTopRef.value / props.itemHeight) - 1,
+        Math.floor(scrollTopRef.value / props.itemSize) - 1,
         0
       )
     })
@@ -60,7 +66,7 @@ export default defineComponent({
       if (!preparedRef.value) return []
       const startIndex = startIndexRef.value
       const endIndex = Math.min(
-        startIndex + Math.ceil(listHeightRef.value as number / props.itemHeight) + 1,
+        startIndex + Math.ceil(listHeightRef.value as number / props.itemSize) + 1,
         props.items.length - 1
       )
       const viewportItems = []
@@ -81,12 +87,12 @@ export default defineComponent({
       }),
       itemsStyle: computed(() => {
         return {
-          height: `${props.itemHeight * props.items.length}px`
+          height: `${props.itemSize * props.items.length}px`
         }
       }),
       visibleItemsStyle: computed(() => {
         return {
-          transform: `translate3d(0, ${startIndexRef.value * props.itemHeight}px, 0)`
+          transform: `translate3d(0, ${startIndexRef.value * props.itemSize}px, 0)`
         }
       }),
       viewportItems: viewportItemsRef,
@@ -97,15 +103,19 @@ export default defineComponent({
     }
   },
   methods: {
-    handleListScroll () {
+    handleListScroll (e: UIEvent) {
       const { rafFlag } = this
       if (!rafFlag.value) {
         nextFrame(this.syncViewport)
         rafFlag.value = true
       }
+      const { onScroll } = this
+      if (onScroll !== undefined) onScroll(e)
     },
     handleListResize (entry: ResizeObserverEntry) {
       this.listHeight = entry.contentRect.height
+      const { onResize } = this
+      if (onResize !== undefined) onResize(entry)
     },
     syncViewport () {
       this.scrollTop = (this.listRef as Element).scrollTop

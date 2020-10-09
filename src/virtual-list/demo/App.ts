@@ -30,7 +30,7 @@ export default defineComponent({
   render () {
     return [
       h(VirtualList, {
-        itemHeight: 34,
+        itemSize: 34,
         items: basicData
       }, {
         default ({ item }: { item: ItemData }) {
@@ -43,7 +43,7 @@ export default defineComponent({
         }
       }),
       h(VirtualList, {
-        itemHeight: 34,
+        itemSize: 34,
         items: basicData,
         showScrollbar: false
       }, {
