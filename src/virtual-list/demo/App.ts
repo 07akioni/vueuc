@@ -1,7 +1,14 @@
-import { defineComponent, ref, h } from 'vue'
+import { defineComponent, ref, h, onMounted } from 'vue'
 import { ItemData } from '../src/type'
 import VirtualList from '../src/VirtualList'
 import { basicData } from './data'
+import { c } from '../../shared'
+
+const styles = c([
+  `.item {
+    height: 34px;
+  }`
+])
 
 export default defineComponent({
   name: 'App',
@@ -9,6 +16,7 @@ export default defineComponent({
     VirtualList
   },
   setup () {
+    onMounted(() => styles.mount({ target: 'vdemo/virtual-list' }))
     return {
       basicData: ref(basicData)
     }
