@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "lib",
+    "module": "CommonJS",
+    "sourceMap": false
+  },
+  "exclude": [
+    "__tests__",
+    "**/demo/*"
+  ]
+}

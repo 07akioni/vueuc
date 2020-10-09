@@ -1,14 +1,22 @@
 {
   "name": "vtools",
-  "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.0-alpha.0",
+  "description": "Tool Components for Vue",
+  "main": "lib/index.js",
+  "module": "es/index.js",
   "scripts": {
     "start": "vite",
-    "build:site": "vite build"
+    "build:site": "vite build",
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "clean": "rm -rf lib es site"
   },
-  "author": "",
+  "author": "07akioni",
   "license": "MIT",
+  "sideEffects": false,
+  "files": [
+    "es",
+    "lib"
+  ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "eslint": "^7.10.0",

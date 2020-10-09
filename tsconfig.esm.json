@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "es",
+    "module": "esnext",
+    "sourceMap": false
+  },
+  "exclude": [
+    "__tests__",
+    "**/demo/*"
+  ]
+}

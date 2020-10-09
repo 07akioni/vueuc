@@ -1,6 +1,6 @@
 import { ItemData } from '../src/type'
 
-function createArray (length: number) {
+function createArray (length: number): number[] {
   const ret = []
   for (let i = 0; i < length; ++i) {
     ret.push(i)
@@ -8,7 +8,7 @@ function createArray (length: number) {
   return ret
 }
 
-export const basicData: ItemData[] = createArray(300).map((_, i) => ({
+export const basicData: ItemData[] = createArray(100000).map((_, i) => ({
   key: i,
   value: `item_${i}`
 }))
