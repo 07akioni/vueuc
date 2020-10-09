@@ -5,9 +5,15 @@ import { basicData } from './data'
 import { c } from '../../shared'
 
 const styles = c([
-  `.item {
+`
+  .v-vl {
+    max-height: 200px;
+    border: 1px solid blue;
+  }
+  .item {
     height: 34px;
-  }`
+  }
+`
 ])
 
 export default defineComponent({
@@ -22,19 +28,34 @@ export default defineComponent({
     }
   },
   render () {
-    return h(VirtualList, {
-      height: 34 * 7,
-      itemHeight: 34,
-      items: basicData
-    }, {
-      default (item: ItemData) {
-        return h('div', {
-          class: 'item',
-          key: item.key
-        }, [
-          item.value
-        ])
-      }
-    })
+    return [
+      h(VirtualList, {
+        itemHeight: 34,
+        items: basicData
+      }, {
+        default ({ item }: { item: ItemData }) {
+          return h('div', {
+            class: 'item',
+            key: item.key
+          }, [
+            item.value
+          ])
+        }
+      }),
+      h(VirtualList, {
+        itemHeight: 34,
+        items: basicData,
+        showScrollbar: false
+      }, {
+        default ({ item }: { item: ItemData }) {
+          return h('div', {
+            class: 'item',
+            key: item.key
+          }, [
+            item.value
+          ])
+        }
+      })
+    ]
   }
 })

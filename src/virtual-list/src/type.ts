@@ -1,4 +1,4 @@
-export type ItemData = {
+export interface ItemData {
   key: string | number
   [rest: string]: any
 }

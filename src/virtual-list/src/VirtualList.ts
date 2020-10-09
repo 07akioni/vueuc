@@ -12,19 +12,26 @@ import { ItemData } from './type'
 import { nextFrame, c } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 
-const styles = c([
-  `.vvl {
-    border: 1px solid cornflowerblue;
-    width: 400px;
-    overflow: scroll;
-    height: 350px;
-    resize: both;
-  }`
+const styles = c('.v-vl', {
+  overflow: 'auto'
+}, [
+  c('&:not(.v-vl--show-scrollbar)', {
+    scrollbarWidth: 'none'
+  }, [
+    c('&::-webkit-scrollbar', {
+      width: 0,
+      height: 0
+    })
+  ])
 ])
 
 export default defineComponent({
   name: 'VirtualList',
   props: {
+    showScrollbar: {
+      type: Boolean,
+      default: true
+    },
     items: {
       type: Array as PropType<ItemData[]>,
       default: () => []
@@ -67,12 +74,17 @@ export default defineComponent({
     return {
       listHeight: listHeightRef,
       scrollTop: scrollTopRef,
-      itemsWrapperStyle: computed(() => {
+      listStyle: computed(() => {
+        return {
+          overflow: 'auto'
+        }
+      }),
+      itemsStyle: computed(() => {
         return {
           height: `${props.itemHeight * props.items.length}px`
         }
       }),
-      itemsViewportStyle: computed(() => {
+      visibleItemsStyle: computed(() => {
         return {
           transform: `translate3d(0, ${startIndexRef.value * props.itemHeight}px, 0)`
         }
@@ -106,20 +118,25 @@ export default defineComponent({
     }, {
       default: () => {
         return h('div', {
-          class: 'vvl',
+          class: [
+            'v-vl',
+            {
+              'v-vl--show-scrollbar': this.showScrollbar
+            }
+          ],
           onScroll: this.handleListScroll,
           ref: 'listRef'
         }, [
           h('div', {
-            class: 'vvl-items',
-            style: this.itemsWrapperStyle
+            class: 'v-vl-items',
+            style: this.itemsStyle
           }, [
             h('div', {
-              class: 'vvl-visible-items',
-              style: this.itemsViewportStyle
+              class: 'v-vl-visible-items',
+              style: this.visibleItemsStyle
             },
-            renderList(this.viewportItems, (item) => {
-              return renderSlot(this.$slots, 'default', item)
+            renderList(this.viewportItems, (item, index) => {
+              return renderSlot(this.$slots, 'default', { item, index })
             }))
           ])
         ])
