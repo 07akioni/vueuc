@@ -10,7 +10,7 @@ module.exports = function (config) {
       'src/**/*.ts'
     ],
     exclude: [
-      'src/demo/**/*',
+      'src/**/demo/**/*',
       'src/test-shared'
     ],
     preprocessors: {
