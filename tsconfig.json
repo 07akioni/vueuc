@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "esnext",
+    "module": "CommonJS",
     "strict": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
@@ -11,7 +11,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "packages/*"
+        "src/*"
       ]
     },
     "lib": [
@@ -22,9 +22,7 @@
     ]
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.vue",
-    "src/**/*.ts",
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"

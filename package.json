@@ -9,7 +9,8 @@
     "build:site": "vite build",
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "clean": "rm -rf lib es site",
-    "release": "npm run clean && npm run build && npm publish"
+    "release": "npm run clean && npm run build && npm publish",
+    "test": "karma start karma.config.js"
   },
   "author": "07akioni",
   "license": "MIT",
@@ -19,6 +20,7 @@
     "lib"
   ],
   "devDependencies": {
+    "@types/jasmine": "^3.5.14",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "eslint": "^7.10.0",
     "eslint-config-standard-with-typescript": "^19.0.1",
@@ -26,6 +28,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "jasmine": "^3.6.1",
+    "karma": "^5.2.3",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^4.0.1",
+    "karma-spec-reporter": "0.0.32",
+    "karma-typescript": "^5.2.0",
+    "puppeteer": "^5.3.1",
     "typescript": "^4.0.3",
     "vite": "^1.0.0-rc.4",
     "vue-router": "^4.0.0-beta.13"

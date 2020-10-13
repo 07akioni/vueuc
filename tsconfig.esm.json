@@ -3,8 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "es",
-    "module": "esnext",
-    "sourceMap": false
+    "module": "esnext"
   },
   "exclude": [
     "__tests__",
