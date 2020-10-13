@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "clean": "rm -rf lib es site",
     "release": "npm run clean && npm run build && npm publish",
-    "test": "karma start karma.config.js"
+    "test": "karma start karma.config.js",
+    "lint": "eslint src/**/*.ts"
   },
   "author": "07akioni",
   "license": "MIT",
