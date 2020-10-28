@@ -68,11 +68,9 @@ export default defineComponent({
         defaultScrollKey
       } = props
       if (defaultScrollIndex !== undefined && defaultScrollIndex !== null) {
-        (listRef.value as Element).scrollTop = defaultScrollIndex * props.itemSize
+        scrollTo({ index: defaultScrollIndex })
       } else if (defaultScrollKey !== undefined && defaultScrollKey !== null) {
-        const index = keyIndexMapRef.value.get(defaultScrollKey)
-        if (index === undefined) return
-        (listRef.value as Element).scrollTop = index * props.itemSize
+        scrollTo({ key: defaultScrollKey })
       }
     })
     const keyIndexMapRef = computed(() => {
@@ -106,6 +104,72 @@ export default defineComponent({
       }
       return viewportItems
     })
+    function scrollTo (options: VScrollToOptions): void {
+      const {
+        left,
+        top,
+        index,
+        key,
+        position,
+        behavior,
+        debounce = true
+      } = options
+      if (left !== undefined || top !== undefined) {
+        scrollToPosition(left, top, behavior)
+      } else if (index !== undefined) {
+        scrollToIndex(index, behavior, debounce)
+      } else if (key !== undefined) {
+        const toIndex = keyIndexMapRef.value.get(key)
+        if (toIndex !== undefined) scrollToIndex(toIndex, behavior, debounce)
+      } else if (position === 'bottom') {
+        scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
+      } else if (position === 'top') {
+        scrollToPosition(0, 0, behavior)
+      }
+    }
+    function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
+      const targetTop = index * props.itemSize
+      if (!debounce) {
+        (listRef.value as HTMLDivElement).scrollTo({
+          left: 0,
+          top: targetTop,
+          behavior
+        })
+      } else {
+        const {
+          scrollTop,
+          offsetHeight
+        } = listRef.value as HTMLDivElement
+        if (targetTop > scrollTop) {
+          if (targetTop + props.itemSize <= scrollTop + offsetHeight) {
+            // do nothing
+          } else {
+            (listRef.value as HTMLDivElement).scrollTo({
+              left: 0,
+              top: targetTop + props.itemSize - offsetHeight,
+              behavior
+            })
+          }
+        } else {
+          (listRef.value as HTMLDivElement).scrollTo({
+            left: 0,
+            top: targetTop,
+            behavior
+          })
+        }
+      }
+    }
+    function scrollToPosition (
+      left: number | undefined,
+      top: number | undefined,
+      behavior: ScrollToOptions['behavior']
+    ): void {
+      (listRef.value as HTMLDivElement).scrollTo({
+        left,
+        top,
+        behavior
+      })
+    }
     return {
       listHeight: listHeightRef,
       scrollTop: scrollTopRef,
@@ -130,81 +194,11 @@ export default defineComponent({
       itemsRef: ref<null | Element>(null),
       rafFlag: {
         value: false
-      }
+      },
+      scrollTo
     }
   },
   methods: {
-    scrollTo (options: VScrollToOptions) {
-      const {
-        left,
-        top,
-        index,
-        key,
-        position,
-        behavior,
-        debounce = true
-      } = options
-      if (left !== undefined || top !== undefined) {
-        this.scrollToPosition(left, top, behavior)
-      } else if (index !== undefined) {
-        this.scrollToIndex(index, behavior, debounce)
-      } else if (key !== undefined) {
-        const {
-          keyIndexMap
-        } = this
-        const toIndex = keyIndexMap.get(key)
-        if (toIndex !== undefined) this.scrollToIndex(toIndex, behavior, debounce)
-      } else if (position === 'bottom') {
-        this.scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
-      } else if (position === 'top') {
-        this.scrollToPosition(0, 0, behavior)
-      }
-    },
-    scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean) {
-      const { listRef, itemSize } = this
-      const targetTop = index * itemSize
-      if (!debounce) {
-        (listRef as HTMLDivElement).scrollTo({
-          left: 0,
-          top: targetTop,
-          behavior
-        })
-      } else {
-        console.log('debounce')
-        const {
-          scrollTop,
-          offsetHeight
-        } = listRef as HTMLDivElement
-        if (targetTop > scrollTop) {
-          if (targetTop + itemSize <= scrollTop + offsetHeight) {
-            // do nothing
-          } else {
-            (listRef as HTMLDivElement).scrollTo({
-              left: 0,
-              top: targetTop + itemSize - offsetHeight,
-              behavior
-            })
-          }
-        } else {
-          (listRef as HTMLDivElement).scrollTo({
-            left: 0,
-            top: targetTop,
-            behavior
-          })
-        }
-      }
-    },
-    scrollToPosition (
-      left: number | undefined,
-      top: number | undefined,
-      behavior: ScrollToOptions['behavior']
-    ) {
-      ;(this.listRef as Element).scrollTo({
-        left,
-        top,
-        behavior
-      })
-    },
     handleListScroll (e: UIEvent) {
       const { rafFlag } = this
       if (!rafFlag.value) {
