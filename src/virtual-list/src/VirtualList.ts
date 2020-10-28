@@ -3,6 +3,7 @@ import {
   defineComponent,
   PropType,
   ref,
+  onBeforeMount,
   onMounted,
   h,
   renderSlot,
@@ -26,7 +27,7 @@ const styles = c('.v-vl', {
 ])
 
 export default defineComponent({
-  name: 'VirtualList',
+  name: 'VVirtualList',
   props: {
     showScrollbar: {
       type: Boolean,
@@ -45,14 +46,27 @@ export default defineComponent({
     },
     onResize: {
       type: Function as PropType<(entry: ResizeObserverEntry) => any>
+    },
+    defaultScrollIndex: {
+      type: Number,
+      default: undefined
     }
   },
   setup (props) {
-    onMounted(() => {
+    onBeforeMount(() => {
       styles.mount({
         target: 'vueuc/virtual-list'
       })
     })
+    onMounted(() => {
+      const {
+        defaultScrollIndex
+      } = props
+      if (defaultScrollIndex !== undefined) {
+        (listRef.value as Element).scrollTop = defaultScrollIndex * props.itemSize
+      }
+    })
+    const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const preparedRef = computed(() => listHeightRef.value !== undefined)
     const scrollTopRef = ref(0)
@@ -95,7 +109,7 @@ export default defineComponent({
         }
       }),
       viewportItems: viewportItemsRef,
-      listRef: ref<null | Element>(null),
+      listRef,
       itemsRef: ref<null | Element>(null),
       rafFlag: {
         value: false
