@@ -3,13 +3,13 @@ import {
   defineComponent,
   PropType,
   ref,
-  onBeforeMount,
   onMounted,
   h,
   renderSlot,
-  renderList
+  renderList,
+  onBeforeMount
 } from 'vue'
-import { ItemData } from './type'
+import { ItemData, VScrollToOptions } from './type'
 import { nextFrame, c } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 
@@ -27,7 +27,7 @@ const styles = c('.v-vl', {
 ])
 
 export default defineComponent({
-  name: 'VVirtualList',
+  name: 'VirtualList',
   props: {
     showScrollbar: {
       type: Boolean,
@@ -47,6 +47,10 @@ export default defineComponent({
     onResize: {
       type: Function as PropType<(entry: ResizeObserverEntry) => any>
     },
+    defaultScrollKey: {
+      type: Number,
+      default: undefined
+    },
     defaultScrollIndex: {
       type: Number,
       default: undefined
@@ -60,11 +64,23 @@ export default defineComponent({
     })
     onMounted(() => {
       const {
-        defaultScrollIndex
+        defaultScrollIndex,
+        defaultScrollKey
       } = props
       if (defaultScrollIndex !== undefined) {
         (listRef.value as Element).scrollTop = defaultScrollIndex * props.itemSize
+      } else if (defaultScrollKey !== undefined) {
+        const index = keyIndexMapRef.value.get(defaultScrollKey)
+        if (index === undefined) return
+        (listRef.value as Element).scrollTop = index * props.itemSize
       }
+    })
+    const keyIndexMapRef = computed(() => {
+      const map = new Map()
+      props.items.forEach((item, index) => {
+        map.set(item.key, index)
+      })
+      return map
     })
     const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
@@ -109,6 +125,7 @@ export default defineComponent({
         }
       }),
       viewportItems: viewportItemsRef,
+      keyIndexMap: keyIndexMapRef,
       listRef,
       itemsRef: ref<null | Element>(null),
       rafFlag: {
@@ -117,6 +134,50 @@ export default defineComponent({
     }
   },
   methods: {
+    scrollTo (options: VScrollToOptions) {
+      const {
+        left,
+        top,
+        index,
+        key,
+        position,
+        behavior
+      } = options
+      if (left !== undefined || top !== undefined) {
+        this.scrollToPosition(left, top, behavior)
+      } else if (index !== undefined) {
+        this.scrollToIndex(index, behavior)
+      } else if (key !== undefined) {
+        const {
+          keyIndexMap
+        } = this
+        const toIndex = keyIndexMap.get(key)
+        if (toIndex !== undefined) this.scrollToIndex(toIndex, behavior)
+      } else if (position === 'bottom') {
+        this.scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
+      } else if (position === 'top') {
+        this.scrollToPosition(0, 0, behavior)
+      }
+    },
+    scrollToIndex (index: number, behavior: ScrollToOptions['behavior']) {
+      const { listRef, itemSize } = this
+      ;(listRef as Element).scrollTo({
+        left: 0,
+        top: index * itemSize,
+        behavior
+      })
+    },
+    scrollToPosition (
+      left: number | undefined,
+      top: number | undefined,
+      behavior: ScrollToOptions['behavior']
+    ) {
+      ;(this.listRef as Element).scrollTo({
+        left,
+        top,
+        behavior
+      })
+    },
     handleListScroll (e: UIEvent) {
       const { rafFlag } = this
       if (!rafFlag.value) {

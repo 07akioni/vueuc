@@ -24,14 +24,48 @@ export default defineComponent({
   setup () {
     onBeforeMount(() => styles.mount({ target: 'vdemo/virtual-list' }))
     return {
+      scrollBehavior: ref<'auto' | 'smooth'>('auto'),
+      listRef: ref<any>(null),
       basicData: ref(basicData)
     }
   },
   render () {
     return [
+      h('div', [
+        h('button', {
+          onClick: () => {
+            this.listRef.scrollTo({ index: 100, behavior: this.scrollBehavior })
+          }
+        }, [
+          'scrollTo({ index: 100 })'
+        ]),
+        h('button', {
+          onClick: () => {
+            this.listRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
+          }
+        }, [
+          'scrollTo({ key: 200 })'
+        ]),
+        h('button', {
+          onClick: () => {
+            this.listRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
+          }
+        }, [
+          'scrollTo({ position: \'top\' })'
+        ]),
+        h('button', {
+          onClick: () => {
+            this.scrollBehavior === 'auto' ? this.scrollBehavior = 'smooth' : this.scrollBehavior = 'auto'
+          }
+        }, [
+          'behavior:',
+          this.scrollBehavior
+        ])
+      ]),
       h(VirtualList, {
         itemSize: 34,
-        items: basicData
+        items: basicData,
+        ref: 'listRef'
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {
