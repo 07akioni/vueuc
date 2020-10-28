@@ -34,10 +34,10 @@ export default defineComponent({
       h('div', [
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ index: 100, behavior: this.scrollBehavior })
+            this.listRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
           }
         }, [
-          'scrollTo({ index: 100 })'
+          'scrollTo({ index: 10 })'
         ]),
         h('button', {
           onClick: () => {

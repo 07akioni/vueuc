@@ -7,4 +7,5 @@ export interface VScrollToOptions extends ScrollToOptions {
   index?: number
   key?: number
   position?: 'top' | 'bottom'
+  debounce?: boolean
 }
