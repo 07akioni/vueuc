@@ -3,10 +3,11 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "lib",
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "sourceMap": false
   },
   "exclude": [
-    "__tests__",
+    "**/__tests__/*",
     "**/demo/*"
   ]
 }
