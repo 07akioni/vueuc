@@ -1,6 +1,6 @@
 {
   "name": "vueuc",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "description": "Util Components for Vue",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -21,29 +21,29 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/jasmine": "^3.5.14",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "eslint": "^7.10.0",
+    "@types/jasmine": "^3.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "eslint": "^7.12.1",
     "eslint-config-standard-with-typescript": "^19.0.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "jasmine": "^3.6.1",
+    "eslint-plugin-standard": "^4.0.2",
+    "jasmine": "^3.6.3",
     "karma": "^5.2.3",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.1",
     "karma-spec-reporter": "0.0.32",
     "karma-typescript": "^5.2.0",
-    "puppeteer": "^5.3.1",
-    "typescript": "^4.0.3",
-    "vite": "^1.0.0-rc.4",
-    "vue-router": "^4.0.0-beta.13"
+    "puppeteer": "^5.4.1",
+    "typescript": "^4.0.5",
+    "vite": "^1.0.0-rc.8",
+    "vue-router": "^4.0.0-rc.1"
   },
   "dependencies": {
     "css-render": "^0.11.1",
     "resize-observer-polyfill": "^1.5.1",
     "vooks": "0.0.1-alpha.1",
-    "vue": "^3.0.0"
+    "vue": "^3.0.2"
   }
 }

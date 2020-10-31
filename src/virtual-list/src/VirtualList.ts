@@ -63,6 +63,7 @@ export default defineComponent({
       })
     })
     onMounted(() => {
+      resizeObserverRef.value.init()
       const {
         defaultScrollIndex,
         defaultScrollKey
@@ -83,6 +84,7 @@ export default defineComponent({
     const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const preparedRef = computed(() => listHeightRef.value !== undefined)
+    const resizeObserverRef = ref<any>(null)
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
       return Math.max(
@@ -191,6 +193,7 @@ export default defineComponent({
       viewportItems: viewportItemsRef,
       keyIndexMap: keyIndexMapRef,
       listRef,
+      resizeObserverRef,
       itemsRef: ref<null | Element>(null),
       rafFlag: {
         value: false
@@ -220,7 +223,9 @@ export default defineComponent({
   },
   render () {
     return h(VResizeObserver, {
-      onResize: this.handleListResize
+      onResize: this.handleListResize,
+      initManually: true,
+      ref: 'resizeObserverRef'
     }, {
       default: () => {
         return h('div', {
