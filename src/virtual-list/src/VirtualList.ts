@@ -28,6 +28,7 @@ const styles = c('.v-vl', {
 
 export default defineComponent({
   name: 'VirtualList',
+  inheritAttrs: false,
   props: {
     showScrollbar: {
       type: Boolean,
@@ -228,8 +229,11 @@ export default defineComponent({
       ref: 'resizeObserverRef'
     }, {
       default: () => {
+        const { $attrs } = this
         return h('div', {
+          ...$attrs,
           class: [
+            $attrs.class,
             'v-vl',
             {
               'v-vl--show-scrollbar': this.showScrollbar

@@ -4,6 +4,7 @@ import { warn } from '../../shared'
 
 export default defineComponent({
   name: 'ResizeObserver',
+  inheritAttrs: false,
   props: {
     onResize: {
       type: Function,
