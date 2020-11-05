@@ -43,7 +43,7 @@
   "dependencies": {
     "css-render": "^0.11.1",
     "resize-observer-polyfill": "^1.5.1",
-    "vooks": "0.0.1-alpha.1",
+    "vooks": "0.0.1-alpha.4",
     "vue": "^3.0.0"
   }
 }
