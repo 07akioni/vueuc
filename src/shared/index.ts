@@ -5,5 +5,10 @@ export {
   c
 } from './cssr'
 export {
-  nextFrame
+  nextFrame,
+  nextFrameOnce
 } from './next-frame'
+export {
+  getFirstVNode,
+  getSlot
+} from './v-node'

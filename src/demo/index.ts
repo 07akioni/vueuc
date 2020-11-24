@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import VirtualListDemo from '../virtual-list/demo'
 import ResizeObserverDemo from '../resize-observer/demo'
+import BinderDemo from '../binder/demo'
 import App from './App'
 
 const routes = [
@@ -12,6 +13,10 @@ const routes = [
   {
     path: '/resize-observer',
     component: ResizeObserverDemo
+  },
+  {
+    path: '/binder',
+    component: BinderDemo
   }
 ]
 

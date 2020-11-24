@@ -41,6 +41,13 @@ export default defineComponent({
               }, {
                 default: () => 'Resize Observer'
               })]
+            ),
+            h('li',
+              [h(RouterLink, {
+                to: '/binder'
+              }, {
+                default: () => 'Binder'
+              })]
             )
           ])
         ]),
