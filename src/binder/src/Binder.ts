@@ -50,11 +50,9 @@ const Binder = defineComponent({
       }
     }
     const onScroll = (): void => {
-      console.log('scroll')
       nextFrameOnce(onScrollRaf)
     }
     const onScrollRaf = (): void => {
-      console.log('scroll raf')
       followerScrollListeners.forEach(listener => listener())
     }
     // resize related

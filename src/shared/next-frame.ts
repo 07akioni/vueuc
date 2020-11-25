@@ -17,5 +17,6 @@ function flushOnceCallbacks (): void {
 }
 
 export function nextFrameOnce (cb: Function): void {
+  if (onceCbs.includes(cb)) return
   onceCbs.push(cb) === 1 && requestAnimationFrame(flushOnceCallbacks)
 }
