@@ -43,14 +43,6 @@ export default defineComponent({
       ]),
       h('button', {
         onClick: () => {
-          this.position === 'fixed' ? this.position = 'absolute' : this.position = 'fixed'
-        }
-      }, [
-        'container position: ',
-        this.position
-      ]),
-      h('button', {
-        onClick: () => {
           this.flip = !this.flip
         }
       }, [
@@ -99,14 +91,12 @@ export default defineComponent({
         placement: this.placement,
         show: this.show,
         syncTrigger: this.syncTrigger,
-        position: this.position,
         flip: this.flip,
         useTargetWidth: this.useTargetWidth
       }) : h(ScrollNestedDiv, {
         placement: this.placement,
         show: this.show,
         syncTrigger: this.syncTrigger,
-        position: this.position,
         flip: this.flip,
         useTargetWidth: this.useTargetWidth
       })

@@ -39,9 +39,6 @@ export default defineComponent({
     syncTrigger: {
       type: Array as PropType<Array<'scroll' | 'resize'>>
     },
-    position: {
-      type: String as PropType<'fixed' | 'absolute'>
-    },
     flip: {
       type: Boolean
     },
@@ -73,7 +70,6 @@ export default defineComponent({
               h(Follower, {
                 show: this.show,
                 placement: this.placement,
-                position: this.position,
                 flip: this.flip,
                 syncTrigger: this.syncTrigger,
                 width: this.useTargetWidth ? 'target' : undefined

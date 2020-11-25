@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, defineComponent, inject, PropType, nextTick, watch, toRef, ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { h, defineComponent, inject, PropType, nextTick, watch, toRef, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useMemo, useIsMounted } from 'vooks'
 import { BinderInstance, Placement } from './interface'
 import { getSlot } from '../../shared/v-node'
@@ -10,6 +10,22 @@ import {
   getStyle
 } from './get-placement-style'
 import { getPointRect, getRect, getScrollParent } from './utils'
+
+const offsetContainerStyle = {
+  position: 'absolute',
+  left: '0',
+  right: '0',
+  top: '0',
+  height: '0',
+  pointerEvents: 'none',
+  zIndex: 'auto'
+}
+
+function setCommonFollowerStyle (follower: HTMLElement): void {
+  follower.style.position = 'absolute'
+  follower.style.zIndex = 'auto'
+  follower.style.pointerEvents = 'all'
+}
 
 export default defineComponent({
   name: 'Follower',
@@ -25,10 +41,6 @@ export default defineComponent({
     placement: {
       type: String as PropType<Placement>,
       default: 'bottom'
-    },
-    position: {
-      type: String as PropType<'absolute' | 'fixed'>,
-      default: 'fixed'
     },
     syncTrigger: {
       type: Array as PropType<Array<'scroll' | 'resize'>>,
@@ -52,6 +64,10 @@ export default defineComponent({
     },
     width: {
       type: String as PropType<'target' | string>,
+      default: undefined
+    },
+    containerClass: {
+      type: String,
       default: undefined
     }
   },
@@ -92,8 +108,7 @@ export default defineComponent({
       }
       const target = VBinder.targetRef!
       const follower = followerRef.value!
-      follower.style.position = 'absolute'
-      follower.style.zIndex = 'auto'
+      setCommonFollowerStyle(follower)
       const { x, y } = props
       const targetRect = (x !== undefined && y !== undefined)
         ? getPointRect(x, y)
@@ -115,11 +130,8 @@ export default defineComponent({
         flip
       )
       const properTransformOrigin = getProperTransformOrigin(properPlacement)
-      const positionStyle = getStyle(properPlacement, offsetContainerRect, targetRect)
+      const positionStyle = getStyle(properPlacement, offsetContainerRect, targetRect, followerRect)
 
-      ;['top', 'right', 'left', 'bottom', 'transform'].forEach(prop => {
-        follower.style[prop as any] = ''
-      })
       Object.keys(positionStyle).forEach((key) => {
         (follower.style as any)[key] = (positionStyle as any)[key]
       })
@@ -160,27 +172,11 @@ export default defineComponent({
         VBinder.addScrollListener(syncPosition)
       }
     })
-    const offsetContainerStyleRef = computed(() => {
-      return props.position === 'fixed' ? {
-        zIndex: 'auto',
-        pointerEvents: 'none',
-        position: props.position,
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0
-      } : {
-        zIndex: 'auto',
-        pointerEvents: 'none',
-        position: 'relative'
-      }
-    })
     const isMountedRef = useIsMounted()
     const mergedToRef = useMemo<string | HTMLElement | undefined>((): HTMLElement | string | undefined => {
       const { to } = props
       if (to !== undefined) return to
-      const { position } = props
-      if (isMountedRef.value && position === 'absolute') {
+      if (isMountedRef.value) {
         const scrollParent = getScrollParent(VBinder.targetRef)
         if (scrollParent === document) return document.body
         if (scrollParent === null) return undefined
@@ -192,7 +188,6 @@ export default defineComponent({
       VBinder,
       mergedEnabled: mergedEnabledRef,
       offsetContainerRef,
-      offsetContainerStyle: offsetContainerStyleRef,
       followerRef,
       mergedTo: mergedToRef,
       syncPosition
@@ -205,9 +200,12 @@ export default defineComponent({
     }, {
       default: () => {
         return h('div', {
-          class: 'v-binder-follower-container',
-          ref: 'offsetContainerRef',
-          style: this.offsetContainerStyle
+          class: [
+            'v-binder-follower-container',
+            this.containerClass
+          ],
+          style: offsetContainerStyle,
+          ref: 'offsetContainerRef'
         }, [
           h('div', {
             class: 'v-binder-follower-content',
