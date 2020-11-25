@@ -9,7 +9,7 @@ import {
   getProperTransformOrigin,
   getStyle
 } from './get-placement-style'
-import { getPointRect, getRect, getScrollParent } from './utils'
+import { getPointRect, getRect } from './utils'
 
 const offsetContainerStyle = {
   position: 'absolute',
@@ -44,7 +44,7 @@ export default defineComponent({
     },
     syncTrigger: {
       type: Array as PropType<Array<'scroll' | 'resize'>>,
-      default: ['resize']
+      default: ['resize', 'scroll']
     },
     to: {
       type: [String, Object] as PropType<string | HTMLElement>,
@@ -177,10 +177,8 @@ export default defineComponent({
       const { to } = props
       if (to !== undefined) return to
       if (isMountedRef.value) {
-        const scrollParent = getScrollParent(VBinder.targetRef)
-        if (scrollParent === document) return document.body
-        if (scrollParent === null) return undefined
-        return scrollParent as HTMLElement
+        // TODO: find proper container
+        return undefined
       }
       return undefined
     })
