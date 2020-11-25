@@ -1,6 +1,6 @@
 import { Teleport, h, toRef, computed, defineComponent, PropType } from 'vue'
 import { useFalseUntilTruthy } from 'vooks'
-import { getSlot } from '../shared/v-node'
+import { getSlot } from '../../shared/v-node'
 
 export default defineComponent({
   name: 'LazyTeleport',
@@ -16,10 +16,6 @@ export default defineComponent({
     show: {
       type: Boolean,
       required: true
-    },
-    adjustTo: {
-      type: Boolean,
-      default: false
     }
   },
   setup (props) {

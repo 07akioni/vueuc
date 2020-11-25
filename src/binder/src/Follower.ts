@@ -3,7 +3,7 @@ import { h, defineComponent, inject, PropType, nextTick, watch, toRef, ref, onMo
 import { useMemo, useIsMounted } from 'vooks'
 import { BinderInstance, Placement } from './interface'
 import { getSlot } from '../../shared/v-node'
-import LazyTeleport from '../../lazy-teleport/index'
+import LazyTeleport from '../../lazy-teleport/src/index'
 import {
   getProperPlacementOfFollower,
   getProperTransformOrigin,
@@ -180,7 +180,7 @@ export default defineComponent({
       const { to } = props
       if (to !== undefined) return to
       const { position } = props
-      if (isMountedRef.value === true && position === 'absolute') {
+      if (isMountedRef.value && position === 'absolute') {
         const scrollParent = getScrollParent(VBinder.targetRef)
         if (scrollParent === document) return document.body
         if (scrollParent === null) return undefined
