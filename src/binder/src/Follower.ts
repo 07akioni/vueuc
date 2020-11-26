@@ -1,5 +1,18 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, defineComponent, inject, PropType, nextTick, watch, toRef, ref, onMounted, onBeforeUnmount } from 'vue'
+import {
+  h,
+  defineComponent,
+  inject,
+  PropType,
+  nextTick,
+  watch,
+  toRef,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  withDirectives
+} from 'vue'
+import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted } from 'vooks'
 import { BinderInstance, Placement } from './interface'
 import { getSlot } from '../../shared/v-node'
@@ -74,6 +87,14 @@ export default defineComponent({
     teleportDisabled: {
       type: Boolean,
       default: false
+    },
+    zindexable: {
+      type: Boolean,
+      default: true
+    },
+    zIndex: {
+      type: Number,
+      default: undefined
     }
   },
   setup (props) {
@@ -206,7 +227,7 @@ export default defineComponent({
       disabled: this.teleportDisabled
     }, {
       default: () => {
-        return h('div', {
+        const vNode = h('div', {
           class: [
             'v-binder-follower-container',
             this.containerClass
@@ -221,6 +242,20 @@ export default defineComponent({
             getSlot(this.$slots)
           ])
         ])
+        if (this.zindexable) {
+          return withDirectives(
+            vNode,
+            [
+              [
+                zindexable, {
+                  enabled: this.mergedEnabled,
+                  zIndex: this.zIndex
+                }
+              ]
+            ]
+          )
+        }
+        return vNode
       }
     })
   }
