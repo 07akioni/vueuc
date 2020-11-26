@@ -109,6 +109,7 @@ export function getProperTransformOrigin (placement: Placement): TransformOrigin
 interface PlacementOffset {
   top: string
   left: string
+  transform: string
 }
 
 // ------------
@@ -117,74 +118,84 @@ interface PlacementOffset {
 // | [target] |
 // |          |
 // ------------
-// We don't use transform to place follower rect since it will affect inline-flow width
 export function getOffset (
   placement: Placement,
   offsetRect: Rect,
-  targetRect: Rect,
-  followerRect: Rect
+  targetRect: Rect
 ): PlacementOffset {
   switch (placement) {
     case 'bottom-start':
       return {
         top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left}px`
+        left: `${targetRect.left - offsetRect.left}px`,
+        transform: ''
       }
     case 'bottom-end':
       return {
         top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width - followerRect.width}px`
+        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        transform: 'translateX(-100%)'
       }
     case 'top-start':
       return {
-        top: `${targetRect.top - offsetRect.top - followerRect.height}px`,
-        left: `${targetRect.left - offsetRect.left}px`
+        top: `${targetRect.top - offsetRect.top}px`,
+        left: `${targetRect.left - offsetRect.left}px`,
+        transform: 'translateY(-100%)'
       }
     case 'top-end':
       return {
-        top: `${targetRect.top - offsetRect.top - followerRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width - followerRect.width}px`
+        top: `${targetRect.top - offsetRect.top}px`,
+        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'right-start':
       return {
         top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`
+        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        transform: ''
       }
     case 'right-end':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height - followerRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`
+        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        transform: 'translateY(-100%)'
       }
     case 'left-start':
       return {
         top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left - followerRect.width}px`
+        left: `${targetRect.left - offsetRect.left}px`,
+        transform: 'translateX(-100%)'
       }
     case 'left-end':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height - followerRect.height}px`,
-        left: `${targetRect.left - offsetRect.left - followerRect.width}px`
+        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+        left: `${targetRect.left - offsetRect.left}px`,
+        transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'top':
       return {
-        top: `${targetRect.top - offsetRect.top - followerRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width / 2 - followerRect.width / 2}px`
+        top: `${targetRect.top - offsetRect.top}px`,
+        left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+        transform: 'translateY(-100%) translateX(-50%)'
       }
     case 'right':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height / 2 - followerRect.height / 2}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`
+        top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
+        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        transform: 'translateY(-100%)'
       }
     case 'left':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height / 2 - followerRect.height / 2}px`,
-        left: `${targetRect.left - offsetRect.left - followerRect.width}px`
+        top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
+        left: `${targetRect.left - offsetRect.left}px`,
+        transform: 'translateY(-50%) translateX(-100%)'
       }
     case 'bottom':
     default:
       return {
         top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width / 2 - followerRect.width / 2}px`
+        left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+        transform: 'translateX(-50%)'
       }
   }
 }

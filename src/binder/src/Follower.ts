@@ -137,12 +137,12 @@ export default defineComponent({
         flip
       )
       const properTransformOrigin = getProperTransformOrigin(properPlacement)
-      const { left, top } = getOffset(properPlacement, offsetContainerRect, targetRect, followerRect)
+      const { left, top, transform } = getOffset(properPlacement, offsetContainerRect, targetRect)
 
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
-      follower.setAttribute('v-placement', properTransformOrigin)
-      follower.style.transform = `translateX(${left}) translateY(${top})`
+      follower.setAttribute('v-placement', properPlacement)
+      follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
     watch(mergedEnabledRef, (value) => {
@@ -164,7 +164,7 @@ export default defineComponent({
       .forEach((prop) => {
         watch(toRef(props, prop as any), syncPosition)
       })
-    ;['position']
+    ;['teleportDisabled']
       .forEach((prop) => {
         watch(toRef(props, prop as any), syncOnNextTick)
       })
