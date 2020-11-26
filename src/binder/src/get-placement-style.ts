@@ -182,7 +182,7 @@ export function getOffset (
       return {
         top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
         left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
-        transform: 'translateY(-100%)'
+        transform: 'translateY(-50%)'
       }
     case 'left':
       return {
