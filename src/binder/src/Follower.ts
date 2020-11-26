@@ -7,7 +7,7 @@ import LazyTeleport from '../../lazy-teleport/src/index'
 import {
   getProperPlacementOfFollower,
   getProperTransformOrigin,
-  getStyle
+  getOffset
 } from './get-placement-style'
 import { getPointRect, getRect } from './utils'
 
@@ -130,12 +130,11 @@ export default defineComponent({
         flip
       )
       const properTransformOrigin = getProperTransformOrigin(properPlacement)
-      const positionStyle = getStyle(properPlacement, offsetContainerRect, targetRect, followerRect)
+      const { left, top } = getOffset(properPlacement, offsetContainerRect, targetRect, followerRect)
 
-      Object.keys(positionStyle).forEach((key) => {
-        (follower.style as any)[key] = (positionStyle as any)[key]
-      })
+      follower.style.transform = `translateX(${left}) translateY(${top})`
       follower.style.transformOrigin = properTransformOrigin
+      follower.setAttribute('v-placement', properPlacement)
     }
     watch(mergedEnabledRef, (value) => {
       if (value) {

@@ -22,7 +22,7 @@ const TrackingContent = defineComponent({
         backgroundColor: 'green'
       }
     }, [
-      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
+      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
     ])
   }
 })

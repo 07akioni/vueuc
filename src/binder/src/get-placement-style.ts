@@ -106,9 +106,9 @@ export function getProperTransformOrigin (placement: Placement): TransformOrigin
   return transformOrigins[placement]
 }
 
-interface PlacementStyle {
-  top?: string
-  left?: string
+interface PlacementOffset {
+  top: string
+  left: string
 }
 
 // ------------
@@ -118,12 +118,12 @@ interface PlacementStyle {
 // |          |
 // ------------
 // We don't use transform to place follower rect since it will affect inline-flow width
-export function getStyle (
+export function getOffset (
   placement: Placement,
   offsetRect: Rect,
   targetRect: Rect,
   followerRect: Rect
-): PlacementStyle {
+): PlacementOffset {
   switch (placement) {
     case 'bottom-start':
       return {
@@ -175,17 +175,16 @@ export function getStyle (
         top: `${targetRect.top - offsetRect.top + targetRect.height / 2 - followerRect.height / 2}px`,
         left: `${targetRect.left - offsetRect.left + targetRect.width}px`
       }
-    case 'bottom':
-      return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width / 2 - followerRect.width / 2}px`
-      }
     case 'left':
       return {
         top: `${targetRect.top - offsetRect.top + targetRect.height / 2 - followerRect.height / 2}px`,
         left: `${targetRect.left - offsetRect.left - followerRect.width}px`
       }
+    case 'bottom':
     default:
-      return {}
+      return {
+        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+        left: `${targetRect.left - offsetRect.left + targetRect.width / 2 - followerRect.width / 2}px`
+      }
   }
 }
