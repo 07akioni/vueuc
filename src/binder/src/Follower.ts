@@ -29,6 +29,7 @@ function setCommonFollowerStyle (follower: HTMLElement): void {
 
 export default defineComponent({
   name: 'Follower',
+  inheritAttrs: false,
   props: {
     show: {
       type: Boolean,
@@ -69,6 +70,10 @@ export default defineComponent({
     containerClass: {
       type: String,
       default: undefined
+    },
+    teleportDisabled: {
+      type: Boolean,
+      default: false
     }
   },
   setup (props) {
@@ -193,7 +198,8 @@ export default defineComponent({
   render () {
     return h(LazyTeleport, {
       show: this.show,
-      to: this.mergedTo
+      to: this.mergedTo,
+      disabled: this.teleportDisabled
     }, {
       default: () => {
         return h('div', {

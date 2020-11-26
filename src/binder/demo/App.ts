@@ -15,6 +15,7 @@ export default defineComponent({
       placement: ref<Placement>('bottom'),
       position: ref<'absolute' | 'fixed'>('fixed'),
       show: ref(false),
+      teleportDisabled: ref(false),
       syncOnResize: syncOnResizeRef,
       syncOnScroll: syncOnScrollRef,
       flip: ref(false),
@@ -48,6 +49,14 @@ export default defineComponent({
       }, [
         'flip: ',
         this.flip.toString()
+      ]),
+      h('button', {
+        onClick: () => {
+          this.teleportDisabled = !this.teleportDisabled
+        }
+      }, [
+        'teleport disabled: ',
+        this.teleportDisabled.toString()
       ]),
       h('button', {
         onClick: () => {
@@ -92,13 +101,15 @@ export default defineComponent({
         show: this.show,
         syncTrigger: this.syncTrigger,
         flip: this.flip,
-        useTargetWidth: this.useTargetWidth
+        useTargetWidth: this.useTargetWidth,
+        teleportDisabled: this.teleportDisabled
       }) : h(ScrollNestedDiv, {
         placement: this.placement,
         show: this.show,
         syncTrigger: this.syncTrigger,
         flip: this.flip,
-        useTargetWidth: this.useTargetWidth
+        useTargetWidth: this.useTargetWidth,
+        teleportDisabled: this.teleportDisabled
       })
     ])
   }
