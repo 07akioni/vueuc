@@ -119,6 +119,8 @@ export default defineComponent({
         ? getPointRect(x, y)
         : getRect(target)
       const { width, placement, flip } = props
+
+      follower.setAttribute('v-placement', placement)
       if (width === 'target') {
         follower.style.width = `${targetRect.width}px`
       } else if (width !== undefined) {
@@ -137,9 +139,11 @@ export default defineComponent({
       const properTransformOrigin = getProperTransformOrigin(properPlacement)
       const { left, top } = getOffset(properPlacement, offsetContainerRect, targetRect, followerRect)
 
+      // we assume that the content size doesn't change after flip,
+      // nor we need to make sync logic more complex
+      follower.setAttribute('v-placement', properTransformOrigin)
       follower.style.transform = `translateX(${left}) translateY(${top})`
       follower.style.transformOrigin = properTransformOrigin
-      follower.setAttribute('v-placement', properPlacement)
     }
     watch(mergedEnabledRef, (value) => {
       if (value) {
