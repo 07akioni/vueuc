@@ -49,6 +49,12 @@ export default defineComponent({
     },
     teleportDisabled: {
       type: Boolean
+    },
+    x: {
+      type: Number
+    },
+    y: {
+      type: Number
     }
   },
   render () {
@@ -90,7 +96,9 @@ export default defineComponent({
                     syncTrigger: this.syncTrigger,
                     flip: this.flip,
                     width: this.useTargetWidth ? 'target' : undefined,
-                    teleportDisabled: this.teleportDisabled
+                    teleportDisabled: this.teleportDisabled,
+                    x: this.x,
+                    y: this.y
                   }, {
                     default () {
                       return h(TrackingContent)

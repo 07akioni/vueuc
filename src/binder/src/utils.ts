@@ -47,7 +47,7 @@ export function getRect (el: HTMLElement): Rect {
   }
 }
 
-export default function getParentNode (node: Node): Node | null {
+export function getParentNode (node: Node): Node | null {
   // document type
   if (node.nodeType === 9) {
     return null

@@ -20,6 +20,8 @@ export default defineComponent({
       syncOnScroll: syncOnScrollRef,
       flip: ref(false),
       useTargetWidth: ref(false),
+      x: ref<number | undefined>(undefined),
+      y: ref<number | undefined>(undefined),
       syncTrigger: computed<Array<'scroll' | 'resize'>>(() => {
         const triggers: Array<'scroll' | 'resize'> = []
         if (syncOnResizeRef.value) {
@@ -76,6 +78,20 @@ export default defineComponent({
       ]),
       h('button', {
         onClick: () => {
+          if (this.x === 100) {
+            this.x = undefined
+            this.y = undefined
+          } else {
+            this.x = 100
+            this.y = 100
+          }
+        }
+      }, [
+        'x=100 & y=100: ',
+        (this.x === 100).toString()
+      ]),
+      h('button', {
+        onClick: () => {
           this.syncOnResize = !this.syncOnResize
         }
       }, [
@@ -102,14 +118,18 @@ export default defineComponent({
         syncTrigger: this.syncTrigger,
         flip: this.flip,
         useTargetWidth: this.useTargetWidth,
-        teleportDisabled: this.teleportDisabled
+        teleportDisabled: this.teleportDisabled,
+        x: this.x,
+        y: this.y
       }) : h(ScrollNestedDiv, {
         placement: this.placement,
         show: this.show,
         syncTrigger: this.syncTrigger,
         flip: this.flip,
         useTargetWidth: this.useTargetWidth,
-        teleportDisabled: this.teleportDisabled
+        teleportDisabled: this.teleportDisabled,
+        x: this.x,
+        y: this.y
       })
     ])
   }
