@@ -132,8 +132,14 @@ export default defineComponent({
       if (!mergedEnabledRef.value) {
         return
       }
+      const follower = followerRef.value
+      // sometimes watched props change before its dom is ready
+      // for example: show=false, x=undefined, y=undefined
+      //              show=true,  x=0,         y=0
+      // will cause error
+      // I may optimize the watch start point later
+      if (follower === null) return
       const target = VBinder.targetRef!
-      const follower = followerRef.value!
       setCommonFollowerStyle(follower)
       const { x, y } = props
       const targetRect = (x !== undefined && y !== undefined)
@@ -169,9 +175,7 @@ export default defineComponent({
     watch(mergedEnabledRef, (value) => {
       if (value) {
         ensureListeners()
-        nextTick()
-          .then(syncPosition)
-          .catch(e => console.error(e))
+        syncOnNextTick()
       } else {
         removeListeners()
       }
