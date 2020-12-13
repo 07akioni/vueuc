@@ -10,12 +10,13 @@ import {
   ref,
   onMounted,
   onBeforeUnmount,
+  onBeforeMount,
   withDirectives
 } from 'vue'
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted } from 'vooks'
 import { BinderInstance, Placement } from './interface'
-import { getSlot } from '../../shared/v-node'
+import { getSlot, c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
   getProperPlacementOfFollower,
@@ -24,21 +25,25 @@ import {
 } from './get-placement-style'
 import { getPointRect, getRect } from './utils'
 
-const offsetContainerStyle = {
-  position: 'absolute',
-  left: '0',
-  right: '0',
-  top: '0',
-  height: '0',
-  pointerEvents: 'none',
-  zIndex: 'auto'
-}
-
-function setCommonFollowerStyle (follower: HTMLElement): void {
-  follower.style.position = 'absolute'
-  follower.style.zIndex = 'auto'
-  follower.style.pointerEvents = 'all'
-}
+const style = c([
+  c('.v-binder-follower-container', {
+    position: 'absolute',
+    left: '0',
+    right: '0',
+    top: '0',
+    height: '0',
+    pointerEvents: 'none',
+    zIndex: 'auto'
+  }),
+  c('.v-binder-follower-content', {
+    position: 'absolute',
+    zIndex: 'auto'
+  }, [
+    c('> *', {
+      pointerEvents: 'all'
+    })
+  ])
+])
 
 export default defineComponent({
   name: 'Follower',
@@ -125,6 +130,11 @@ export default defineComponent({
         ensureListeners()
       }
     })
+    onBeforeMount(() => {
+      style.mount({
+        target: 'v-binder'
+      })
+    })
     onBeforeUnmount(() => {
       removeListeners()
     })
@@ -140,7 +150,6 @@ export default defineComponent({
       // I may optimize the watch start point later
       if (follower === null) return
       const target = VBinder.targetRef!
-      setCommonFollowerStyle(follower)
       const { x, y } = props
       const targetRect = (x !== undefined && y !== undefined)
         ? getPointRect(x, y)
@@ -236,7 +245,6 @@ export default defineComponent({
             'v-binder-follower-container',
             this.containerClass
           ],
-          style: offsetContainerStyle,
           ref: 'offsetContainerRef'
         }, [
           h('div', {
