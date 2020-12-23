@@ -45,7 +45,7 @@
     "evtd": "^0.0.1-alpha.3",
     "resize-observer-polyfill": "^1.5.1",
     "vdirs": "^0.0.2",
-    "vooks": "^0.0.4",
+    "vooks": "0.0.7",
     "vue": "^3.0.0"
   }
 }

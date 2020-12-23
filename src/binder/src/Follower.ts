@@ -14,7 +14,7 @@ import {
   withDirectives
 } from 'vue'
 import { zindexable } from 'vdirs'
-import { useMemo, useIsMounted } from 'vooks'
+import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { BinderInstance, Placement } from './interface'
 import { getSlot, c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
@@ -137,6 +137,11 @@ export default defineComponent({
     })
     onBeforeUnmount(() => {
       removeListeners()
+    })
+    onFontsReady(() => {
+      if (mergedEnabledRef.value) {
+        syncPosition()
+      }
     })
     const syncPosition = (): void => {
       if (!mergedEnabledRef.value) {
