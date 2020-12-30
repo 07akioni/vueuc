@@ -55,6 +55,17 @@ export default defineComponent({
     defaultScrollIndex: {
       type: Number,
       default: undefined
+    },
+    // Whether it is a good API?
+    // ResizeObserver + footer & header is not enough.
+    // Too complex for simple case
+    paddingTop: {
+      type: Number,
+      default: 0
+    },
+    paddingBottom: {
+      type: Number,
+      default: 0
     }
   },
   setup (props) {
@@ -88,19 +99,24 @@ export default defineComponent({
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
       return Math.max(
-        Math.floor(scrollTopRef.value / props.itemSize) - 1,
+        Math.floor((scrollTopRef.value - props.paddingTop) / props.itemSize) - 1,
         0
       )
     })
     const viewportItemsRef = computed(() => {
       if (!preparedRef.value) return []
+      const { items, itemSize, paddingTop } = props
       const startIndex = startIndexRef.value
       const endIndex = Math.min(
-        startIndex + Math.ceil(listHeightRef.value as number / props.itemSize) + 1,
-        props.items.length - 1
+        startIndex + Math.ceil(
+          Math.min(
+            listHeightRef.value as number,
+            itemSize * items.length + paddingTop - scrollTopRef.value
+          ) / itemSize
+        ) + 1,
+        items.length - 1
       )
       const viewportItems = []
-      const { items } = props
       for (let i = startIndex; i <= endIndex; ++i) {
         viewportItems.push(items[i])
       }
@@ -130,7 +146,7 @@ export default defineComponent({
       }
     }
     function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
-      const targetTop = index * props.itemSize
+      const targetTop = index * props.itemSize + props.paddingTop
       if (!debounce) {
         (listRef.value as HTMLDivElement).scrollTo({
           left: 0,
@@ -175,14 +191,15 @@ export default defineComponent({
     return {
       listHeight: listHeightRef,
       scrollTop: scrollTopRef,
-      listStyle: computed(() => {
-        return {
-          overflow: 'auto'
-        }
-      }),
+      listStyle: {
+        overflow: 'auto'
+      },
       itemsStyle: computed(() => {
         return {
-          height: `${props.itemSize * props.items.length}px`
+          boxSizing: 'padding-box',
+          height: `${props.itemSize * props.items.length}px`,
+          paddingTop: `${props.paddingTop}px`,
+          paddingBottom: `${props.paddingBottom}px`
         }
       }),
       visibleItemsStyle: computed(() => {

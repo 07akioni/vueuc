@@ -103,6 +103,22 @@ export default defineComponent({
             item.value
           ])
         }
+      }),
+      h(VirtualList, {
+        itemSize: 34,
+        items: basicData,
+        defaultScrollIndex: 300,
+        paddingTop: 100,
+        paddingBottom: 100
+      }, {
+        default ({ item }: { item: ItemData }) {
+          return h('div', {
+            class: 'item',
+            key: item.key
+          }, [
+            item.value
+          ])
+        }
       })
     ]
   }
