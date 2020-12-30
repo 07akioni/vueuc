@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "lib",
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "target": "ES6"
   },
   "exclude": [
     "__tests__",

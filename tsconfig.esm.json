@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "es",
-    "module": "esnext"
+    "module": "esnext",
+    "target": "ES6"
   },
   "exclude": [
     "__tests__",
