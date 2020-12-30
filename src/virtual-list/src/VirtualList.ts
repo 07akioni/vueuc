@@ -254,19 +254,21 @@ export default defineComponent({
           onScroll: this.handleListScroll,
           ref: 'listRef'
         }, [
-          h('div', {
-            ref: 'itemsRef',
-            class: 'v-vl-items',
-            style: this.itemsStyle
-          }, [
-            h('div', {
-              class: 'v-vl-visible-items',
-              style: this.visibleItemsStyle
-            },
-            renderList(this.viewportItems, (item, index) => {
-              return renderSlot(this.$slots, 'default', { item, index })
-            }))
-          ])
+          this.items.length !== 0
+            ? h('div', {
+              ref: 'itemsRef',
+              class: 'v-vl-items',
+              style: this.itemsStyle
+            }, [
+              h('div', {
+                class: 'v-vl-visible-items',
+                style: this.visibleItemsStyle
+              },
+              renderList(this.viewportItems, (item, index) => {
+                return renderSlot(this.$slots, 'default', { item, index })
+              }))
+            ])
+            : this.$slots.empty?.()
         ])
       }
     })
