@@ -42,10 +42,10 @@
   },
   "dependencies": {
     "css-render": "^0.11.1",
-    "evtd": "^0.0.1-alpha.3",
+    "evtd": "^0.1.0",
     "resize-observer-polyfill": "^1.5.1",
     "vdirs": "^0.0.2",
-    "vooks": "0.0.7",
+    "vooks": "^0.0.7",
     "vue": "^3.0.0"
   }
 }
