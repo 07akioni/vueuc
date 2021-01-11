@@ -1,6 +1,6 @@
 {
   "name": "vueuc",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Util Components for Vue",
   "main": "lib/index.js",
   "module": "es/index.js",
