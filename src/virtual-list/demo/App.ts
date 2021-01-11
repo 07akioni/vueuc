@@ -109,7 +109,7 @@ export default defineComponent({
         items: basicData,
         defaultScrollIndex: 300,
         paddingTop: 100,
-        paddingBottom: 100
+        paddingBottom: '100px'
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {

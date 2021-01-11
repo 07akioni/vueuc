@@ -10,7 +10,7 @@ import {
   renderList,
   onBeforeMount
 } from 'vue'
-import { depx } from 'seemly'
+import { depx, pxfy } from 'seemly'
 import { ItemData, VScrollToOptions } from './type'
 import { nextFrame, c } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
@@ -199,14 +199,14 @@ export default defineComponent({
       itemsStyle: computed(() => {
         return {
           boxSizing: 'padding-box',
-          height: `${props.itemSize * props.items.length}px`,
-          paddingTop: `${props.paddingTop}px`,
-          paddingBottom: `${props.paddingBottom}px`
+          height: pxfy(props.itemSize * props.items.length),
+          paddingTop: pxfy(props.paddingTop),
+          paddingBottom: pxfy(props.paddingBottom)
         }
       }),
       visibleItemsStyle: computed(() => {
         return {
-          transform: `translate3d(0, ${startIndexRef.value * props.itemSize}px, 0)`
+          transform: `translate3d(0, ${pxfy(startIndexRef.value * props.itemSize)}, 0)`
         }
       }),
       viewportItems: viewportItemsRef,
