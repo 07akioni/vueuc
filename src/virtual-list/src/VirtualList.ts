@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
 import {
   computed,
   defineComponent,
@@ -9,6 +10,7 @@ import {
   renderList,
   onBeforeMount
 } from 'vue'
+import { depx } from 'seemly'
 import { ItemData, VScrollToOptions } from './type'
 import { nextFrame, c } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
@@ -60,11 +62,11 @@ export default defineComponent({
     // ResizeObserver + footer & header is not enough.
     // Too complex for simple case
     paddingTop: {
-      type: Number,
+      type: [Number, String],
       default: 0
     },
     paddingBottom: {
-      type: Number,
+      type: [Number, String],
       default: 0
     }
   },
@@ -99,7 +101,7 @@ export default defineComponent({
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
       return Math.max(
-        Math.floor((scrollTopRef.value - props.paddingTop) / props.itemSize) - 1,
+        Math.floor((scrollTopRef.value - depx(props.paddingTop)) / props.itemSize) - 1,
         0
       )
     })
@@ -111,7 +113,7 @@ export default defineComponent({
         startIndex + Math.ceil(
           Math.min(
             listHeightRef.value as number,
-            itemSize * items.length + paddingTop - scrollTopRef.value
+            itemSize * items.length + depx(paddingTop) - scrollTopRef.value
           ) / itemSize
         ) + 1,
         items.length - 1
@@ -146,7 +148,7 @@ export default defineComponent({
       }
     }
     function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
-      const targetTop = index * props.itemSize + props.paddingTop
+      const targetTop = index * props.itemSize + depx(props.paddingTop)
       if (!debounce) {
         (listRef.value as HTMLDivElement).scrollTo({
           left: 0,
@@ -164,7 +166,7 @@ export default defineComponent({
           } else {
             (listRef.value as HTMLDivElement).scrollTo({
               left: 0,
-              top: targetTop + props.itemSize - offsetHeight,
+              top: targetTop + depx(props.itemSize) - offsetHeight,
               behavior
             })
           }
