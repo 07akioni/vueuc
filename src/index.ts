@@ -1,11 +1,4 @@
-export {
-  Binder,
-  Binder as VBinder,
-  Follower,
-  Follower as VFollower,
-  Target,
-  Target as VTarget
-} from './binder/src'
+export * from './binder/src'
 export {
   default as VirtualList,
   default as VVirtualList
