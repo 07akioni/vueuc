@@ -45,6 +45,10 @@ const style = c([
   ])
 ])
 
+export interface FollowerRef {
+  syncPosition: () => void
+}
+
 export default defineComponent({
   name: 'Follower',
   inheritAttrs: false,
