@@ -1,7 +1,8 @@
 export * from './binder/src'
 export {
   default as VirtualList,
-  default as VVirtualList
+  default as VVirtualList,
+  VirtualListRef
 } from './virtual-list/src'
 export {
   default as LazyTeleport,

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 import {
+  mergeProps,
   computed,
   defineComponent,
   PropType,
@@ -27,6 +28,23 @@ const styles = c('.v-vl', {
     })
   ])
 ])
+
+interface CommonScrollToOptions {
+  behavior?: ScrollBehavior
+  debounce?: boolean
+}
+
+interface ScrollTo {
+  (options: { left?: number, top?: number } & CommonScrollToOptions): void
+  (options: { index: number } & CommonScrollToOptions): void
+  (options: { key: string | number } & CommonScrollToOptions): void
+  (options: { position: 'top' | 'bottom' } & CommonScrollToOptions): void
+}
+export interface VirtualListRef {
+  listRef: HTMLElement
+  itemsRef: HTMLElement | null
+  scrollTo: ScrollTo
+}
 
 export default defineComponent({
   name: 'VirtualList',
@@ -124,7 +142,7 @@ export default defineComponent({
       }
       return viewportItems
     })
-    function scrollTo (options: VScrollToOptions): void {
+    const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
       const {
         left,
         top,
@@ -244,18 +262,17 @@ export default defineComponent({
       onResize: this.handleListResize
     }, {
       default: () => {
-        return h('div', {
-          ...this.$attrs,
-          class: [
-            this.$attrs.class,
-            'v-vl',
-            {
-              'v-vl--show-scrollbar': this.showScrollbar
-            }
-          ],
-          onScroll: this.handleListScroll,
-          ref: 'listRef'
-        }, [
+        return h('div', mergeProps(
+          this.$attrs, {
+            class: [
+              'v-vl',
+              {
+                'v-vl--show-scrollbar': this.showScrollbar
+              }
+            ],
+            onScroll: this.handleListScroll,
+            ref: 'listRef'
+          }), [
           this.items.length !== 0
             ? h('div', {
               ref: 'itemsRef',

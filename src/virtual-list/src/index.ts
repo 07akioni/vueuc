@@ -1,1 +1,1 @@
-export { default } from './VirtualList'
+export { default, VirtualListRef } from './VirtualList'

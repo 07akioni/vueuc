@@ -5,7 +5,7 @@ export interface ItemData {
 
 export interface VScrollToOptions extends ScrollToOptions {
   index?: number
-  key?: number
+  key?: number | string
   position?: 'top' | 'bottom'
   debounce?: boolean
 }
