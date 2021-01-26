@@ -62,19 +62,13 @@ export default defineComponent({
       type: Number,
       required: true
     },
-    onScroll: {
-      type: Function as PropType<(event: UIEvent) => any>
-    },
-    onResize: {
-      type: Function as PropType<(entry: ResizeObserverEntry) => any>
-    },
-    defaultScrollKey: {
-      type: Number,
-      default: undefined
-    },
-    defaultScrollIndex: {
-      type: Number,
-      default: undefined
+    onScroll: Function as PropType<(event: Event) => any>,
+    onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
+    defaultScrollKey: Number,
+    defaultScrollIndex: Number,
+    keyField: {
+      type: String,
+      default: 'key'
     },
     // Whether it is a good API?
     // ResizeObserver + footer & header is not enough.
@@ -108,8 +102,9 @@ export default defineComponent({
     })
     const keyIndexMapRef = computed(() => {
       const map = new Map()
+      const { keyField } = props
       props.items.forEach((item, index) => {
-        map.set(item.key, index)
+        map.set(item[keyField], index)
       })
       return map
     })
