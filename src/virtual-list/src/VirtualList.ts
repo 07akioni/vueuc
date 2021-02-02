@@ -29,12 +29,12 @@ const styles = c('.v-vl', {
   ])
 ])
 
-interface CommonScrollToOptions {
+export interface CommonScrollToOptions {
   behavior?: ScrollBehavior
   debounce?: boolean
 }
 
-interface ScrollTo {
+export interface ScrollTo {
   (options: { left?: number, top?: number } & CommonScrollToOptions): void
   (options: { index: number } & CommonScrollToOptions): void
   (options: { key: string | number } & CommonScrollToOptions): void
