@@ -1,9 +1,9 @@
 const path = require('path')
 
+/**
+ * @type import('vite').UserConfig
+ */
 module.exports = {
   root: 'src',
-  outDir: path.resolve(__dirname, 'site'),
-  optmizeDeps: {
-    include: ['vue-router']
-  }
+  outDir: path.resolve(__dirname, 'site')
 }

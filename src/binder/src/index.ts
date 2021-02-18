@@ -1,4 +1,5 @@
 export { default as Binder, default as VBinder } from './Binder'
 export { default as Target, default as VTarget } from './Target'
-export { default as Follower, default as VFollower, FollowerRef } from './Follower'
-export { Placement as FollowerPlacement } from './interface'
+export { default as Follower, default as VFollower } from './Follower'
+export type { FollowerRef } from './Follower'
+export type { Placement as FollowerPlacement } from './interface'
