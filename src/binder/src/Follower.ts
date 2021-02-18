@@ -104,6 +104,10 @@ export default defineComponent({
     zIndex: {
       type: Number,
       default: undefined
+    },
+    overlap: {
+      type: Boolean,
+      default: false
     }
   },
   setup (props) {
@@ -159,13 +163,18 @@ export default defineComponent({
       // I may optimize the watch start point later
       if (follower === null) return
       const target = VBinder.targetRef!
-      const { x, y } = props
+      const { x, y, overlap } = props
       const targetRect = (x !== undefined && y !== undefined)
         ? getPointRect(x, y)
         : getRect(target)
       const { width, placement, flip } = props
 
       follower.setAttribute('v-placement', placement)
+      if (overlap) {
+        follower.setAttribute('v-overlap', '')
+      } else {
+        follower.removeAttribute('v-overlap')
+      }
       if (width === 'target') {
         follower.style.width = `${targetRect.width}px`
       } else if (width !== undefined) {
@@ -179,10 +188,11 @@ export default defineComponent({
         placement,
         targetRect,
         followerRect,
-        flip
+        flip,
+        overlap
       )
-      const properTransformOrigin = getProperTransformOrigin(properPlacement)
-      const { left, top, transform } = getOffset(properPlacement, offsetContainerRect, targetRect)
+      const properTransformOrigin = getProperTransformOrigin(properPlacement, overlap)
+      const { left, top, transform } = getOffset(properPlacement, offsetContainerRect, targetRect, overlap)
 
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
@@ -203,7 +213,7 @@ export default defineComponent({
         .then(syncPosition)
         .catch(e => console.error(e))
     }
-    ;['placement', 'x', 'y', 'flip', 'width']
+    ;['placement', 'x', 'y', 'flip', 'width', 'overlap']
       .forEach((prop) => {
         watch(toRef(props, prop as any), syncPosition)
       })

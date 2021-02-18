@@ -25,7 +25,7 @@ const transformOrigins: Record<Placement, TransformOrigin> = {
   bottom: 'top center',
   'bottom-end': 'top right',
   'top-start': 'bottom left',
-  top: 'bottom',
+  top: 'bottom center',
   'top-end': 'bottom right',
   'right-start': 'top left',
   right: 'center left',
@@ -33,6 +33,21 @@ const transformOrigins: Record<Placement, TransformOrigin> = {
   'left-start': 'top right',
   left: 'center right',
   'left-end': 'bottom right'
+}
+
+const overlapTransformOrigin: Record<Placement, TransformOrigin> = {
+  'bottom-start': 'bottom left',
+  bottom: 'bottom center',
+  'bottom-end': 'bottom right',
+  'top-start': 'top left',
+  top: 'top center',
+  'top-end': 'top right',
+  'right-start': 'top right',
+  right: 'center right',
+  'right-end': 'bottom right',
+  'left-start': 'top left',
+  left: 'center left',
+  'left-end': 'bottom left'
 }
 
 const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
@@ -50,9 +65,10 @@ export function getProperPlacementOfFollower (
   placement: Placement,
   targetRect: Rect,
   followerRect: Rect,
-  flip: boolean
+  flip: boolean,
+  overlap: boolean
 ): Placement {
-  if (!flip) {
+  if (!flip || overlap) {
     return placement
   }
   const [position, align] = placement.split('-') as [Position, Align]
@@ -102,7 +118,8 @@ export function getProperPlacementOfFollower (
   return properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition
 }
 
-export function getProperTransformOrigin (placement: Placement): TransformOrigin {
+export function getProperTransformOrigin (placement: Placement, overlap: boolean): TransformOrigin {
+  if (overlap) return overlapTransformOrigin[placement]
   return transformOrigins[placement]
 }
 
@@ -121,8 +138,87 @@ interface PlacementOffset {
 export function getOffset (
   placement: Placement,
   offsetRect: Rect,
-  targetRect: Rect
+  targetRect: Rect,
+  overlap: boolean
 ): PlacementOffset {
+  if (overlap) {
+    switch (placement) {
+      case 'bottom-start':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+          left: `${targetRect.left - offsetRect.left}px`,
+          transform: 'translateY(-100%)'
+        }
+      case 'bottom-end':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          transform: 'translateX(-100%) translateY(-100%)'
+        }
+      case 'top-start':
+        return {
+          top: `${targetRect.top - offsetRect.top}px`,
+          left: `${targetRect.left - offsetRect.left}px`,
+          transform: ''
+        }
+      case 'top-end':
+        return {
+          top: `${targetRect.top - offsetRect.top}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          transform: 'translateX(-100%)'
+        }
+      case 'right-start':
+        return {
+          top: `${targetRect.top - offsetRect.top}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          transform: 'translateX(-100%)'
+        }
+      case 'right-end':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          transform: 'translateX(-100%) translateY(-100%)'
+        }
+      case 'left-start':
+        return {
+          top: `${targetRect.top - offsetRect.top}px`,
+          left: `${targetRect.left - offsetRect.left}px`,
+          transform: ''
+        }
+      case 'left-end':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+          left: `${targetRect.left - offsetRect.left}px`,
+          transform: 'translateY(-100%)'
+        }
+      case 'top':
+        return {
+          top: `${targetRect.top - offsetRect.top}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+          transform: 'translateX(-50%)'
+        }
+      case 'right':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          transform: 'translateX(-100%) translateY(-50%)'
+        }
+      case 'left':
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
+          left: `${targetRect.left - offsetRect.left}px`,
+          transform: 'translateY(-50%)'
+        }
+      case 'bottom':
+      default:
+        return {
+          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
+          left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+          transform: 'translateX(-50%) translateY(-100%)'
+        }
+    }
+  }
+
   switch (placement) {
     case 'bottom-start':
       return {

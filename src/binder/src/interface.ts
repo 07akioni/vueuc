@@ -49,7 +49,7 @@ export type TransformOrigin =
   'top center' |
   'top right' |
   'bottom left' |
-  'bottom' |
+  'bottom center' |
   'bottom right' |
   'top left' |
   'center left' |

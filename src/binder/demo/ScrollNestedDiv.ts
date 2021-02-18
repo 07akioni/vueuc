@@ -1,6 +1,6 @@
-import { h, defineComponent, PropType } from 'vue'
+import { h, defineComponent } from 'vue'
 import { Binder, Follower, Target } from '../src/index'
-import { Placement } from '../src/interface'
+import { demoProps } from './demo-props'
 
 const TrackedContent = defineComponent({
   render () {
@@ -31,32 +31,7 @@ const TrackingContent = defineComponent({
 
 export default defineComponent({
   name: 'ScrollNestedDiv',
-  props: {
-    placement: {
-      type: String as PropType<Placement>
-    },
-    show: {
-      type: Boolean
-    },
-    syncTrigger: {
-      type: Array as PropType<Array<'scroll' | 'resize'>>
-    },
-    flip: {
-      type: Boolean
-    },
-    useTargetWidth: {
-      type: Boolean
-    },
-    teleportDisabled: {
-      type: Boolean
-    },
-    x: {
-      type: Number
-    },
-    y: {
-      type: Number
-    }
-  },
+  props: demoProps,
   render () {
     return [
       'scroll nested div',
@@ -98,7 +73,8 @@ export default defineComponent({
                     width: this.useTargetWidth ? 'target' : undefined,
                     teleportDisabled: this.teleportDisabled,
                     x: this.x,
-                    y: this.y
+                    y: this.y,
+                    overlap: this.overlap
                   }, {
                     default () {
                       return h(TrackingContent)
