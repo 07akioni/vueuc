@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import VirtualListDemo from '../virtual-list/demo'
 import ResizeObserverDemo from '../resize-observer/demo'
 import BinderDemo from '../binder/demo'
+import XScrollDemo from '../x-scroll/demo'
 import App from './App'
 
 const routes = [
@@ -17,6 +18,10 @@ const routes = [
   {
     path: '/binder',
     component: BinderDemo
+  },
+  {
+    path: '/x-scroll',
+    component: XScrollDemo
   }
 ]
 

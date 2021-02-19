@@ -48,12 +48,20 @@ export default defineComponent({
               }, {
                 default: () => 'Binder'
               })]
+            ),
+            h('li',
+              [h(RouterLink, {
+                to: '/x-scroll'
+              }, {
+                default: () => 'XScroll'
+              })]
             )
           ])
         ]),
         h('div', {
           style: {
             flex: 1,
+            overflow: 'hidden',
             paddingLeft: '24px'
           }
         }, [

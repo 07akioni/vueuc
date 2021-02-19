@@ -1,7 +1,9 @@
 export * from './binder/src'
 export {
   default as VirtualList,
-  default as VVirtualList,
+  default as VVirtualList
+} from './virtual-list/src'
+export type {
   VirtualListRef
 } from './virtual-list/src'
 export {
@@ -12,3 +14,7 @@ export {
   default as ResizeObserver,
   default as VResizeObserver
 } from './resize-observer/src'
+export {
+  default as XScroll,
+  default as VXScroll
+} from './x-scroll/src'
