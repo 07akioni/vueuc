@@ -19,8 +19,8 @@ export default defineComponent({
   setup (props, { slots }) {
     function handleWheel (e: WheelEvent): void {
       const preventYWheel =
-        (e.target as HTMLElement).offsetWidth <
-        (e.target as HTMLElement).scrollWidth
+        (e.currentTarget as HTMLElement).offsetWidth <
+        (e.currentTarget as HTMLElement).scrollWidth
       if (!preventYWheel || e.deltaY === 0) return;
       (e.currentTarget as HTMLElement).scrollLeft += e.deltaY + e.deltaX
       e.preventDefault()
