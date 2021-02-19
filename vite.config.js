@@ -5,5 +5,7 @@ const path = require('path')
  */
 module.exports = {
   root: 'src',
-  outDir: path.resolve(__dirname, 'site')
+  build: {
+    outDir: path.resolve(__dirname, 'site')
+  }
 }
