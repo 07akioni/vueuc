@@ -30,6 +30,6 @@ export function mount (comp: Component, options: MountOptions = {}): Wrapper {
   return {
     app,
     instance,
-    unmount: () => app.unmount(div)
+    unmount: () => app.unmount()
   }
 }
