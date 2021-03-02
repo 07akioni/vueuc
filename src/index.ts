@@ -12,7 +12,8 @@ export {
 } from './lazy-teleport/src'
 export {
   default as ResizeObserver,
-  default as VResizeObserver
+  default as VResizeObserver,
+  VResizeObserverOnResize
 } from './resize-observer/src'
 export {
   default as XScroll,

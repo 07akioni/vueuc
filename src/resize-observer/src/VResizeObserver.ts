@@ -1,14 +1,13 @@
-import { defineComponent, renderSlot } from 'vue'
+import { defineComponent, renderSlot, PropType } from 'vue'
 import delegate from './delegate'
 import { warn } from '../../shared'
+
+export type VResizeObserverOnResize = (entry: ResizeObserverEntry) => void
 
 export default defineComponent({
   name: 'ResizeObserver',
   props: {
-    onResize: {
-      type: Function,
-      default: undefined
-    }
+    onResize: Function as PropType<VResizeObserverOnResize>
   },
   data () {
     return {
