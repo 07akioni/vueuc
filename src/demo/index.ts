@@ -4,6 +4,7 @@ import VirtualListDemo from '../virtual-list/demo'
 import ResizeObserverDemo from '../resize-observer/demo'
 import BinderDemo from '../binder/demo'
 import XScrollDemo from '../x-scroll/demo'
+import OverflowDemo from '../overflow/demo'
 import App from './App'
 
 const routes = [
@@ -22,6 +23,10 @@ const routes = [
   {
     path: '/x-scroll',
     component: XScrollDemo
+  },
+  {
+    path: '/overflow',
+    component: OverflowDemo
   }
 ]
 

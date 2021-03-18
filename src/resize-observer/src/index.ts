@@ -1,1 +1,2 @@
-export { default, VResizeObserverOnResize } from './VResizeObserver'
+export { default } from './VResizeObserver'
+export type { VResizeObserverOnResize } from './VResizeObserver'

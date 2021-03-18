@@ -2,14 +2,10 @@ import { defineComponent, h, onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { c } from '../shared'
 
-const styles = c([
-  `
-  body {
-    font-family: sans-serif;
-    font-size: 14px;
-  }
-  `
-])
+const styles = c([`body {
+  font-family: sans-serif;
+  font-size: 14px;
+}`])
 
 export default defineComponent({
   name: 'VueucDemo',
@@ -54,6 +50,13 @@ export default defineComponent({
                 to: '/x-scroll'
               }, {
                 default: () => 'XScroll'
+              })]
+            ),
+            h('li',
+              [h(RouterLink, {
+                to: '/overflow'
+              }, {
+                default: () => 'Overflow'
               })]
             )
           ])
