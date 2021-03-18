@@ -1,18 +1,25 @@
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, ref, computed } from 'vue'
 import { VOverflow } from '../../index'
 
 export default defineComponent({
   setup () {
     const tailRef = ref<HTMLElement | null>(null)
+    const tailContentRef = ref<HTMLElement | null>(null)
+    const itemCountRef = ref(3)
+    const itemsRef = computed(() => Array.apply(null, { length: itemCountRef.value } as any).map(
+      (_, i) => i
+    ))
     return {
       getTail: () => tailRef.value,
       updateTail: (count: number) => {
-        if (tailRef.value !== null) {
-          tailRef.value.textContent = `${count}牛`
+        if (tailContentRef.value !== null) {
+          tailContentRef.value.textContent = `${count}牛`
         }
       },
       tailRef,
-      itemCount: ref(3)
+      tailContentRef,
+      items: itemsRef,
+      itemCount: itemCountRef
     }
   },
   render () {
@@ -47,20 +54,17 @@ export default defineComponent({
         },
         {
           default: () => {
-            return Array.apply(null, { length: this.itemCount } as any).map(
-              (_, i) =>
-                h(
-                  'div',
-                  {
-                    style: {
-                      display: 'inline-block',
-                      border: '1px solid yellow',
-                      width: '30px'
-                    }
-                  },
-                  [i + 1]
-                )
-            )
+            return this.items.map(v => h(
+              'div',
+              {
+                style: {
+                  display: 'inline-block',
+                  border: '1px solid yellow',
+                  width: '30px'
+                }
+              },
+              [v + 1]
+            ))
           }
         }
       ),
@@ -69,6 +73,7 @@ export default defineComponent({
         {
           getTail: this.getTail,
           updateTail: this.updateTail,
+          items: this.items,
           style: {
             width: '120px',
             background: 'grey'
@@ -76,28 +81,42 @@ export default defineComponent({
         },
         {
           default: () => {
-            return Array.apply(null, { length: this.itemCount } as any).map(
-              (_, i) =>
-                h(
-                  'div',
-                  {
-                    style: {
-                      display: 'inline-block',
-                      border: '1px solid yellow',
-                      width: '30px'
-                    }
-                  },
-                  [i + 1]
-                )
-            )
+            return this.items.map(v => h(
+              'div',
+              {
+                style: {
+                  display: 'inline-block',
+                  border: '1px solid yellow',
+                  width: '30px'
+                }
+              },
+              [v + 1]
+            ))
           },
-          tail: () => {
+          tail: ({
+            rest,
+            overflow
+          }: any) => {
             return h('span', {
               ref: 'tailRef',
               style: {
+                position: 'relative',
                 display: 'inline-block'
               }
-            })
+            }, [
+              h('span', {
+                ref: 'tailContentRef'
+              }),
+              h('div', {
+                style: {
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0'
+                }
+              }, [
+                JSON.stringify(overflow), JSON.stringify(rest)
+              ])
+            ])
           }
         }
       )

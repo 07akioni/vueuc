@@ -1,5 +1,6 @@
-import { defineComponent, renderSlot, h, onMounted, ref, onUpdated, PropType } from 'vue'
+import { defineComponent, renderSlot, h, onMounted, ref, onUpdated, PropType, InjectionKey, reactive, provide } from 'vue'
 import { c } from '../../shared'
+import Tail from './Tail'
 
 const hiddenAttr = 'v-hidden'
 
@@ -7,15 +8,28 @@ const style = c('[v-hidden]', {
   display: 'none!important'
 })
 
+export interface VOverflowInjection {
+  rest: any[] | undefined
+  overflow: boolean
+}
+
+export const overflowInjectionKey: InjectionKey<VOverflowInjection> = Symbol('VOverflow')
+
 export default defineComponent({
   name: 'Overflow',
   props: {
     getTail: Function as PropType<() => HTMLElement | null>,
-    updateTail: Function as PropType<(count: number) => void>
+    updateTail: Function as PropType<(count: number) => void>,
+    items: Array
   },
   setup (props) {
     const selfRef = ref<HTMLElement | null>(null)
     const tailRef = ref<HTMLElement | null>(null)
+    const overflowContext = reactive<VOverflowInjection>({
+      rest: undefined,
+      overflow: false
+    })
+    provide(overflowInjectionKey, overflowContext)
     function deriveTail (): void {
       const {
         value: self
@@ -36,6 +50,7 @@ export default defineComponent({
       let childWidthSum = 0
       let overflow = false
       const len = self.children.length
+      const { items } = props
       for (let i = 0; i < len - 1; ++i) {
         const child = children[i]
         if (overflow) {
@@ -63,13 +78,19 @@ export default defineComponent({
             if (childWidthSum + tailWidth <= containerWidth) {
               overflow = true
               i = j - 1
+              if (items !== undefined) {
+                overflowContext.rest = items.slice(j, items.length)
+              }
               break
             }
           }
         }
       }
       if (!overflow) {
+        overflowContext.overflow = false
         tail.setAttribute(hiddenAttr, '')
+      } else {
+        overflowContext.overflow = true
       }
     }
     style.mount({
@@ -93,7 +114,9 @@ export default defineComponent({
       renderSlot($slots, 'default'),
       // $slots.tail should only has 1 element
       $slots.tail !== undefined
-        ? $slots.tail()
+        ? h(Tail, undefined, {
+          default: $slots.tail
+        })
         : h('span', {
           style: {
             display: 'inline-block'
