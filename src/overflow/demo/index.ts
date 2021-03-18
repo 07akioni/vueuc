@@ -1,10 +1,12 @@
-import { defineComponent, h, ref, computed } from 'vue'
+import { defineComponent, h, ref, computed, nextTick } from 'vue'
 import { VOverflow } from '../../index'
+import { VOverflowRef } from '../src'
 
 export default defineComponent({
   setup () {
+    const overflowRef1 = ref<VOverflowRef | null>(null)
+    const overflowRef2 = ref<VOverflowRef | null>(null)
     const tailRef = ref<HTMLElement | null>(null)
-    const tailContentRef = ref<HTMLElement | null>(null)
     const itemCountRef = ref(3)
     const itemsRef = computed(() => Array.apply(null, { length: itemCountRef.value } as any).map(
       (_, i) => i
@@ -12,14 +14,22 @@ export default defineComponent({
     return {
       getTail: () => tailRef.value,
       updateTail: (count: number) => {
-        if (tailContentRef.value !== null) {
-          tailContentRef.value.textContent = `${count}牛`
+        if (tailRef.value !== null) {
+          tailRef.value.textContent = `${count}牛`
         }
       },
       tailRef,
-      tailContentRef,
       items: itemsRef,
-      itemCount: itemCountRef
+      itemCount: itemCountRef,
+      overflowRef1,
+      overflowRef2,
+      sync: () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        nextTick(() => {
+          overflowRef1.value?.sync()
+          overflowRef2.value?.sync()
+        })
+      }
     }
   },
   render () {
@@ -47,6 +57,7 @@ export default defineComponent({
       h(
         VOverflow,
         {
+          ref: 'overflowRef1',
           style: {
             width: '120px',
             background: 'grey'
@@ -71,9 +82,9 @@ export default defineComponent({
       h(
         VOverflow,
         {
+          ref: 'overflowRef2',
           getTail: this.getTail,
           updateTail: this.updateTail,
-          items: this.items,
           style: {
             width: '120px',
             background: 'grey'
@@ -93,30 +104,13 @@ export default defineComponent({
               [v + 1]
             ))
           },
-          tail: ({
-            rest,
-            overflow
-          }: any) => {
+          tail: () => {
             return h('span', {
               ref: 'tailRef',
               style: {
-                position: 'relative',
                 display: 'inline-block'
               }
-            }, [
-              h('span', {
-                ref: 'tailContentRef'
-              }),
-              h('div', {
-                style: {
-                  position: 'absolute',
-                  top: '100%',
-                  left: '0'
-                }
-              }, [
-                JSON.stringify(overflow), JSON.stringify(rest)
-              ])
-            ])
+            })
           }
         }
       )

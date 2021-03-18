@@ -25,3 +25,6 @@ export {
   VOverflow,
   Overflow
 } from './overflow'
+export type {
+  VOverflowRef
+} from './overflow'
