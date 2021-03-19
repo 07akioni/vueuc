@@ -27,6 +27,7 @@ export default defineComponent({
         }
       },
       getTail: () => tailRef1.value,
+      tailValue: ref('tail'),
       counterRef1,
       counterRef2,
       tailRef1,
@@ -64,6 +65,11 @@ export default defineComponent({
         },
         ['+']
       ),
+      h('hr'),
+      h('input', {
+        value: this.tailValue,
+        onInput: (e: InputEvent): void => { this.tailValue = (e.target as HTMLInputElement).value }
+      }),
       h('hr'),
       h(
         VOverflow,
@@ -132,6 +138,7 @@ export default defineComponent({
           updateCounter: this.updateCounter2,
           getTail: this.getTail,
           style: {
+            whiteSpace: 'nowrap',
             width: '120px',
             background: 'grey'
           }
@@ -162,10 +169,11 @@ export default defineComponent({
             return h('span', {
               ref: 'tailRef1',
               style: {
+                border: '1px solid red',
                 display: 'inline-block'
               }
             }, [
-              'tail'
+              this.tailValue
             ])
           }
         }
