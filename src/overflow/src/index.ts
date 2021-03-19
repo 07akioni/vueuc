@@ -14,33 +14,34 @@ export interface VOverflowRef {
 export default defineComponent({
   name: 'Overflow',
   props: {
+    getCounter: Function as PropType<() => HTMLElement | null>,
     getTail: Function as PropType<() => HTMLElement | null>,
-    updateTail: Function as PropType<(count: number) => void>,
+    updateCounter: Function as PropType<(count: number) => void>,
     onUpdateOverflow: Function as PropType<(overflow: boolean) => void>
   },
-  setup (props) {
+  setup (props, { slots }) {
     const selfRef = ref<HTMLElement | null>(null)
-    const tailRef = ref<HTMLElement | null>(null)
-    function deriveTail (): void {
+    const counterRef = ref<HTMLElement | null>(null)
+    function deriveCounter (): void {
       const {
         value: self
       } = selfRef
-      const { getTail } = props
-      let tail: HTMLElement | null
-      if (getTail !== undefined) tail = getTail()
+      const { getCounter, getTail } = props
+      let counter: HTMLElement | null
+      if (getCounter !== undefined) counter = getCounter()
       else {
-        tail = tailRef.value
+        counter = counterRef.value
       }
-      if (self === null || tail === null) return
-      if (tail.hasAttribute(hiddenAttr)) {
-        tail.removeAttribute(hiddenAttr)
+      if (self === null || counter === null) return
+      if (counter.hasAttribute(hiddenAttr)) {
+        counter.removeAttribute(hiddenAttr)
       }
       const { children } = self
       const containerWidth = self.offsetWidth
       const childWidths: number[] = []
-      let childWidthSum = 0
+      let childWidthSum = slots.tail === undefined ? 0 : (getTail?.()?.offsetWidth ?? 0)
       let overflow = false
-      const len = self.children.length
+      const len = self.children.length - (slots.tail === undefined ? 0 : 1)
       for (let i = 0; i < len - 1; ++i) {
         const child = children[i]
         if (overflow) {
@@ -55,17 +56,17 @@ export default defineComponent({
         childWidthSum += childWidth
         childWidths[i] = childWidth
         if (childWidthSum > containerWidth) {
-          const { updateTail } = props
+          const { updateCounter } = props
           for (let j = i; j >= 0; --j) {
             const restCount = len - 1 - j
-            if (updateTail !== undefined) {
-              updateTail(restCount)
+            if (updateCounter !== undefined) {
+              updateCounter(restCount)
             } else {
-              tail.textContent = `${restCount}`
+              counter.textContent = `${restCount}`
             }
-            const tailWidth = tail.offsetWidth
+            const counterWidth = counter.offsetWidth
             childWidthSum -= childWidths[j]
-            if (childWidthSum + tailWidth <= containerWidth) {
+            if (childWidthSum + counterWidth <= containerWidth) {
               overflow = true
               i = j - 1
               break
@@ -78,7 +79,7 @@ export default defineComponent({
         if (onUpdateOverflow !== undefined) {
           onUpdateOverflow(false)
         }
-        tail.setAttribute(hiddenAttr, '')
+        counter.setAttribute(hiddenAttr, '')
       } else {
         if (onUpdateOverflow !== undefined) {
           onUpdateOverflow(true)
@@ -88,12 +89,12 @@ export default defineComponent({
     style.mount({
       id: 'v-overflow'
     })
-    onMounted(deriveTail)
+    onMounted(deriveCounter)
     // besides onMounted, other case should be manually triggered, or we shoud watch items
     return {
       selfRef,
-      tailRef,
-      sync: deriveTail
+      counterRef,
+      sync: deriveCounter
     }
   },
   render () {
@@ -106,15 +107,19 @@ export default defineComponent({
       ref: 'selfRef'
     }, [
       renderSlot($slots, 'default'),
-      // $slots.tail should only has 1 element
-      $slots.tail !== undefined
-        ? $slots.tail()
+      // $slots.counter should only has 1 element
+      $slots.counter !== undefined
+        ? $slots.counter()
         : h('span', {
           style: {
             display: 'inline-block'
           },
-          ref: 'tailRef'
-        })
+          ref: 'counterRef'
+        }),
+      // $slots.tail should only has 1 element
+      $slots.tail !== undefined
+        ? $slots.tail()
+        : null
     ])
   }
 })

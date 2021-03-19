@@ -6,19 +6,30 @@ export default defineComponent({
   setup () {
     const overflowRef1 = ref<VOverflowRef | null>(null)
     const overflowRef2 = ref<VOverflowRef | null>(null)
-    const tailRef = ref<HTMLElement | null>(null)
+    const counterRef1 = ref<HTMLElement | null>(null)
+    const counterRef2 = ref<HTMLElement | null>(null)
+    const tailRef1 = ref<HTMLElement | null>(null)
     const itemCountRef = ref(3)
     const itemsRef = computed(() => Array.apply(null, { length: itemCountRef.value } as any).map(
       (_, i) => i
     ))
     return {
-      getTail: () => tailRef.value,
-      updateTail: (count: number) => {
-        if (tailRef.value !== null) {
-          tailRef.value.textContent = `${count}牛`
+      getCounter1: () => counterRef1.value,
+      updateCounter1: (count: number) => {
+        if (counterRef1.value !== null) {
+          counterRef1.value.textContent = `${count}牛`
         }
       },
-      tailRef,
+      getCounter2: () => counterRef2.value,
+      updateCounter2: (count: number) => {
+        if (counterRef2.value !== null) {
+          counterRef2.value.textContent = `${count}牛`
+        }
+      },
+      getTail: () => tailRef1.value,
+      counterRef1,
+      counterRef2,
+      tailRef1,
       items: itemsRef,
       itemCount: itemCountRef,
       overflowRef1,
@@ -83,8 +94,8 @@ export default defineComponent({
         VOverflow,
         {
           ref: 'overflowRef2',
-          getTail: this.getTail,
-          updateTail: this.updateTail,
+          getCounter: this.getCounter1,
+          updateCounter: this.updateCounter1,
           style: {
             width: '120px',
             background: 'grey'
@@ -104,13 +115,58 @@ export default defineComponent({
               [v + 1]
             ))
           },
-          tail: () => {
+          counter: () => {
             return h('span', {
-              ref: 'tailRef',
+              ref: 'counterRef1',
               style: {
                 display: 'inline-block'
               }
             })
+          }
+        }
+      ),
+      h(
+        VOverflow,
+        {
+          getCounter: this.getCounter2,
+          updateCounter: this.updateCounter2,
+          getTail: this.getTail,
+          style: {
+            width: '120px',
+            background: 'grey'
+          }
+        },
+        {
+          default: () => {
+            return this.items.map(v => h(
+              'div',
+              {
+                style: {
+                  display: 'inline-block',
+                  border: '1px solid yellow',
+                  width: '30px'
+                }
+              },
+              [v + 1]
+            ))
+          },
+          counter: () => {
+            return h('span', {
+              ref: 'counterRef2',
+              style: {
+                display: 'inline-block'
+              }
+            })
+          },
+          tail: () => {
+            return h('span', {
+              ref: 'tailRef1',
+              style: {
+                display: 'inline-block'
+              }
+            }, [
+              'tail'
+            ])
           }
         }
       )
