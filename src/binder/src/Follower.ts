@@ -269,9 +269,7 @@ export default defineComponent({
           h('div', {
             class: 'v-binder-follower-content',
             ref: 'followerRef'
-          }, [
-            getSlot(this.$slots)
-          ])
+          }, this.$slots)
         ])
         if (this.zindexable) {
           return withDirectives(
