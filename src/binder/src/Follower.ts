@@ -213,13 +213,13 @@ export default defineComponent({
         .then(syncPosition)
         .catch(e => console.error(e))
     }
-    ;['placement', 'x', 'y', 'flip', 'width', 'overlap']
+    ;(['placement', 'x', 'y', 'flip', 'width', 'overlap'] as const)
       .forEach((prop) => {
-        watch(toRef(props, prop as any), syncPosition)
+        watch(toRef(props, prop), syncPosition)
       })
-    ;['teleportDisabled']
+    ;(['teleportDisabled'] as const)
       .forEach((prop) => {
-        watch(toRef(props, prop as any), syncOnNextTick)
+        watch(toRef(props, prop), syncOnNextTick)
       })
     watch(toRef(props, 'syncTrigger'), (value) => {
       if (!value.includes('resize')) {
