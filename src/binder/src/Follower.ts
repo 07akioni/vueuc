@@ -16,7 +16,7 @@ import {
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { BinderInstance, Placement } from './interface'
-import { getSlot, c } from '../../shared'
+import { c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
   getProperPlacementOfFollower,
