@@ -46,7 +46,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "seemly": "^0.1.2",
     "vdirs": "^0.1.0",
-    "vooks": "^0.0.8",
+    "vooks": "^0.1.5",
     "vue": "^3.0.6"
   }
 }
