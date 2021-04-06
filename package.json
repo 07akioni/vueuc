@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "css-render": "^0.12.0",
-    "evtd": "^0.1.0",
+    "evtd": "^0.2.0",
     "resize-observer-polyfill": "^1.5.1",
     "seemly": "^0.1.2",
     "vdirs": "^0.1.0",
