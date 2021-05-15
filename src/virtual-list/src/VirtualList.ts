@@ -13,7 +13,7 @@ import {
 } from 'vue'
 import { depx, pxfy } from 'seemly'
 import { ItemData, VScrollToOptions } from './type'
-import { nextFrame, c } from '../../shared'
+import { nextFrame, c, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 
 const styles = c('.v-vl', {
@@ -58,6 +58,7 @@ export default defineComponent({
       type: Array as PropType<ItemData[]>,
       default: () => []
     },
+    // it is suppose to be the min height
     itemSize: {
       type: Number,
       required: true
@@ -110,27 +111,17 @@ export default defineComponent({
     })
     const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
-    const preparedRef = computed(() => listHeightRef.value !== undefined)
+    const finweckTreeRef = computed(() => new FinweckTree(props.items.length, props.itemSize))
     const scrollTopRef = ref(0)
     const startIndexRef = computed(() => {
-      return Math.max(
-        Math.floor((scrollTopRef.value - depx(props.paddingTop)) / props.itemSize) - 1,
-        0
-      )
+      return finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop))
     })
     const viewportItemsRef = computed(() => {
-      if (!preparedRef.value) return []
-      const { items, itemSize, paddingTop } = props
+      const { value: listHeight } = listHeightRef
+      if (listHeight === undefined) return []
+      const { items, itemSize } = props
       const startIndex = startIndexRef.value
-      const endIndex = Math.min(
-        startIndex + Math.ceil(
-          Math.min(
-            listHeightRef.value as number,
-            itemSize * items.length + depx(paddingTop) - scrollTopRef.value
-          ) / itemSize
-        ) + 1,
-        items.length - 1
-      )
+      const endIndex = Math.min(startIndex + Math.ceil(listHeight / itemSize + 1), items.length - 1)
       const viewportItems = []
       for (let i = startIndex; i <= endIndex; ++i) {
         viewportItems.push(items[i])
@@ -161,7 +152,7 @@ export default defineComponent({
       }
     }
     function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
-      const targetTop = index * props.itemSize + depx(props.paddingTop)
+      const targetTop = finweckTreeRef.value.sum(index) + depx(props.paddingTop)
       if (!debounce) {
         (listRef.value as HTMLDivElement).scrollTo({
           left: 0,
@@ -212,14 +203,14 @@ export default defineComponent({
       itemsStyle: computed(() => {
         return {
           boxSizing: 'padding-box',
-          height: pxfy(props.itemSize * props.items.length),
+          height: pxfy(finweckTreeRef.value.sum()),
           paddingTop: pxfy(props.paddingTop),
           paddingBottom: pxfy(props.paddingBottom)
         }
       }),
       visibleItemsStyle: computed(() => {
         return {
-          transform: `translate3d(0, ${pxfy(startIndexRef.value * props.itemSize)}, 0)`
+          transform: `translate3d(0, ${pxfy(finweckTreeRef.value.sum(startIndexRef.value))}, 0)`
         }
       }),
       viewportItems: viewportItemsRef,
@@ -261,9 +252,7 @@ export default defineComponent({
           this.$attrs, {
             class: [
               'v-vl',
-              {
-                'v-vl--show-scrollbar': this.showScrollbar
-              }
+              this.showScrollbar && 'v-vl--show-scrollbar'
             ],
             onScroll: this.handleListScroll,
             ref: 'listRef'
@@ -277,8 +266,7 @@ export default defineComponent({
               h('div', {
                 class: 'v-vl-visible-items',
                 style: this.visibleItemsStyle
-              },
-              renderList(this.viewportItems, (item, index) => {
+              }, renderList(this.viewportItems, (item, index) => {
                 return renderSlot(this.$slots, 'default', { item, index })
               }))
             ])

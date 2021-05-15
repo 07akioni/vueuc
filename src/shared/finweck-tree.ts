@@ -27,6 +27,7 @@ export class FinweckTree {
    * @param n the value to be added
    */
   add (i: number, n: number): void {
+    if (n === 0) return
     const { l, ft } = this
     i += 1
     while (i <= l) {
@@ -36,12 +37,23 @@ export class FinweckTree {
   }
 
   /**
+   * Get the value of index i
+   * @param i index
+   * @returns value of the index
+   */
+  get (i: number): number {
+    return this.sum(i + 1) - this.sum(i)
+  }
+
+  /**
    * Get the sum of first i elements
    * @param i count of head elements to be added
    * @returns the sum of first i elements
    */
-  sum (i: number): number {
+  sum (i?: number): number {
+    if (i === 0) return 0
     const { ft, min, l } = this
+    if (i === undefined) i = l
     if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
     let ret = i * min
     while (i > 0) {
@@ -67,7 +79,6 @@ export class FinweckTree {
         continue
       } else if (sumM < threshold) {
         if (l === m) {
-          console.log('xxx', l, this.sum(l + 1))
           if (this.sum(l + 1) <= threshold) return l + 1
           return m
         }
