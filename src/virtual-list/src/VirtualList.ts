@@ -9,8 +9,7 @@ import {
   onMounted,
   h,
   onBeforeMount,
-  CSSProperties,
-  nextTick
+  CSSProperties
 } from 'vue'
 import { depx, pxfy } from 'seemly'
 import { ItemData, VScrollToOptions } from './type'
@@ -195,6 +194,7 @@ export default defineComponent({
           })
         }
       }
+      lastScrollAnchorIndex = index
     }
     function scrollToPosition (
       left: number | undefined,
@@ -210,11 +210,10 @@ export default defineComponent({
     function handleItemResize (key: string | number, entry: ResizeObserverEntry): void {
       const { value: ft } = finweckTreeRef
       const index = keyIndexMapRef.value.get(key)
-      const offset = entry.contentRect.height - ft.get(index)
-      if (lastStartIndex !== undefined && index < lastStartIndex) {
-        void nextTick(() => {
-          listRef.value?.scrollBy(0, offset)
-        })
+      const offset = (entry.target as HTMLElement).offsetHeight - ft.get(index)
+      if (offset === 0) return
+      if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
+        listRef.value?.scrollBy(0, offset)
       }
       ft.add(index, offset)
       finweckTreeUpdateTrigger.value++
@@ -232,15 +231,16 @@ export default defineComponent({
       const { onResize } = props
       if (onResize !== undefined) onResize(entry)
     }
-    let lastStartIndex: number | undefined
+    let lastScrollAnchorIndex: number | undefined
+    let lastAnchorIndex: number | undefined
     function syncViewport (): void {
-      lastStartIndex = startIndexRef.value
+      lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
+      lastScrollAnchorIndex = undefined
       scrollTopRef.value = (listRef.value as Element).scrollTop
       rafFlag = false
     }
     return {
       listHeight: listHeightRef,
-      scrollTop: scrollTopRef,
       listStyle: {
         overflow: 'auto'
       },
