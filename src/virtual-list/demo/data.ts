@@ -12,3 +12,9 @@ export const basicData: ItemData[] = createArray(100000).map((_, i) => ({
   key: i,
   value: `item_${i}`
 }))
+
+export const randomHeightData: ItemData[] = createArray(100000).map((_, i) => ({
+  key: i,
+  value: `item_${i}`,
+  height: Math.ceil(Math.random() * 34) + 34
+}))

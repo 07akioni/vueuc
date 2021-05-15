@@ -1,3 +1,4 @@
+/* eslint-disable no-void */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 import {
   mergeProps,
@@ -7,14 +8,15 @@ import {
   ref,
   onMounted,
   h,
-  renderSlot,
-  renderList,
-  onBeforeMount
+  onBeforeMount,
+  CSSProperties,
+  nextTick
 } from 'vue'
 import { depx, pxfy } from 'seemly'
 import { ItemData, VScrollToOptions } from './type'
 import { nextFrame, c, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
+import { useMemo } from 'vooks'
 
 const styles = c('.v-vl', {
   overflow: 'auto'
@@ -63,6 +65,10 @@ export default defineComponent({
       type: Number,
       required: true
     },
+    itemResizable: {
+      type: Boolean,
+      default: false
+    },
     onScroll: Function as PropType<(event: Event) => any>,
     onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
     defaultScrollKey: Number,
@@ -101,6 +107,7 @@ export default defineComponent({
         scrollTo({ key: defaultScrollKey })
       }
     })
+    let rafFlag = false
     const keyIndexMapRef = computed(() => {
       const map = new Map()
       const { keyField } = props
@@ -112,9 +119,13 @@ export default defineComponent({
     const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const finweckTreeRef = computed(() => new FinweckTree(props.items.length, props.itemSize))
+    const finweckTreeUpdateTrigger = ref(0)
     const scrollTopRef = ref(0)
-    const startIndexRef = computed(() => {
-      return finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop))
+    const startIndexRef = useMemo(() => {
+      return Math.max(
+        finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop)) - 1,
+        0
+      )
     })
     const viewportItemsRef = computed(() => {
       const { value: listHeight } = listHeightRef
@@ -152,7 +163,8 @@ export default defineComponent({
       }
     }
     function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
-      const targetTop = finweckTreeRef.value.sum(index) + depx(props.paddingTop)
+      const { value: ft } = finweckTreeRef
+      const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
         (listRef.value as HTMLDivElement).scrollTo({
           left: 0,
@@ -165,12 +177,13 @@ export default defineComponent({
           offsetHeight
         } = listRef.value as HTMLDivElement
         if (targetTop > scrollTop) {
-          if (targetTop + props.itemSize <= scrollTop + offsetHeight) {
+          const itemSize = ft.get(index)
+          if (targetTop + itemSize <= scrollTop + offsetHeight) {
             // do nothing
           } else {
             (listRef.value as HTMLDivElement).scrollTo({
               left: 0,
-              top: targetTop + depx(props.itemSize) - offsetHeight,
+              top: targetTop + itemSize - offsetHeight,
               behavior
             })
           }
@@ -194,56 +207,74 @@ export default defineComponent({
         behavior
       })
     }
+    function handleItemResize (key: string | number, entry: ResizeObserverEntry): void {
+      const { value: ft } = finweckTreeRef
+      const index = keyIndexMapRef.value.get(key)
+      const offset = entry.contentRect.height - ft.get(index)
+      if (lastStartIndex !== undefined && index < lastStartIndex) {
+        void nextTick(() => {
+          listRef.value?.scrollBy(0, offset)
+        })
+      }
+      ft.add(index, offset)
+      finweckTreeUpdateTrigger.value++
+    }
+    function handleListScroll (e: UIEvent): void {
+      if (!rafFlag) {
+        nextFrame(syncViewport)
+        rafFlag = true
+      }
+      const { onScroll } = props
+      if (onScroll !== undefined) onScroll(e)
+    }
+    function handleListResize (entry: ResizeObserverEntry): void {
+      listHeightRef.value = entry.contentRect.height
+      const { onResize } = props
+      if (onResize !== undefined) onResize(entry)
+    }
+    let lastStartIndex: number | undefined
+    function syncViewport (): void {
+      lastStartIndex = startIndexRef.value
+      scrollTopRef.value = (listRef.value as Element).scrollTop
+      rafFlag = false
+    }
     return {
       listHeight: listHeightRef,
       scrollTop: scrollTopRef,
       listStyle: {
         overflow: 'auto'
       },
-      itemsStyle: computed(() => {
+      itemsStyle: computed<CSSProperties>(() => {
+        const { itemResizable } = props
+        const height = pxfy(finweckTreeRef.value.sum())
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        finweckTreeUpdateTrigger.value
         return {
-          boxSizing: 'padding-box',
-          height: pxfy(finweckTreeRef.value.sum()),
+          boxSizing: 'content-box',
+          height: itemResizable ? '' : height,
+          minHeight: itemResizable ? height : '',
           paddingTop: pxfy(props.paddingTop),
           paddingBottom: pxfy(props.paddingBottom)
         }
       }),
       visibleItemsStyle: computed(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        finweckTreeUpdateTrigger.value
         return {
           transform: `translate3d(0, ${pxfy(finweckTreeRef.value.sum(startIndexRef.value))}, 0)`
         }
       }),
       viewportItems: viewportItemsRef,
-      keyIndexMap: keyIndexMapRef,
       listRef,
       itemsRef: ref<null | Element>(null),
-      rafFlag: {
-        value: false
-      },
-      scrollTo
-    }
-  },
-  methods: {
-    handleListScroll (e: UIEvent) {
-      const { rafFlag } = this
-      if (!rafFlag.value) {
-        nextFrame(this.syncViewport)
-        rafFlag.value = true
-      }
-      const { onScroll } = this
-      if (onScroll !== undefined) onScroll(e)
-    },
-    handleListResize (entry: ResizeObserverEntry) {
-      this.listHeight = entry.contentRect.height
-      const { onResize } = this
-      if (onResize !== undefined) onResize(entry)
-    },
-    syncViewport () {
-      this.scrollTop = (this.listRef as Element).scrollTop
-      this.rafFlag.value = false
+      scrollTo,
+      handleListResize,
+      handleListScroll,
+      handleItemResize
     }
   },
   render () {
+    const { itemResizable, keyField } = this
     return h(VResizeObserver, {
       onResize: this.handleListResize
     }, {
@@ -266,8 +297,19 @@ export default defineComponent({
               h('div', {
                 class: 'v-vl-visible-items',
                 style: this.visibleItemsStyle
-              }, renderList(this.viewportItems, (item, index) => {
-                return renderSlot(this.$slots, 'default', { item, index })
+              }, this.viewportItems.map(item => {
+                const itemVNode = (this.$slots.default as any)({ item })[0]
+                const key = item[keyField]
+                if (itemResizable) {
+                  return h(VResizeObserver, {
+                    key,
+                    onResize: (entry: ResizeObserverEntry) => this.handleItemResize(key, entry)
+                  }, {
+                    default: () => itemVNode
+                  })
+                }
+                itemVNode.key = key
+                return itemVNode
               }))
             ])
             : this.$slots.empty?.()

@@ -10,7 +10,7 @@
 ## Slots
 |Slot|Type|Default|Description|
 |-|-|-|-|
-|default|`({ item, index }) => VNode`|required||
+|default|`({ item }) => VNode`|required||
 ## Instance Property
 |Name|Type|Default|Description|
 |-|-|-|-|

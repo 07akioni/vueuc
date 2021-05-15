@@ -5,22 +5,21 @@ import { basicData } from './data'
 import { c } from '../../shared'
 
 const styles = c([
-`
-  .v-vl {
-    max-height: 200px;
-    border: 1px solid blue;
-  }
-  .item {
-    height: 34px;
-  }
-`
+  `
+    .v-vl {
+      max-height: 200px;
+      border: 1px solid blue;
+    }
+    .item {
+      box-sizing: border-box;
+      border: 1px solid green;
+      height: 34px;
+    }
+  `
 ])
 
 export default defineComponent({
   name: 'App',
-  components: {
-    VirtualList
-  },
   setup () {
     onBeforeMount(() => styles.mount({ target: 'vdemo/virtual-list' }))
     return {
@@ -69,8 +68,7 @@ export default defineComponent({
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {
-            class: 'item',
-            key: item.key
+            class: 'item'
           }, [
             item.value
           ])
