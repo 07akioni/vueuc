@@ -67,7 +67,7 @@ export default defineComponent({
     },
     itemResizable: Boolean,
     itemsWrapperTag: {
-      type: String,
+      type: [String, Object] as PropType<string | object>,
       default: 'div'
     },
     itemsWrapperClass: String,
@@ -322,7 +322,7 @@ export default defineComponent({
               class: 'v-vl-items',
               style: this.itemsStyle
             }, [
-              h(itemsWrapperTag, {
+              h(itemsWrapperTag as any, {
                 class: [
                   'v-vl-visible-items',
                   itemsWrapperClass
