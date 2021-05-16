@@ -64,10 +64,8 @@ export default defineComponent({
       type: Number,
       required: true
     },
-    itemResizable: {
-      type: Boolean,
-      default: false
-    },
+    itemResizable: Boolean,
+    ignoreItemResize: Boolean,
     onScroll: Function as PropType<(event: Event) => any>,
     onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
     defaultScrollKey: Number,
@@ -220,6 +218,7 @@ export default defineComponent({
       })
     }
     function handleItemResize (key: string | number, entry: ResizeObserverEntry): void {
+      if (props.ignoreItemResize) return
       const { value: ft } = finweckTreeRef
       const index = keyIndexMapRef.value.get(key)
       const height = (entry.target as HTMLElement).offsetHeight
