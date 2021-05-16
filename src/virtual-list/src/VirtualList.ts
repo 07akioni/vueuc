@@ -328,21 +328,23 @@ export default defineComponent({
                   itemsWrapperClass
                 ],
                 style: this.visibleItemsStyle
-              }, this.viewportItems.map(item => {
-                const key = item[keyField]
-                const index = keyToIndex.get(key)
-                const itemVNode = (this.$slots.default as any)({ item, index })[0]
-                if (itemResizable) {
-                  return h(VResizeObserver, {
-                    key,
-                    onResize: (entry: ResizeObserverEntry) => this.handleItemResize(key, entry)
-                  }, {
-                    default: () => itemVNode
-                  })
-                }
-                itemVNode.key = key
-                return itemVNode
-              }))
+              }, {
+                default: () => this.viewportItems.map(item => {
+                  const key = item[keyField]
+                  const index = keyToIndex.get(key)
+                  const itemVNode = (this.$slots.default as any)({ item, index })[0]
+                  if (itemResizable) {
+                    return h(VResizeObserver, {
+                      key,
+                      onResize: (entry: ResizeObserverEntry) => this.handleItemResize(key, entry)
+                    }, {
+                      default: () => itemVNode
+                    })
+                  }
+                  itemVNode.key = key
+                  return itemVNode
+                })
+              })
             ])
             : this.$slots.empty?.()
         ])
