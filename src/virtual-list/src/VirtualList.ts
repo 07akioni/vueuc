@@ -117,7 +117,19 @@ export default defineComponent({
     })
     const listRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
-    const finweckTreeRef = computed(() => new FinweckTree(props.items.length, props.itemSize))
+    const keyToHeightOffset = new Map<string | number, number>()
+    const finweckTreeRef = computed(() => {
+      const { items, itemSize, keyField } = props
+      const ft = new FinweckTree(items.length, itemSize)
+      items.forEach((item, index) => {
+        const key: string | number = item[keyField]
+        const heightOffset = keyToHeightOffset.get(key)
+        if (heightOffset !== undefined) {
+          ft.add(index, heightOffset)
+        }
+      })
+      return ft
+    })
     const finweckTreeUpdateTrigger = ref(0)
     const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
@@ -210,12 +222,22 @@ export default defineComponent({
     function handleItemResize (key: string | number, entry: ResizeObserverEntry): void {
       const { value: ft } = finweckTreeRef
       const index = keyIndexMapRef.value.get(key)
-      const offset = (entry.target as HTMLElement).offsetHeight - ft.get(index)
-      if (offset === 0) return
-      if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
-        listRef.value?.scrollBy(0, offset)
+      const height = (entry.target as HTMLElement).offsetHeight
+      // height offset based on itemSize
+      // used when rebuild the finweck tree
+      const offset = height - props.itemSize
+      if (offset === 0) {
+        keyToHeightOffset.delete(key)
+      } else {
+        keyToHeightOffset.set(key, height - props.itemSize)
       }
-      ft.add(index, offset)
+      // delta height based on finweck tree data
+      const delta = height - ft.get(index)
+      if (delta === 0) return
+      if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
+        listRef.value?.scrollBy(0, delta)
+      }
+      ft.add(index, delta)
       finweckTreeUpdateTrigger.value++
     }
     function handleListScroll (e: UIEvent): void {
