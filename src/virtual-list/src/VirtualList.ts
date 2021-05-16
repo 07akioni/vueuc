@@ -18,6 +18,7 @@ import VResizeObserver from '../../resize-observer/src'
 import { useMemo } from 'vooks'
 
 const styles = c('.v-vl', {
+  maxHeight: 'inherit',
   height: '100%',
   overflow: 'auto'
 }, [
