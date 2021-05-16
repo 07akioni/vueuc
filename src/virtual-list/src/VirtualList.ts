@@ -244,6 +244,7 @@ export default defineComponent({
       listStyle: {
         overflow: 'auto'
       },
+      keyToIndex: keyIndexMapRef,
       itemsStyle: computed<CSSProperties>(() => {
         const { itemResizable } = props
         const height = pxfy(finweckTreeRef.value.sum())
@@ -274,7 +275,7 @@ export default defineComponent({
     }
   },
   render () {
-    const { itemResizable, keyField } = this
+    const { itemResizable, keyField, keyToIndex } = this
     return h(VResizeObserver, {
       onResize: this.handleListResize
     }, {
@@ -298,8 +299,9 @@ export default defineComponent({
                 class: 'v-vl-visible-items',
                 style: this.visibleItemsStyle
               }, this.viewportItems.map(item => {
-                const itemVNode = (this.$slots.default as any)({ item })[0]
                 const key = item[keyField]
+                const index = keyToIndex.get(key)
+                const itemVNode = (this.$slots.default as any)({ item, index })[0]
                 if (itemResizable) {
                   return h(VResizeObserver, {
                     key,

@@ -13,7 +13,7 @@ const styles = c([
     .item {
       box-sizing: border-box;
       border: 1px solid green;
-      height: 34px;
+      min-height: 34px;
     }
   `
 ])
