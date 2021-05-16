@@ -67,11 +67,11 @@ export default defineComponent({
       required: true
     },
     itemResizable: Boolean,
-    itemsWrapperTag: {
+    itemsStyle: [String, Object] as PropType<string | CSSProperties>,
+    visibleItemsTag: {
       type: [String, Object] as PropType<string | object>,
       default: 'div'
     },
-    itemsWrapperClass: String,
     ignoreItemResize: Boolean,
     onScroll: Function as PropType<(event: Event) => any>,
     onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
@@ -274,18 +274,21 @@ export default defineComponent({
         overflow: 'auto'
       },
       keyToIndex: keyIndexMapRef,
-      itemsStyle: computed<CSSProperties>(() => {
+      itemsStyle: computed(() => {
         const { itemResizable } = props
         const height = pxfy(finweckTreeRef.value.sum())
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         finweckTreeUpdateTrigger.value
-        return {
-          boxSizing: 'content-box',
-          height: itemResizable ? '' : height,
-          minHeight: itemResizable ? height : '',
-          paddingTop: pxfy(props.paddingTop),
-          paddingBottom: pxfy(props.paddingBottom)
-        }
+        return [
+          props.itemsStyle,
+          {
+            boxSizing: 'content-box',
+            height: itemResizable ? '' : height,
+            minHeight: itemResizable ? height : '',
+            paddingTop: pxfy(props.paddingTop),
+            paddingBottom: pxfy(props.paddingBottom)
+          }
+        ]
       }),
       visibleItemsStyle: computed(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -304,7 +307,7 @@ export default defineComponent({
     }
   },
   render () {
-    const { itemResizable, keyField, keyToIndex, itemsWrapperTag, itemsWrapperClass } = this
+    const { itemResizable, keyField, keyToIndex, visibleItemsTag } = this
     return h(VResizeObserver, {
       onResize: this.handleListResize
     }, {
@@ -324,11 +327,8 @@ export default defineComponent({
               class: 'v-vl-items',
               style: this.itemsStyle
             }, [
-              h(itemsWrapperTag as any, {
-                class: [
-                  'v-vl-visible-items',
-                  itemsWrapperClass
-                ],
+              h(visibleItemsTag as any, {
+                class: 'v-vl-visible-items',
                 style: this.visibleItemsStyle
               }, {
                 default: () => this.viewportItems.map(item => {
