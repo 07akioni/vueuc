@@ -66,6 +66,11 @@ export default defineComponent({
       required: true
     },
     itemResizable: Boolean,
+    itemsWrapperTag: {
+      type: String,
+      default: 'div'
+    },
+    itemsWrapperClass: String,
     ignoreItemResize: Boolean,
     onScroll: Function as PropType<(event: Event) => any>,
     onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
@@ -297,7 +302,7 @@ export default defineComponent({
     }
   },
   render () {
-    const { itemResizable, keyField, keyToIndex } = this
+    const { itemResizable, keyField, keyToIndex, itemsWrapperTag, itemsWrapperClass } = this
     return h(VResizeObserver, {
       onResize: this.handleListResize
     }, {
@@ -317,8 +322,11 @@ export default defineComponent({
               class: 'v-vl-items',
               style: this.itemsStyle
             }, [
-              h('div', {
-                class: 'v-vl-visible-items',
+              h(itemsWrapperTag, {
+                class: [
+                  'v-vl-visible-items',
+                  itemsWrapperClass
+                ],
                 style: this.visibleItemsStyle
               }, this.viewportItems.map(item => {
                 const key = item[keyField]
