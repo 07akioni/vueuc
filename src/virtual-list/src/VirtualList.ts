@@ -18,6 +18,7 @@ import VResizeObserver from '../../resize-observer/src'
 import { useMemo } from 'vooks'
 
 const styles = c('.v-vl', {
+  height: '100%',
   overflow: 'auto'
 }, [
   c('&:not(.v-vl--show-scrollbar)', {
