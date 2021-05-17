@@ -73,8 +73,9 @@ export default defineComponent({
       default: 'div'
     },
     ignoreItemResize: Boolean,
-    onScroll: Function as PropType<(event: Event) => any>,
-    onResize: Function as PropType<(entry: ResizeObserverEntry) => any>,
+    onScroll: Function as PropType<(event: Event) => void>,
+    onWheel: Function as PropType<(event: WheelEvent) => void>,
+    onResize: Function as PropType<(entry: ResizeObserverEntry) => void>,
     defaultScrollKey: Number,
     defaultScrollIndex: Number,
     keyField: {
@@ -319,6 +320,7 @@ export default defineComponent({
               this.showScrollbar && 'v-vl--show-scrollbar'
             ],
             onScroll: this.handleListScroll,
+            onWheel: this.onWheel,
             ref: 'listRef'
           }), [
           this.items.length !== 0
