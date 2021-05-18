@@ -72,6 +72,7 @@ export default defineComponent({
       type: [String, Object] as PropType<string | object>,
       default: 'div'
     },
+    visbleItemsProps: Object,
     ignoreItemResize: Boolean,
     onScroll: Function as PropType<(event: Event) => void>,
     onWheel: Function as PropType<(event: WheelEvent) => void>,
@@ -329,10 +330,10 @@ export default defineComponent({
               class: 'v-vl-items',
               style: this.itemsStyle
             }, [
-              h(visibleItemsTag as any, {
+              h(visibleItemsTag as any, Object.assign({
                 class: 'v-vl-visible-items',
                 style: this.visibleItemsStyle
-              }, {
+              }, this.visbleItemsProps), {
                 default: () => this.viewportItems.map(item => {
                   const key = item[keyField]
                   const index = keyToIndex.get(key)
