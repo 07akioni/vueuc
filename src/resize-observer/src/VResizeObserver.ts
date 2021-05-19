@@ -9,9 +9,13 @@ export default defineComponent({
   props: {
     onResize: Function as PropType<VResizeObserverOnResize>
   },
-  data () {
+  setup (props) {
     return {
-      registered: false
+      registered: false,
+      handleResize (entry: ResizeObserverEntry) {
+        const { onResize } = props
+        if (onResize !== undefined) onResize(entry)
+      }
     }
   },
   mounted () {
@@ -19,7 +23,10 @@ export default defineComponent({
     if (el === undefined) {
       warn('resize-observer', '$el does not exist.')
     } else if (el.nextElementSibling !== el.nextSibling) {
-      warn('resize-observer', '$el can not be observed (it may be a text node).')
+      warn(
+        'resize-observer',
+        '$el can not be observed (it may be a text node).'
+      )
     } else if (el.nextElementSibling !== null) {
       delegate.registerHandler(el.nextElementSibling, this.handleResize)
       this.registered = true
@@ -28,14 +35,6 @@ export default defineComponent({
   beforeUnmount () {
     if (this.registered) {
       delegate.unregisterHandler(this.$el.nextElementSibling)
-    }
-  },
-  methods: {
-    handleResize (entry: ResizeObserverEntry) {
-      const {
-        onResize
-      } = this
-      if (onResize !== undefined) onResize(entry)
     }
   },
   render () {
