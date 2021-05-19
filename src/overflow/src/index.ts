@@ -16,7 +16,7 @@ const style = c('[v-hidden]', {
   display: 'none!important'
 })
 
-export interface VOverflowRef {
+export interface VOverflowInst {
   sync: () => void
 }
 

@@ -24,7 +24,7 @@ export default defineComponent({
     onBeforeMount(() => styles.mount({ target: 'vdemo/virtual-list' }))
     return {
       scrollBehavior: ref<'auto' | 'smooth'>('auto'),
-      listRef: ref<any>(null),
+      listElRef: ref<any>(null),
       basicData: ref(basicData)
     }
   },
@@ -33,21 +33,21 @@ export default defineComponent({
       h('div', [
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ index: 10 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ key: 200 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ position: \'top\' })'
@@ -64,7 +64,7 @@ export default defineComponent({
       h(VirtualList, {
         itemSize: 34,
         items: basicData,
-        ref: 'listRef'
+        ref: 'listElRef'
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {

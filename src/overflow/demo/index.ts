@@ -1,16 +1,16 @@
 import { defineComponent, h, ref, computed, nextTick } from 'vue'
 import { VOverflow } from '../../index'
-import { VOverflowRef } from '../src'
+import { VOverflowInst } from '../src'
 
 export default defineComponent({
   setup () {
-    const overflowRef1 = ref<VOverflowRef | null>(null)
-    const overflowRef2 = ref<VOverflowRef | null>(null)
+    const overflowRef1 = ref<VOverflowInst | null>(null)
+    const overflowRef2 = ref<VOverflowInst | null>(null)
     const counterRef1 = ref<HTMLElement | null>(null)
     const counterRef2 = ref<HTMLElement | null>(null)
     const tailRef1 = ref<HTMLElement | null>(null)
     const itemCountRef = ref(3)
-    const itemsRef = computed(() => Array.apply(null, { length: itemCountRef.value } as any).map(
+    const itemsElRef = computed(() => Array.apply(null, { length: itemCountRef.value } as any).map(
       (_, i) => i
     ))
     return {
@@ -31,7 +31,7 @@ export default defineComponent({
       counterRef1,
       counterRef2,
       tailRef1,
-      items: itemsRef,
+      items: itemsElRef,
       itemCount: itemCountRef,
       overflowRef1,
       overflowRef2,

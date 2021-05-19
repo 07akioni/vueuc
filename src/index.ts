@@ -4,7 +4,7 @@ export {
   default as VVirtualList
 } from './virtual-list/src'
 export type {
-  VirtualListRef
+  VirtualListInst
 } from './virtual-list/src'
 export {
   default as LazyTeleport,
@@ -26,5 +26,5 @@ export {
   Overflow
 } from './overflow'
 export type {
-  VOverflowRef
+  VOverflowInst
 } from './overflow'

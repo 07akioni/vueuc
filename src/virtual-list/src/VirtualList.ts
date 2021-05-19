@@ -43,9 +43,9 @@ export interface ScrollTo {
   (options: { key: string | number } & CommonScrollToOptions): void
   (options: { position: 'top' | 'bottom' } & CommonScrollToOptions): void
 }
-export interface VirtualListRef {
-  listRef: HTMLElement
-  itemsRef: HTMLElement | null
+export interface VirtualListInst {
+  listElRef: HTMLElement
+  itemsElRef: HTMLElement | null
   scrollTo: ScrollTo
 }
 
@@ -123,7 +123,7 @@ export default defineComponent({
       })
       return map
     })
-    const listRef = ref<null | Element>(null)
+    const listElRef = ref<null | Element>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const keyToHeightOffset = new Map<string | number, number>()
     const finweckTreeRef = computed(() => {
@@ -185,7 +185,7 @@ export default defineComponent({
       const { value: ft } = finweckTreeRef
       const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
-        (listRef.value as HTMLDivElement).scrollTo({
+        (listElRef.value as HTMLDivElement).scrollTo({
           left: 0,
           top: targetTop,
           behavior
@@ -194,20 +194,20 @@ export default defineComponent({
         const {
           scrollTop,
           offsetHeight
-        } = listRef.value as HTMLDivElement
+        } = listElRef.value as HTMLDivElement
         if (targetTop > scrollTop) {
           const itemSize = ft.get(index)
           if (targetTop + itemSize <= scrollTop + offsetHeight) {
             // do nothing
           } else {
-            (listRef.value as HTMLDivElement).scrollTo({
+            (listElRef.value as HTMLDivElement).scrollTo({
               left: 0,
               top: targetTop + itemSize - offsetHeight,
               behavior
             })
           }
         } else {
-          (listRef.value as HTMLDivElement).scrollTo({
+          (listElRef.value as HTMLDivElement).scrollTo({
             left: 0,
             top: targetTop,
             behavior
@@ -221,7 +221,7 @@ export default defineComponent({
       top: number | undefined,
       behavior: ScrollToOptions['behavior']
     ): void {
-      (listRef.value as HTMLDivElement).scrollTo({
+      (listElRef.value as HTMLDivElement).scrollTo({
         left,
         top,
         behavior
@@ -244,7 +244,7 @@ export default defineComponent({
       const delta = height - ft.get(index)
       if (delta === 0) return
       if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
-        listRef.value?.scrollBy(0, delta)
+        listElRef.value?.scrollBy(0, delta)
       }
       ft.add(index, delta)
       finweckTreeUpdateTrigger.value++
@@ -267,7 +267,7 @@ export default defineComponent({
     function syncViewport (): void {
       lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
       lastScrollAnchorIndex = undefined
-      scrollTopRef.value = (listRef.value as Element).scrollTop
+      scrollTopRef.value = (listElRef.value as Element).scrollTop
       rafFlag = false
     }
     return {
@@ -300,8 +300,8 @@ export default defineComponent({
         }
       }),
       viewportItems: viewportItemsRef,
-      listRef,
-      itemsRef: ref<null | Element>(null),
+      listElRef,
+      itemsElRef: ref<null | Element>(null),
       scrollTo,
       handleListResize,
       handleListScroll,
@@ -322,11 +322,11 @@ export default defineComponent({
             ],
             onScroll: this.handleListScroll,
             onWheel: this.onWheel,
-            ref: 'listRef'
+            ref: 'listElRef'
           }), [
           this.items.length !== 0
             ? h('div', {
-              ref: 'itemsRef',
+              ref: 'itemsElRef',
               class: 'v-vl-items',
               style: this.itemsStyle
             }, [

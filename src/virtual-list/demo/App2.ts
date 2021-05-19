@@ -103,7 +103,7 @@ export default defineComponent({
     onBeforeMount(() => styles.mount({ target: 'vdemo/virtual-list' }))
     return {
       scrollBehavior: ref<'auto' | 'smooth'>('auto'),
-      listRef: ref<any>(null),
+      listElRef: ref<any>(null),
       mutableData: ref(Array.from(randomHeightData))
     }
   },
@@ -112,21 +112,21 @@ export default defineComponent({
       h('div', [
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ index: 10 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ key: 200 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
           }
         }, [
           'scrollTo({ position: \'top\' })'
@@ -144,7 +144,7 @@ export default defineComponent({
         itemSize: 34,
         items: randomHeightData,
         itemResizable: true,
-        ref: 'listRef'
+        ref: 'listElRef'
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {
@@ -162,7 +162,7 @@ export default defineComponent({
         itemSize: 34,
         items: this.mutableData,
         itemResizable: true,
-        ref: 'listRef'
+        ref: 'listElRef'
       }, {
         default: ({ item, index }: { item: ItemData, index: number }) => {
           return h(ExpandableNode, {

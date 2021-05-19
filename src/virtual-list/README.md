@@ -18,5 +18,5 @@
 ## Instance Property
 |Name|Type|Default|Description|
 |-|-|-|-|
-|listRef|`null \| Element`|`null`||
-|itemsRef|`null \| Element`|`null`||
+|listElRef|`null \| Element`|`null`||
+|itemsElRef|`null \| Element`|`null`||
