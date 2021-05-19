@@ -10,7 +10,7 @@ const styles = c([`body {
 export default defineComponent({
   name: 'VueucDemo',
   setup () {
-    onMounted(() => styles.mount({ target: 'vdemo' }))
+    onMounted(() => styles.mount({ id: 'vdemo' }))
     return () => {
       return h('main', {
         style: {

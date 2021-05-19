@@ -100,7 +100,7 @@ const ExpandableNode = defineComponent({
 export default defineComponent({
   name: 'App',
   setup () {
-    onBeforeMount(() => styles.mount({ target: 'vdemo/virtual-list' }))
+    onBeforeMount(() => styles.mount({ id: 'vdemo/virtual-list' }))
     return {
       scrollBehavior: ref<'auto' | 'smooth'>('auto'),
       listElRef: ref<any>(null),

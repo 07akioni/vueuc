@@ -140,7 +140,7 @@ export default defineComponent({
     })
     onBeforeMount(() => {
       style.mount({
-        target: 'v-binder'
+        id: 'v-binder'
       })
     })
     onBeforeUnmount(() => {

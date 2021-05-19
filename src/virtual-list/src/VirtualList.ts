@@ -98,8 +98,7 @@ export default defineComponent({
   setup (props) {
     onBeforeMount(() => {
       styles.mount({
-        target: 'vueuc/virtual-list',
-        count: false,
+        id: 'vueuc/virtual-list',
         head: true
       })
     })

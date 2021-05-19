@@ -18,7 +18,7 @@ export default defineComponent({
   name: 'ResizeObserverDemo',
   mounted () {
     styles.mount({
-      target: 'resize-observer-demo'
+      id: 'resize-observer-demo'
     })
   },
   methods: {
