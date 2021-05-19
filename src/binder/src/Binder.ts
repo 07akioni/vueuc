@@ -1,9 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { defineComponent, provide, ref, getCurrentInstance, onBeforeUnmount } from 'vue'
+import {
+  defineComponent,
+  provide,
+  ref,
+  getCurrentInstance,
+  onBeforeUnmount
+} from 'vue'
+import { beforeNextFrameOnce } from 'seemly'
 import { getSlot } from '../../shared/v-node'
 import { getScrollParent } from './utils'
 import { on, off } from 'evtd'
-import { nextFrameOnce } from '../../shared'
 
 const Binder = defineComponent({
   name: 'Binder',
@@ -50,10 +56,10 @@ const Binder = defineComponent({
       }
     }
     const onScroll = (): void => {
-      nextFrameOnce(onScrollRaf)
+      beforeNextFrameOnce(onScrollRaf)
     }
     const onScrollRaf = (): void => {
-      followerScrollListeners.forEach(listener => listener())
+      followerScrollListeners.forEach((listener) => listener())
     }
     // resize related
     const followerResizeListeners = new Set<() => void>()
@@ -74,7 +80,7 @@ const Binder = defineComponent({
       }
     }
     const onResize = (): void => {
-      followerResizeListeners.forEach(listener => listener())
+      followerResizeListeners.forEach((listener) => listener())
     }
     onBeforeUnmount(() => {
       off('resize', window, onResize)

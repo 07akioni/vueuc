@@ -11,11 +11,11 @@ import {
   onBeforeMount,
   CSSProperties
 } from 'vue'
-import { depx, pxfy } from 'seemly'
-import { ItemData, VScrollToOptions } from './type'
-import { nextFrame, c, FinweckTree } from '../../shared'
-import VResizeObserver from '../../resize-observer/src'
+import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
+import { ItemData, VScrollToOptions } from './type'
+import { c, FinweckTree } from '../../shared'
+import VResizeObserver from '../../resize-observer/src'
 
 const styles = c('.v-vl', {
   maxHeight: 'inherit',
@@ -113,7 +113,6 @@ export default defineComponent({
         scrollTo({ key: defaultScrollKey })
       }
     })
-    let rafFlag = false
     const keyIndexMapRef = computed(() => {
       const map = new Map()
       const { keyField } = props
@@ -249,10 +248,7 @@ export default defineComponent({
       finweckTreeUpdateTrigger.value++
     }
     function handleListScroll (e: UIEvent): void {
-      if (!rafFlag) {
-        nextFrame(syncViewport)
-        rafFlag = true
-      }
+      beforeNextFrameOnce(syncViewport)
       const { onScroll } = props
       if (onScroll !== undefined) onScroll(e)
     }
@@ -267,7 +263,6 @@ export default defineComponent({
       lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
       lastScrollAnchorIndex = undefined
       scrollTopRef.value = (listElRef.value as Element).scrollTop
-      rafFlag = false
     }
     return {
       listHeight: listHeightRef,
