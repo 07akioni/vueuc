@@ -4,7 +4,8 @@ export {
   default as VVirtualList
 } from './virtual-list/src'
 export type {
-  VirtualListInst
+  VirtualListInst, // deprecated, should use v prefix
+  VirtualListInst as VVirtualListInst
 } from './virtual-list/src'
 export {
   default as LazyTeleport,
@@ -20,6 +21,9 @@ export type {
 export {
   default as XScroll,
   default as VXScroll
+} from './x-scroll/src'
+export type {
+  VXScrollInst
 } from './x-scroll/src'
 export {
   VOverflow,
