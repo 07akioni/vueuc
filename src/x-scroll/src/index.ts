@@ -1,4 +1,4 @@
-import { defineComponent, h, renderSlot, onBeforeMount } from 'vue'
+import { defineComponent, h, onBeforeMount, PropType } from 'vue'
 import { c } from '../../shared'
 
 const styles = c('.v-x-scroll', {
@@ -14,7 +14,8 @@ const styles = c('.v-x-scroll', {
 export default defineComponent({
   name: 'XScroll',
   props: {
-    disabled: Boolean
+    disabled: Boolean,
+    onScroll: Function as PropType<(e: Event) => void>
   },
   setup (props, { slots }) {
     function handleWheel (e: WheelEvent): void {
@@ -32,10 +33,11 @@ export default defineComponent({
       h(
         'div',
         {
+          onScroll: props.onScroll,
           onWheel: props.disabled ? undefined : handleWheel,
           class: 'v-x-scroll'
         },
-        [renderSlot(slots, 'default')]
+        slots.default?.()
       )
   }
 })
