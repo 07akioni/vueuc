@@ -35,14 +35,18 @@ const style = c([
     pointerEvents: 'none',
     zIndex: 'auto'
   }),
-  c('.v-binder-follower-content', {
-    position: 'absolute',
-    zIndex: 'auto'
-  }, [
-    c('> *', {
-      pointerEvents: 'all'
-    })
-  ])
+  c(
+    '.v-binder-follower-content',
+    {
+      position: 'absolute',
+      zIndex: 'auto'
+    },
+    [
+      c('> *', {
+        pointerEvents: 'all'
+      })
+    ]
+  )
 ])
 
 export interface FollowerRef {
@@ -58,7 +62,7 @@ export default defineComponent({
       default: false
     },
     enabled: {
-      type: Boolean,
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined
     },
     placement: {
@@ -69,30 +73,16 @@ export default defineComponent({
       type: Array as PropType<Array<'scroll' | 'resize'>>,
       default: ['resize', 'scroll']
     },
-    to: {
-      type: [String, Object] as PropType<string | HTMLElement>,
-      default: undefined
-    },
+    to: [String, Object] as PropType<string | HTMLElement>,
     flip: {
       type: Boolean,
       default: true
     },
-    x: {
-      type: Number,
-      default: undefined
-    },
-    y: {
-      type: Number,
-      default: undefined
-    },
-    width: {
-      type: String as PropType<'target' | string>,
-      default: undefined
-    },
-    containerClass: {
-      type: String,
-      default: undefined
-    },
+    x: Number,
+    y: Number,
+    width: String as PropType<'target' | string>,
+    minWidth: String as PropType<'target' | string>,
+    containerClass: String,
     teleportDisabled: {
       type: Boolean,
       default: false
@@ -101,10 +91,7 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    zIndex: {
-      type: Number,
-      default: undefined
-    },
+    zIndex: Number,
     overlap: {
       type: Boolean,
       default: false
@@ -118,9 +105,7 @@ export default defineComponent({
     const followerRef = ref<HTMLElement | null>(null)
     const offsetContainerRef = ref<HTMLElement | null>(null)
     const ensureListeners = (): void => {
-      const {
-        syncTrigger
-      } = props
+      const { syncTrigger } = props
       if (syncTrigger.includes('scroll')) {
         VBinder.addScrollListener(syncPosition)
       }
@@ -164,10 +149,11 @@ export default defineComponent({
       if (follower === null) return
       const target = VBinder.targetRef!
       const { x, y, overlap } = props
-      const targetRect = (x !== undefined && y !== undefined)
-        ? getPointRect(x, y)
-        : getRect(target)
-      const { width, placement, flip } = props
+      const targetRect =
+        x !== undefined && y !== undefined
+          ? getPointRect(x, y)
+          : getRect(target)
+      const { width, minWidth, placement, flip } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -175,12 +161,20 @@ export default defineComponent({
       } else {
         follower.removeAttribute('v-overlap')
       }
+      const { style } = follower
       if (width === 'target') {
-        follower.style.width = `${targetRect.width}px`
+        style.width = `${targetRect.width}px`
       } else if (width !== undefined) {
-        follower.style.width = width
+        style.width = width
       } else {
-        follower.style.width = ''
+        style.width = ''
+      }
+      if (minWidth === 'target') {
+        style.minWidth = `${targetRect.width}px`
+      } else if (minWidth !== undefined) {
+        style.minWidth = minWidth
+      } else {
+        style.minWidth = ''
       }
       const followerRect = getRect(follower)
       const offsetContainerRect = getRect(offsetContainerRef.value!)
@@ -191,8 +185,16 @@ export default defineComponent({
         flip,
         overlap
       )
-      const properTransformOrigin = getProperTransformOrigin(properPlacement, overlap)
-      const { left, top, transform } = getOffset(properPlacement, offsetContainerRect, targetRect, overlap)
+      const properTransformOrigin = getProperTransformOrigin(
+        properPlacement,
+        overlap
+      )
+      const { left, top, transform } = getOffset(
+        properPlacement,
+        offsetContainerRect,
+        targetRect,
+        overlap
+      )
 
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
@@ -211,16 +213,16 @@ export default defineComponent({
     const syncOnNextTick = (): void => {
       nextTick()
         .then(syncPosition)
-        .catch(e => console.error(e))
-    }
-    ;(['placement', 'x', 'y', 'flip', 'width', 'overlap'] as const)
-      .forEach((prop) => {
-        watch(toRef(props, prop), syncPosition)
-      })
-    ;(['teleportDisabled'] as const)
-      .forEach((prop) => {
-        watch(toRef(props, prop), syncOnNextTick)
-      })
+        .catch((e) => console.error(e))
+    };
+    (
+      ['placement', 'x', 'y', 'flip', 'width', 'overlap', 'minWidth'] as const
+    ).forEach((prop) => {
+      watch(toRef(props, prop), syncPosition)
+    });
+    (['teleportDisabled'] as const).forEach((prop) => {
+      watch(toRef(props, prop), syncOnNextTick)
+    })
     watch(toRef(props, 'syncTrigger'), (value) => {
       if (!value.includes('resize')) {
         VBinder.removeResizeListener(syncPosition)
@@ -234,7 +236,10 @@ export default defineComponent({
       }
     })
     const isMountedRef = useIsMounted()
-    const mergedToRef = useMemo<string | HTMLElement | undefined>((): HTMLElement | string | undefined => {
+    const mergedToRef = useMemo<string | HTMLElement | undefined>(():
+    | HTMLElement
+    | string
+    | undefined => {
       const { to } = props
       if (to !== undefined) return to
       if (isMountedRef.value) {
@@ -253,39 +258,46 @@ export default defineComponent({
     }
   },
   render () {
-    return h(LazyTeleport, {
-      show: this.show,
-      to: this.mergedTo,
-      disabled: this.teleportDisabled
-    }, {
-      default: () => {
-        const vNode = h('div', {
-          class: [
-            'v-binder-follower-container',
-            this.containerClass
-          ],
-          ref: 'offsetContainerRef'
-        }, [
-          h('div', {
-            class: 'v-binder-follower-content',
-            ref: 'followerRef'
-          }, this.$slots)
-        ])
-        if (this.zindexable) {
-          return withDirectives(
-            vNode,
+    return h(
+      LazyTeleport,
+      {
+        show: this.show,
+        to: this.mergedTo,
+        disabled: this.teleportDisabled
+      },
+      {
+        default: () => {
+          const vNode = h(
+            'div',
+            {
+              class: ['v-binder-follower-container', this.containerClass],
+              ref: 'offsetContainerRef'
+            },
             [
+              h(
+                'div',
+                {
+                  class: 'v-binder-follower-content',
+                  ref: 'followerRef'
+                },
+                this.$slots
+              )
+            ]
+          )
+          if (this.zindexable) {
+            return withDirectives(vNode, [
               [
-                zindexable, {
+                zindexable,
+                {
                   enabled: this.mergedEnabled,
                   zIndex: this.zIndex
                 }
               ]
-            ]
-          )
+            ])
+          }
+          return vNode
         }
-        return vNode
       }
-    })
+    )
   }
 })
