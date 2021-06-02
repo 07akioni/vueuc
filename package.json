@@ -41,12 +41,14 @@
     "vue-router": "^4.0.0-beta.13"
   },
   "dependencies": {
-    "css-render": "^0.15.0",
-    "evtd": "^0.2.0",
+    "css-render": "^0.15.2",
+    "evtd": "^0.2.2",
     "resize-observer-polyfill": "^1.5.1",
-    "seemly": "^0.1.2",
-    "vdirs": "^0.1.0",
-    "vooks": "^0.2.3",
-    "vue": "^3.0.6"
+    "seemly": "^0.3.1",
+    "vdirs": "^0.1.2",
+    "vooks": "^0.2.4"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.11"
   }
 }

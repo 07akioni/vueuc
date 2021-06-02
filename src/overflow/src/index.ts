@@ -106,7 +106,7 @@ export default defineComponent({
       }
     }
     style.mount({
-      id: 'v-overflow'
+      id: 'vueuc/overflow'
     })
     onMounted(deriveCounter)
     // besides onMounted, other case should be manually triggered, or we shoud watch items

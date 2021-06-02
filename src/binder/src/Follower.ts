@@ -125,7 +125,7 @@ export default defineComponent({
     })
     onBeforeMount(() => {
       style.mount({
-        id: 'v-binder'
+        id: 'vueuc/binder'
       })
     })
     onBeforeUnmount(() => {
