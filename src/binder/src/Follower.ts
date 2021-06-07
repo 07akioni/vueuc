@@ -49,7 +49,7 @@ const style = c([
   )
 ])
 
-export interface FollowerRef {
+export interface FollowerInst {
   syncPosition: () => void
 }
 
