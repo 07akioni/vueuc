@@ -9,10 +9,7 @@ export default defineComponent({
       type: [String, Object] as PropType<string | HTMLElement>,
       default: undefined
     },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
+    disabled: Boolean,
     show: {
       type: Boolean,
       required: true
@@ -29,15 +26,16 @@ export default defineComponent({
   },
   render () {
     return this.showTeleport
-      ? (
-        this.disabled
-          ? getSlot(this.$slots)
-          : h(Teleport, {
+      ? this.disabled
+        ? getSlot(this.$slots)
+        : h(
+          Teleport,
+          {
             disabled: this.disabled,
             to: this.mergedTo
-          }, [
-            getSlot(this.$slots)
-          ]))
+          },
+          getSlot(this.$slots)
+        )
       : null
   }
 })

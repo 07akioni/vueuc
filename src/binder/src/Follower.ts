@@ -57,10 +57,7 @@ export default defineComponent({
   name: 'Follower',
   inheritAttrs: false,
   props: {
-    show: {
-      type: Boolean,
-      default: false
-    },
+    show: Boolean,
     enabled: {
       type: Boolean as PropType<boolean | undefined>,
       default: undefined
@@ -83,19 +80,13 @@ export default defineComponent({
     width: String as PropType<'target' | string>,
     minWidth: String as PropType<'target' | string>,
     containerClass: String,
-    teleportDisabled: {
-      type: Boolean,
-      default: false
-    },
+    teleportDisabled: Boolean,
     zindexable: {
       type: Boolean,
       default: true
     },
     zIndex: Number,
-    overlap: {
-      type: Boolean,
-      default: false
-    }
+    overlap: Boolean
   },
   setup (props) {
     const VBinder = inject<BinderInstance>('VBinder')!

@@ -77,7 +77,7 @@ export default defineComponent({
     onScroll: Function as PropType<(event: Event) => void>,
     onWheel: Function as PropType<(event: WheelEvent) => void>,
     onResize: Function as PropType<(entry: ResizeObserverEntry) => void>,
-    defaultScrollKey: Number,
+    defaultScrollKey: [Number, String],
     defaultScrollIndex: Number,
     keyField: {
       type: String,

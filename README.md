@@ -35,7 +35,7 @@ A simple virtual list which supports fixed-height items
 ### VXScroll
 All content inside it to be scroll in X direction when you wheel at Y direction.
 
-## VResizeObserver
+### VResizeObserver
 ```html
 <v-resize-observer :on-resize="handleResize">
   <el />
