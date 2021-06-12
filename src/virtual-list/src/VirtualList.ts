@@ -8,7 +8,6 @@ import {
   ref,
   onMounted,
   h,
-  onBeforeMount,
   CSSProperties
 } from 'vue'
 import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
@@ -16,6 +15,7 @@ import { useMemo } from 'vooks'
 import { ItemData, VScrollToOptions } from './type'
 import { c, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
+import { useSsrAdapter } from '@css-render/vue3-ssr'
 
 const styles = c('.v-vl', {
   maxHeight: 'inherit',
@@ -96,11 +96,11 @@ export default defineComponent({
     }
   },
   setup (props) {
-    onBeforeMount(() => {
-      styles.mount({
-        id: 'vueuc/virtual-list',
-        head: true
-      })
+    const ssrAdapter = useSsrAdapter()
+    styles.mount({
+      id: 'vueuc/virtual-list',
+      head: true,
+      ssr: ssrAdapter
     })
     onMounted(() => {
       const {

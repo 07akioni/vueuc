@@ -1,4 +1,5 @@
-import { defineComponent, h, onBeforeMount, PropType, ref } from 'vue'
+import { useSsrAdapter } from '@css-render/vue3-ssr'
+import { defineComponent, h, PropType, ref } from 'vue'
 import { c } from '../../shared'
 import type { VXScrollInst } from './interface'
 export type { VXScrollInst } from './interface'
@@ -33,9 +34,14 @@ export default defineComponent({
       (e.currentTarget as HTMLElement).scrollLeft += e.deltaY + e.deltaX
       e.preventDefault()
     }
-    onBeforeMount(() => {
-      styles.mount({ id: 'vueuc/x-scroll' })
+
+    const ssrAdapter = useSsrAdapter()
+    styles.mount({
+      id: 'vueuc/x-scroll',
+      head: true,
+      ssr: ssrAdapter
     })
+
     const exposedMethods: VXScrollInst = {
       scrollTo (...args: any[]) {
         selfRef.value?.scrollTo(...args)
@@ -56,7 +62,7 @@ export default defineComponent({
         onWheel: this.disabled ? undefined : this.handleWheel,
         class: 'v-x-scroll'
       },
-      this.$slots.default?.()
+      this.$slots
     )
   }
 })

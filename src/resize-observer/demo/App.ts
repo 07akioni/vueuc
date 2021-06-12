@@ -16,14 +16,14 @@ const styles = c('.resize-observer-demo', [
 
 export default defineComponent({
   name: 'ResizeObserverDemo',
-  mounted () {
+  setup () {
     styles.mount({
       id: 'resize-observer-demo'
     })
-  },
-  methods: {
-    handleResize () {
-      console.log('element resize')
+    return {
+      handleResize () {
+        console.log('element resize')
+      }
     }
   },
   render () {

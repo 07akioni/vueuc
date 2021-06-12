@@ -10,11 +10,11 @@ import {
   ref,
   onMounted,
   onBeforeUnmount,
-  onBeforeMount,
   withDirectives
 } from 'vue'
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
+import { useSsrAdapter } from '@css-render/vue3-ssr'
 import { BinderInstance, Placement } from './interface'
 import { c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
@@ -114,10 +114,11 @@ export default defineComponent({
         ensureListeners()
       }
     })
-    onBeforeMount(() => {
-      style.mount({
-        id: 'vueuc/binder'
-      })
+    const ssrAdapter = useSsrAdapter()
+    style.mount({
+      id: 'vueuc/binder',
+      head: true,
+      ssr: ssrAdapter
     })
     onBeforeUnmount(() => {
       removeListeners()

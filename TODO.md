@@ -1,0 +1,1 @@
+1. There's still some misbehaviors in `scrollTo` method in the dynamic height virtual list.
