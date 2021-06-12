@@ -157,26 +157,26 @@ export default defineComponent({
             item.value
           ])
         }
-      }),
-      h(VirtualList, {
-        itemSize: 34,
-        items: this.mutableData,
-        itemResizable: true,
-        ref: 'listElRef'
-      }, {
-        default: ({ item, index }: { item: ItemData, index: number }) => {
-          return h(ExpandableNode, {
-            onAfterNextEnter: (newItem: ItemData) => {
-              this.mutableData.splice(index + 1, 0, newItem)
-            },
-            onAfterSelfLeave: () => {
-              this.mutableData.splice(index, 1)
-            },
-            key: item.key,
-            item
-          })
-        }
       })
+      // h(VirtualList, {
+      //   itemSize: 34,
+      //   items: this.mutableData,
+      //   itemResizable: true,
+      //   ref: 'listElRef'
+      // }, {
+      //   default: ({ item, index }: { item: ItemData, index: number }) => {
+      //     return h(ExpandableNode, {
+      //       onAfterNextEnter: (newItem: ItemData) => {
+      //         this.mutableData.splice(index + 1, 0, newItem)
+      //       },
+      //       onAfterSelfLeave: () => {
+      //         this.mutableData.splice(index, 1)
+      //       },
+      //       key: item.key,
+      //       item
+      //     })
+      //   }
+      // })
     ]
   }
 })

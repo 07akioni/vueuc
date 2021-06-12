@@ -8,6 +8,7 @@ import {
   PropType,
   nextTick
 } from 'vue'
+import { useSsrAdapter } from '@css-render/vue3-ssr'
 import { c } from '../../shared'
 
 const hiddenAttr = 'v-hidden'
@@ -105,8 +106,11 @@ export default defineComponent({
         }
       }
     }
+    const ssrAdapter = useSsrAdapter()
     style.mount({
-      id: 'vueuc/overflow'
+      id: 'vueuc/overflow',
+      head: true,
+      ssr: ssrAdapter
     })
     onMounted(deriveCounter)
     // besides onMounted, other case should be manually triggered, or we shoud watch items

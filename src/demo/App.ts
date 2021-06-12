@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted } from 'vue'
+import { defineComponent, h } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import { c } from '../shared'
 
@@ -10,7 +10,7 @@ const styles = c([`body {
 export default defineComponent({
   name: 'VueucDemo',
   setup () {
-    onMounted(() => styles.mount({ id: 'vdemo' }))
+    styles.mount({ id: 'vdemo' })
     return () => {
       return h('main', {
         style: {
