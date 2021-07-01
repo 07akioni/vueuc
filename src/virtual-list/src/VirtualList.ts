@@ -20,14 +20,16 @@ import { useSsrAdapter } from '@css-render/vue3-ssr'
 const styles = c('.v-vl', {
   maxHeight: 'inherit',
   height: '100%',
-  overflow: 'auto'
+  overflow: 'auto',
+  minWidth: '1px' // a zero width container won't be scrollable
 }, [
   c('&:not(.v-vl--show-scrollbar)', {
     scrollbarWidth: 'none'
   }, [
-    c('&::-webkit-scrollbar', {
+    c('&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb', {
       width: 0,
-      height: 0
+      height: 0,
+      display: 'none'
     })
   ])
 ])
