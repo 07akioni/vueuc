@@ -262,6 +262,10 @@ export default defineComponent({
     let lastScrollAnchorIndex: number | undefined
     let lastAnchorIndex: number | undefined
     function syncViewport (): void {
+      const { value: listEl } = listElRef
+      // sometime ref el can be null
+      // https://github.com/TuSimple/naive-ui/issues/811
+      if (listEl == null) return
       lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
       lastScrollAnchorIndex = undefined
       scrollTopRef.value = (listElRef.value as Element).scrollTop
