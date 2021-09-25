@@ -191,7 +191,7 @@ export default defineComponent({
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
-      follower.style.transform = `translateX(${left}px) translateY(${top}px) ${transform}`
+      follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
     watch(mergedEnabledRef, (value) => {
