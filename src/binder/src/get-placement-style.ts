@@ -145,75 +145,75 @@ export function getOffset (
     switch (placement) {
       case 'bottom-start':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-          left: `${targetRect.left - offsetRect.left}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left)}px`,
           transform: 'translateY(-100%)'
         }
       case 'bottom-end':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
           transform: 'translateX(-100%) translateY(-100%)'
         }
       case 'top-start':
         return {
-          top: `${targetRect.top - offsetRect.top}px`,
-          left: `${targetRect.left - offsetRect.left}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left)}px`,
           transform: ''
         }
       case 'top-end':
         return {
-          top: `${targetRect.top - offsetRect.top}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
           transform: 'translateX(-100%)'
         }
       case 'right-start':
         return {
-          top: `${targetRect.top - offsetRect.top}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
           transform: 'translateX(-100%)'
         }
       case 'right-end':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
           transform: 'translateX(-100%) translateY(-100%)'
         }
       case 'left-start':
         return {
-          top: `${targetRect.top - offsetRect.top}px`,
-          left: `${targetRect.left - offsetRect.left}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left)}px`,
           transform: ''
         }
       case 'left-end':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-          left: `${targetRect.left - offsetRect.left}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left)}px`,
           transform: 'translateY(-100%)'
         }
       case 'top':
         return {
-          top: `${targetRect.top - offsetRect.top}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
           transform: 'translateX(-50%)'
         }
       case 'right':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
           transform: 'translateX(-100%) translateY(-50%)'
         }
       case 'left':
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
-          left: `${targetRect.left - offsetRect.left}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left)}px`,
           transform: 'translateY(-50%)'
         }
       case 'bottom':
       default:
         return {
-          top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-          left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+          top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+          left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
           transform: 'translateX(-50%) translateY(-100%)'
         }
     }
@@ -222,75 +222,75 @@ export function getOffset (
   switch (placement) {
     case 'bottom-start':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
         transform: ''
       }
     case 'bottom-end':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
         transform: 'translateX(-100%)'
       }
     case 'top-start':
       return {
-        top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
         transform: 'translateY(-100%)'
       }
     case 'top-end':
       return {
-        top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
         transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'right-start':
       return {
-        top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
         transform: ''
       }
     case 'right-end':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
         transform: 'translateY(-100%)'
       }
     case 'left-start':
       return {
-        top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
         transform: 'translateX(-100%)'
       }
     case 'left-end':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
         transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'top':
       return {
-        top: `${targetRect.top - offsetRect.top}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
         transform: 'translateY(-100%) translateX(-50%)'
       }
     case 'right':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
         transform: 'translateY(-50%)'
       }
     case 'left':
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height / 2}px`,
-        left: `${targetRect.left - offsetRect.left}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
         transform: 'translateY(-50%) translateX(-100%)'
       }
     case 'bottom':
     default:
       return {
-        top: `${targetRect.top - offsetRect.top + targetRect.height}px`,
-        left: `${targetRect.left - offsetRect.left + targetRect.width / 2}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
         transform: 'translateX(-50%)'
       }
   }
