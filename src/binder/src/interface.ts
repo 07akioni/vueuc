@@ -1,5 +1,8 @@
-export interface BinderInstance {
+export interface ExposedBinderInstance {
   targetRef: HTMLElement | null
+}
+
+export interface BinderInstance extends ExposedBinderInstance {
   syncTargetWithParent: boolean
   syncTarget: boolean
   setTargetRef: (el: HTMLElement | null) => void
@@ -10,28 +13,28 @@ export interface BinderInstance {
 }
 
 export type Placement =
-  'top'|
-  'bottom'|
-  'left'|
-  'right'|
-  'top-start'|
-  'top-end'|
-  'left-start'|
-  'left-end'|
-  'right-start'|
-  'right-end'|
-  'bottom-start'|
-  'bottom-end'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-start'
+  | 'top-end'
+  | 'left-start'
+  | 'left-end'
+  | 'right-start'
+  | 'right-end'
+  | 'bottom-start'
+  | 'bottom-end'
 
 export type NonCenterPlacement =
-  'top-start'|
-  'top-end'|
-  'left-start'|
-  'left-end'|
-  'right-start'|
-  'right-end'|
-  'bottom-start'|
-  'bottom-end'
+  | 'top-start'
+  | 'top-end'
+  | 'left-start'
+  | 'left-end'
+  | 'right-start'
+  | 'right-end'
+  | 'bottom-start'
+  | 'bottom-end'
 
 export interface Rect {
   left: number
@@ -47,15 +50,15 @@ export type Align = 'start' | 'end' | 'center'
 export type Position = 'left' | 'right' | 'top' | 'bottom'
 
 export type TransformOrigin =
-  'top left' |
-  'top center' |
-  'top right' |
-  'bottom left' |
-  'bottom center' |
-  'bottom right' |
-  'top left' |
-  'center left' |
-  'bottom left' |
-  'top right' |
-  'center right' |
-  'bottom right'
+  | 'top left'
+  | 'top center'
+  | 'top right'
+  | 'bottom left'
+  | 'bottom center'
+  | 'bottom right'
+  | 'top left'
+  | 'center left'
+  | 'bottom left'
+  | 'top right'
+  | 'center right'
+  | 'bottom right'
