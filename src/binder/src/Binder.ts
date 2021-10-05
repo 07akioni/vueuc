@@ -16,7 +16,11 @@ import { BinderInstance } from './interface'
 const Binder = defineComponent({
   name: 'Binder',
   props: {
-    syncTargetWithParent: Boolean
+    syncTargetWithParent: Boolean,
+    syncTargetOnMounted: {
+      type: Boolean,
+      default: true
+    }
   },
   setup (props) {
     provide('VBinder', getCurrentInstance()?.proxy)

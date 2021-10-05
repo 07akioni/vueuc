@@ -1,5 +1,7 @@
 export interface BinderInstance {
   targetRef: HTMLElement | null
+  syncTargetWithParent: boolean
+  syncTargetOnMounted: boolean
   setTargetRef: (el: HTMLElement | null) => void
   addScrollListener: (listener: () => void) => void
   removeScrollListener: (listener: () => void) => void

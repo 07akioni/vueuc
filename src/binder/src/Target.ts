@@ -6,26 +6,22 @@ import { getFirstVNode } from '../../shared/v-node'
 export default defineComponent({
   name: 'Target',
   setup () {
-    const {
-      setTargetRef
-    } = inject<BinderInstance>('VBinder')!
+    const { setTargetRef, syncTargetOnMounted } =
+      inject<BinderInstance>('VBinder')!
     const setTargetDirective = {
       mounted: setTargetRef,
       updated: setTargetRef
     }
     return {
+      syncTargetOnMounted,
       setTargetDirective
     }
   },
   render () {
-    const {
-      setTargetDirective
-    } = this
-    return withDirectives(
-      getFirstVNode(this.$slots),
-      [
-        [setTargetDirective]
-      ]
-    )
+    const { syncTargetOnMounted, setTargetDirective } = this
+    if (syncTargetOnMounted) {
+      return withDirectives(getFirstVNode(this.$slots), [[setTargetDirective]])
+    }
+    return getFirstVNode(this.$slots)
   }
 })
