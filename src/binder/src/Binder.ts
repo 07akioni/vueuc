@@ -3,6 +3,7 @@ import {
   defineComponent,
   provide,
   ref,
+  inject,
   getCurrentInstance,
   onBeforeUnmount
 } from 'vue'
@@ -10,14 +11,22 @@ import { beforeNextFrameOnce } from 'seemly'
 import { getSlot } from '../../shared/v-node'
 import { getScrollParent } from './utils'
 import { on, off } from 'evtd'
+import { BinderInstance } from './interface'
 
 const Binder = defineComponent({
   name: 'Binder',
-  setup () {
+  props: {
+    syncTargetWithParent: Boolean
+  },
+  setup (props) {
     provide('VBinder', getCurrentInstance()?.proxy)
+    const VBinder = inject<BinderInstance>('VBinder')
     const targetRef = ref<HTMLElement | null>(null)
     const setTargetRef = (el: HTMLElement | null): void => {
       targetRef.value = el
+      if (VBinder != null && props.syncTargetWithParent) {
+        VBinder.setTargetRef(el)
+      }
     }
     // scroll related
     let scrollableNodes: Array<Element | Document> = []
