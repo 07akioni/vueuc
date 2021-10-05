@@ -17,7 +17,7 @@ const Binder = defineComponent({
   name: 'Binder',
   props: {
     syncTargetWithParent: Boolean,
-    syncTargetOnMounted: {
+    syncTarget: {
       type: Boolean,
       default: true
     }
@@ -26,6 +26,32 @@ const Binder = defineComponent({
     provide('VBinder', getCurrentInstance()?.proxy)
     const VBinder = inject<BinderInstance>('VBinder')
     const targetRef = ref<HTMLElement | null>(null)
+    /**
+     * If there's no nested vbinder, we can simply set the target ref.
+     *
+     * However, when it comes to:
+     * <VBinder> <- syncTarget = false
+     *
+     *              Should hold target DOM ref, but can't get it directly from
+     *              its VTarget. So if there are nested VBinder, we should:
+     *              1. Stop setting target DOM from level-1 VTarget
+     *              2. Set target DOM from level-2 VTarget
+     *              For (1), we need `syncTarget` to `false`
+     *              For (2), we need to set `syncTargetWithParent` to `true` on
+     *              level-2 VBinder
+     *   <VTarget>
+     *     <VBinder> <- syncTargetWithParent = true
+     *       <VTarget>target</VTarget>
+     *     </VBinder>
+     *     <VFollower>
+     *       content1
+     *     </VFollower>
+     *   </VTarget>
+     *   <VFollower>
+     *     content2
+     *   </VFollower>
+     * </VBinder>
+     */
     const setTargetRef = (el: HTMLElement | null): void => {
       targetRef.value = el
       if (VBinder != null && props.syncTargetWithParent) {
