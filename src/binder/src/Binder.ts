@@ -24,7 +24,7 @@ const Binder = defineComponent({
   },
   setup (props) {
     provide('VBinder', getCurrentInstance()?.proxy)
-    const VBinder = inject<BinderInstance>('VBinder')
+    const VBinder = inject<BinderInstance | null>('VBinder', null)
     const targetRef = ref<HTMLElement | null>(null)
     /**
      * If there's no nested vbinder, we can simply set the target ref.
@@ -54,7 +54,8 @@ const Binder = defineComponent({
      */
     const setTargetRef = (el: HTMLElement | null): void => {
       targetRef.value = el
-      if (VBinder != null && props.syncTargetWithParent) {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (VBinder && props.syncTargetWithParent) {
         VBinder.setTargetRef(el)
       }
     }
