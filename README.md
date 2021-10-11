@@ -30,7 +30,7 @@ For more API please read the source code. I'm too lazy to write them since I'm t
 ```
 
 ### VVirtialList
-A simple virtual list which supports fixed-height items
+A simple virtual list which supports flexable-height items
 
 ### VXScroll
 All content inside it to be scroll in X direction when you wheel at Y direction.
