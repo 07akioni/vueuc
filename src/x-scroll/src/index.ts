@@ -32,7 +32,6 @@ export default defineComponent({
         (e.currentTarget as HTMLElement).scrollWidth
       if (!preventYWheel || e.deltaY === 0) return;
       (e.currentTarget as HTMLElement).scrollLeft += e.deltaY + e.deltaX
-      e.preventDefault()
     }
 
     const ssrAdapter = useSsrAdapter()
