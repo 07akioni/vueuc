@@ -59,7 +59,7 @@ export default defineComponent({
       {
         ref: 'selfRef',
         onScroll: this.onScroll,
-        onWheelPassive: this.disabled ? undefined : this.handleWheel,
+        onWheel: this.disabled ? undefined : this.handleWheel,
         class: 'v-x-scroll'
       },
       this.$slots
