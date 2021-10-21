@@ -53,5 +53,8 @@
   "peerDependencies": {
     "vue": "^3.0.11",
     "@css-render/vue3-ssr": "^0.15.3"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
