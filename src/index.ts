@@ -8,7 +8,8 @@ export type {
   VirtualListInst as VVirtualListInst,
   VirtualListScrollTo,
   VirtualListScrollToOptions,
-  VirtualListItemData
+  VirtualListItemData,
+  VVirtualListColumn
 } from './virtual-list/src'
 export {
   default as LazyTeleport,
