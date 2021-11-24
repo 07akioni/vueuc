@@ -18,7 +18,7 @@ export default defineComponent({
       teleportDisabled: ref(false),
       syncOnResize: syncOnResizeRef,
       syncOnScroll: syncOnScrollRef,
-      flipLevel: ref<FlipLevel>(1),
+      flipLevel: ref<FlipLevel>(2),
       useTargetWidth: ref(false),
       x: ref<number | undefined>(undefined),
       y: ref<number | undefined>(undefined),
