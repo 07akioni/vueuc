@@ -61,20 +61,36 @@ const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
   'left-end': 'top'
 }
 
+const offsetDirection: Record<Position, boolean> = {
+  top: true,
+  bottom: false,
+  left: true,
+  right: false
+}
+
+interface ProperPlacement {
+  top?: string
+  left?: string
+  properPlacement: Placement
+}
+
 export function getProperPlacementOfFollower (
   placement: Placement,
   targetRect: Rect,
   followerRect: Rect,
   flip: boolean,
   overlap: boolean
-): Placement {
+): ProperPlacement {
   if (!flip || overlap) {
-    return placement
+    return { properPlacement: placement }
   }
   const [position, align] = placement.split('-') as [Position, Align]
   let properAlign = align ?? 'center'
+  let left = 0
+  let top = 0
   if (align !== 'center') {
     const oppositeAlignCssPositionProp = oppositeAlignCssPositionProps[placement as NonCenterPlacement]
+    const isVertical = oppositeAlignCssPositionProp === 'top' || oppositeAlignCssPositionProp === 'bottom'
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
     const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp]
     // if follower rect is larger than target rect in align direction
@@ -86,11 +102,35 @@ export function getProperPlacementOfFollower (
       // [ follower   |  ]
       if (
         // overflow screen
-        (targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] <= followerRect[oppositeAlignCssSizeProp]) &&
-        // opposite align has larger space
-        (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp])
+        targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] <= followerRect[oppositeAlignCssSizeProp]
       ) {
-        properAlign = oppositeAligns[align]
+        // 'center' align is better
+        if ((targetRect[oppositeAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2) ||
+        (targetRect[currentAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2)) {
+          // opposite align has larger space
+          if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
+            properAlign = oppositeAligns[align]
+            const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+            if (diff > 0) {
+              if (isVertical) {
+                top = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
+              } else {
+                left = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
+              }
+            }
+          } else {
+            const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+            if (diff > 0) {
+              if (isVertical) {
+                top = offsetDirection[oppositeAlignCssPositionProp] ? diff : -diff
+              } else {
+                left = offsetDirection[oppositeAlignCssPositionProp] ? diff : -diff
+              }
+            }
+          }
+        } else {
+          properAlign = 'center'
+        }
       }
     }
     // if follower rect is smaller than target rect in align direction
@@ -109,13 +149,17 @@ export function getProperPlacementOfFollower (
   let properPosition = position
   if (
     // space is not enough
-    !(targetRect[position] >= followerRect[propToCompare[position]]) &&
+    targetRect[position] < followerRect[propToCompare[position]] &&
     // opposite position's space is larger
-    targetRect[oppositionPositions[position]] >= followerRect[propToCompare[position]]
+    targetRect[position] < targetRect[oppositionPositions[position]]
   ) {
     properPosition = oppositionPositions[position]
   }
-  return properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition
+  return {
+    properPlacement: properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition,
+    left: `${left}px`,
+    top: `${top}px`
+  }
 }
 
 export function getProperTransformOrigin (placement: Placement, overlap: boolean): TransformOrigin {

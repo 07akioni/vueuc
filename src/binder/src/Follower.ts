@@ -50,7 +50,7 @@ const style = c([
 ])
 
 export interface FollowerInst {
-  syncPosition: () => void
+  syncPosition: () => HTMLElement | null
 }
 
 export default defineComponent({
@@ -128,9 +128,9 @@ export default defineComponent({
         syncPosition()
       }
     })
-    const syncPosition = (): void => {
+    const syncPosition = (): HTMLElement | null => {
       if (!mergedEnabledRef.value) {
-        return
+        return null
       }
       const follower = followerRef.value
       // sometimes watched props change before its dom is ready
@@ -138,7 +138,7 @@ export default defineComponent({
       //              show=true,  x=0,         y=0
       // will cause error
       // I may optimize the watch start point later
-      if (follower === null) return
+      if (follower === null) return null
       const target = VBinder.targetRef!
       const { x, y, overlap } = props
       const targetRect =
@@ -170,7 +170,7 @@ export default defineComponent({
       }
       const followerRect = getRect(follower)
       const offsetContainerRect = getRect(offsetContainerRef.value!)
-      const properPlacement = getProperPlacementOfFollower(
+      const { left: properLeft, top: properTop, properPlacement } = getProperPlacementOfFollower(
         placement,
         targetRect,
         followerRect,
@@ -181,18 +181,23 @@ export default defineComponent({
         properPlacement,
         overlap
       )
-      const { left, top, transform } = getOffset(
+      const { left: offsetLeft, top: offetTop, transform } = getOffset(
         properPlacement,
         offsetContainerRect,
         targetRect,
         overlap
       )
+      const left = properLeft !== undefined ? `${handlePx(offsetLeft) + handlePx(properLeft)}px` : offsetLeft
+      const top = properTop !== undefined ? `${handlePx(offetTop) + handlePx(properTop)}px` : offetTop
 
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
+      properLeft !== undefined && follower.setAttribute('v-leftOffet', properLeft)
+      properTop !== undefined && follower.setAttribute('v-topOffet', properTop)
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
+      return follower
     }
     watch(mergedEnabledRef, (value) => {
       if (value) {
@@ -202,6 +207,9 @@ export default defineComponent({
         removeListeners()
       }
     })
+    const handlePx = (value: string): number => {
+      return Number(value.substr(0, value.length - 2))
+    }
     const syncOnNextTick = (): void => {
       nextTick()
         .then(syncPosition)
