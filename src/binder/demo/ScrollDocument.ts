@@ -18,11 +18,11 @@ const TrackingContent = defineComponent({
   render () {
     return h('div', {
       style: {
-        height: '400px',
+        height: '600px',
         backgroundColor: 'green'
       }
     }, [
-      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
+      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
     ])
   }
 })
@@ -54,7 +54,7 @@ export default defineComponent({
               h(Follower, {
                 show: this.show,
                 placement: this.placement,
-                flip: this.flip,
+                flipLevel: this.flipLevel,
                 syncTrigger: this.syncTrigger,
                 width: this.useTargetWidth ? 'target' : undefined,
                 teleportDisabled: this.teleportDisabled,

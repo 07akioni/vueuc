@@ -15,7 +15,7 @@ import {
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { BinderInstance, Placement } from './interface'
+import { BinderInstance, Placement, FlipLevel } from './interface'
 import { c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
@@ -71,9 +71,9 @@ export default defineComponent({
       default: ['resize', 'scroll']
     },
     to: [String, Object] as PropType<string | HTMLElement>,
-    flip: {
-      type: Boolean,
-      default: true
+    flipLevel: {
+      type: Number as PropType<FlipLevel>,
+      default: 1
     },
     x: Number,
     y: Number,
@@ -145,7 +145,7 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
-      const { width, minWidth, placement, flip } = props
+      const { width, minWidth, placement, flipLevel } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -174,7 +174,7 @@ export default defineComponent({
         placement,
         targetRect,
         followerRect,
-        flip,
+        flipLevel,
         overlap
       )
       const properTransformOrigin = getProperTransformOrigin(
@@ -190,7 +190,7 @@ export default defineComponent({
       const left = properLeft !== undefined ? `${handlePx(offsetLeft) + handlePx(properLeft)}px` : offsetLeft
       const top = properTop !== undefined ? `${handlePx(offetTop) + handlePx(properTop)}px` : offetTop
 
-      // we assume that the content size doesn't change after flip,
+      // we assume that the content size doesn't change after flipLevel,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
       properLeft !== undefined && follower.setAttribute('v-leftOffet', properLeft)
@@ -216,7 +216,7 @@ export default defineComponent({
         .catch((e) => console.error(e))
     };
     (
-      ['placement', 'x', 'y', 'flip', 'width', 'overlap', 'minWidth'] as const
+      ['placement', 'x', 'y', 'flipLevel', 'width', 'overlap', 'minWidth'] as const
     ).forEach((prop) => {
       watch(toRef(props, prop), syncPosition)
     });

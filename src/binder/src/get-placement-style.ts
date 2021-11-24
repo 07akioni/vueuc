@@ -85,10 +85,10 @@ export function getProperPlacementOfFollower (
   placement: Placement,
   targetRect: Rect,
   followerRect: Rect,
-  flip: boolean,
+  flipLevel: number,
   overlap: boolean
 ): ProperPlacement {
-  if (!flip || overlap) {
+  if (flipLevel === 1 || overlap) {
     return { properPlacement: placement }
   }
   const [position, align] = placement.split('-') as [Position, Align]
@@ -118,7 +118,7 @@ export function getProperPlacementOfFollower (
           if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
             properAlign = oppositeAligns[align]
             const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
-            if (diff > 0) {
+            if (diff > 0 && flipLevel === 3) {
               if (isVertical) {
                 top = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
               } else {
@@ -127,7 +127,7 @@ export function getProperPlacementOfFollower (
             }
           } else {
             const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
-            if (diff > 0) {
+            if (diff > 0 && flipLevel === 3) {
               if (isVertical) {
                 top = offsetDirection[oppositeAlignCssPositionProp] ? diff : -diff
               } else {
@@ -157,11 +157,29 @@ export function getProperPlacementOfFollower (
     const oppositeAlignCssPositionProp = isVertical ? 'left' : 'top'
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
     const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp]
-    if ((targetRect[oppositeAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2) &&
-     targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]) {
-      properAlign = transformProperOrigin[oppositeAlignCssPositionProp]
-    } else if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
-      properAlign = transformProperOrigin[currentAlignCssPositionProp]
+    if ((targetRect[oppositeAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2) ||
+        (targetRect[currentAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2)) {
+      if (targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]) {
+        properAlign = transformProperOrigin[oppositeAlignCssPositionProp]
+        const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+        if (diff > 0 && flipLevel === 3) {
+          if (isVertical) {
+            left = offsetDirection[oppositeAlignCssPositionProp] ? diff : -diff
+          } else {
+            top = offsetDirection[oppositeAlignCssPositionProp] ? diff : -diff
+          }
+        }
+      } else {
+        properAlign = transformProperOrigin[currentAlignCssPositionProp]
+        const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+        if (diff > 0 && flipLevel === 3) {
+          if (isVertical) {
+            left = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
+          } else {
+            top = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
+          }
+        }
+      }
     }
   }
   let properPosition = position
