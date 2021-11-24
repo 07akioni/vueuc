@@ -68,6 +68,13 @@ const offsetDirection: Record<Position, boolean> = {
   right: false
 }
 
+const transformProperOrigin: Record<Position, Align> = {
+  top: 'end',
+  bottom: 'start',
+  left: 'end',
+  right: 'start'
+}
+
 interface ProperPlacement {
   top?: string
   left?: string
@@ -88,7 +95,7 @@ export function getProperPlacementOfFollower (
   let properAlign = align ?? 'center'
   let left = 0
   let top = 0
-  if (align !== 'center') {
+  if (properAlign !== 'center') {
     const oppositeAlignCssPositionProp = oppositeAlignCssPositionProps[placement as NonCenterPlacement]
     const isVertical = oppositeAlignCssPositionProp === 'top' || oppositeAlignCssPositionProp === 'bottom'
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
@@ -144,6 +151,17 @@ export function getProperPlacementOfFollower (
       ) {
         properAlign = oppositeAligns[align]
       }
+    }
+  } else {
+    const isVertical = position === 'top' || position === 'bottom'
+    const oppositeAlignCssPositionProp = isVertical ? 'left' : 'top'
+    const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
+    const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp]
+    if ((targetRect[oppositeAlignCssPositionProp] < (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2) &&
+     targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]) {
+      properAlign = transformProperOrigin[oppositeAlignCssPositionProp]
+    } else if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
+      properAlign = transformProperOrigin[currentAlignCssPositionProp]
     }
   }
   let properPosition = position
