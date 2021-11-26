@@ -86,9 +86,10 @@ export function getProperPlacementOfFollower (
   targetRect: Rect,
   followerRect: Rect,
   flipLevel: FlipLevel,
+  flip: boolean,
   overlap: boolean
 ): ProperPlacement {
-  if (flipLevel === 1 || overlap) {
+  if (!flip || overlap) {
     return { properPlacement: placement }
   }
   const [position, align] = placement.split('-') as [Position, Align]
@@ -99,7 +100,7 @@ export function getProperPlacementOfFollower (
   // calculate offset
   const calcOffset = (oppositeAlignCssSizeProp: 'width' | 'height', currentAlignCssPositionProp: Position, isVertical: boolean): void => {
     const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
-    if (diff > 0 && flipLevel === 3) {
+    if (diff > 0 && flipLevel === 2) {
       if (isVertical) {
         top = offsetDirection[currentAlignCssPositionProp] ? diff : -diff
       } else {

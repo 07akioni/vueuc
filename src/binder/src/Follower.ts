@@ -71,9 +71,13 @@ export default defineComponent({
       default: ['resize', 'scroll']
     },
     to: [String, Object] as PropType<string | HTMLElement>,
+    flip: {
+      type: Boolean,
+      default: true
+    },
     flipLevel: {
       type: Number as PropType<FlipLevel>,
-      default: 1
+      default: 2
     },
     x: Number,
     y: Number,
@@ -145,7 +149,7 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
-      const { width, minWidth, placement, flipLevel } = props
+      const { width, minWidth, placement, flipLevel, flip } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -175,6 +179,7 @@ export default defineComponent({
         targetRect,
         followerRect,
         flipLevel,
+        flip,
         overlap
       )
       const properTransformOrigin = getProperTransformOrigin(
@@ -193,8 +198,8 @@ export default defineComponent({
       // we assume that the content size doesn't change after flipLevel,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
-      properLeft !== undefined && follower.setAttribute('v-leftOffet', properLeft)
-      properTop !== undefined && follower.setAttribute('v-topOffet', properTop)
+      properLeft !== undefined ? follower.setAttribute('v-leftOffet', properLeft) : follower.removeAttribute('v-leftOffet')
+      properTop !== undefined ? follower.setAttribute('v-topOffet', properTop) : follower.removeAttribute('v-topOffet')
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
       return follower
@@ -216,7 +221,7 @@ export default defineComponent({
         .catch((e) => console.error(e))
     };
     (
-      ['placement', 'x', 'y', 'flipLevel', 'width', 'overlap', 'minWidth'] as const
+      ['placement', 'x', 'y', 'flipLevel', 'flip', 'width', 'overlap', 'minWidth'] as const
     ).forEach((prop) => {
       watch(toRef(props, prop), syncPosition)
     });

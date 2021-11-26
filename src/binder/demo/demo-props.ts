@@ -11,6 +11,9 @@ export const demoProps = {
   syncTrigger: {
     type: Array as PropType<Array<'scroll' | 'resize'>>
   },
+  flip: {
+    type: Boolean
+  },
   flipLevel: {
     type: Number as PropType<FlipLevel>
   },

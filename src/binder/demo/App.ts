@@ -18,7 +18,8 @@ export default defineComponent({
       teleportDisabled: ref(false),
       syncOnResize: syncOnResizeRef,
       syncOnScroll: syncOnScrollRef,
-      flipLevel: ref<FlipLevel>(2),
+      flip: ref(false),
+      flipLevel: ref<FlipLevel>(1),
       useTargetWidth: ref(false),
       x: ref<number | undefined>(undefined),
       y: ref<number | undefined>(undefined),
@@ -40,6 +41,7 @@ export default defineComponent({
       placement: this.placement,
       show: this.show,
       syncTrigger: this.syncTrigger,
+      flip: this.flip,
       flipLevel: this.flipLevel,
       useTargetWidth: this.useTargetWidth,
       teleportDisabled: this.teleportDisabled,
@@ -63,7 +65,16 @@ export default defineComponent({
         'button',
         {
           onClick: () => {
-            if (this.flipLevel === 3) {
+            this.flip = !this.flip
+          }
+        },
+        ['flip: ', this.flip.toString()]
+      ),
+      h(
+        'button',
+        {
+          onClick: () => {
+            if (this.flipLevel === 2) {
               this.flipLevel = 1
             } else {
               this.flipLevel += 1
