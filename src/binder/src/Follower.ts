@@ -19,7 +19,7 @@ import { BinderInstance, Placement, FlipLevel } from './interface'
 import { c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
-  getProperPlacementOfFollower,
+  getPlacementAndOffsetOfFollower,
   getProperTransformOrigin,
   getOffset
 } from './get-placement-style'
@@ -50,7 +50,7 @@ const style = c([
 ])
 
 export interface FollowerInst {
-  syncPosition: () => HTMLElement | null
+  syncPosition: () => void
 }
 
 export default defineComponent({
@@ -132,9 +132,9 @@ export default defineComponent({
         syncPosition()
       }
     })
-    const syncPosition = (): HTMLElement | null => {
+    const syncPosition = (): void => {
       if (!mergedEnabledRef.value) {
-        return null
+        return
       }
       const follower = followerRef.value
       // sometimes watched props change before its dom is ready
@@ -142,7 +142,7 @@ export default defineComponent({
       //              show=true,  x=0,         y=0
       // will cause error
       // I may optimize the watch start point later
-      if (follower === null) return null
+      if (follower === null) return
       const target = VBinder.targetRef!
       const { x, y, overlap } = props
       const targetRect =
@@ -174,7 +174,11 @@ export default defineComponent({
       }
       const followerRect = getRect(follower)
       const offsetContainerRect = getRect(offsetContainerRef.value!)
-      const { left: properLeft, top: properTop, properPlacement } = getProperPlacementOfFollower(
+      const {
+        left: offsetLeftToStandardPlacement,
+        top: offsetTopToStandardPlacement,
+        placement: properPlacement
+      } = getPlacementAndOffsetOfFollower(
         placement,
         targetRect,
         followerRect,
@@ -186,23 +190,21 @@ export default defineComponent({
         properPlacement,
         overlap
       )
-      const { left: offsetLeft, top: offetTop, transform } = getOffset(
+      const { left, top, transform } = getOffset(
         properPlacement,
         offsetContainerRect,
         targetRect,
+        offsetTopToStandardPlacement,
+        offsetLeftToStandardPlacement,
         overlap
       )
-      const left = properLeft !== undefined ? `${handlePx(offsetLeft) + handlePx(properLeft)}px` : offsetLeft
-      const top = properTop !== undefined ? `${handlePx(offetTop) + handlePx(properTop)}px` : offetTop
-
       // we assume that the content size doesn't change after flipLevel,
       // nor we need to make sync logic more complex
-      follower.setAttribute('v-placement', properPlacement)
-      properLeft !== undefined ? follower.setAttribute('v-leftOffet', properLeft) : follower.removeAttribute('v-leftOffet')
-      properTop !== undefined ? follower.setAttribute('v-topOffet', properTop) : follower.removeAttribute('v-topOffet')
+      follower.setAttribute('v-placement', placement)
+      follower.setAttribute('v-left-offset', `${Math.round(offsetLeftToStandardPlacement)}px`)
+      follower.setAttribute('v-top-offset', `${Math.round(offsetTopToStandardPlacement)}px`)
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
-      return follower
     }
     watch(mergedEnabledRef, (value) => {
       if (value) {
