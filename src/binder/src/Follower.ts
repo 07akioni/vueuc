@@ -198,11 +198,11 @@ export default defineComponent({
         offsetLeftToStandardPlacement,
         overlap
       )
-      // we assume that the content size doesn't change after flipLevel,
+      // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', placement)
-      follower.setAttribute('v-left-offset', `${Math.round(offsetLeftToStandardPlacement)}px`)
-      follower.setAttribute('v-top-offset', `${Math.round(offsetTopToStandardPlacement)}px`)
+      ;(follower.style as any)['--v-offset-left'] =  `${Math.round(offsetLeftToStandardPlacement)}px`
+      ;(follower.style as any)['--v-offset-top'] =  `${Math.round(offsetTopToStandardPlacement)}px`
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
@@ -214,9 +214,6 @@ export default defineComponent({
         removeListeners()
       }
     })
-    const handlePx = (value: string): number => {
-      return Number(value.substr(0, value.length - 2))
-    }
     const syncOnNextTick = (): void => {
       nextTick()
         .then(syncPosition)
