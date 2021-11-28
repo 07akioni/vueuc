@@ -4,5 +4,6 @@ export { default as Follower, default as VFollower } from './Follower'
 export type { FollowerInst } from './Follower'
 export type {
   Placement as FollowerPlacement,
+  FlipLevel,
   ExposedBinderInstance as BinderInst
 } from './interface'

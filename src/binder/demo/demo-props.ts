@@ -1,5 +1,5 @@
 import { PropType } from 'vue'
-import type { Placement } from '../src/interface'
+import type { Placement, FlipLevel } from '../src/interface'
 
 export const demoProps = {
   placement: {
@@ -13,6 +13,9 @@ export const demoProps = {
   },
   flip: {
     type: Boolean
+  },
+  flipLevel: {
+    type: Number as PropType<FlipLevel>
   },
   useTargetWidth: {
     type: Boolean

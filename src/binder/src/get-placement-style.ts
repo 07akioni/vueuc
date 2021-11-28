@@ -1,4 +1,4 @@
-import { Placement, NonCenterPlacement, Rect, Align, Position, TransformOrigin } from './interface'
+import { Placement, FlipLevel, NonCenterPlacement, Rect, Align, Position, TransformOrigin } from './interface'
 
 const oppositionPositions: Record<Position, Position> = {
   top: 'bottom',
@@ -61,19 +61,63 @@ const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
   'left-end': 'top'
 }
 
-export function getProperPlacementOfFollower (
+const keepOffsetDirection: Record<Position, boolean> = {
+  top: true, // top++
+  bottom: false, // top--
+  left: true, // left++
+  right: false // left--
+}
+
+const cssPositionToOppositeAlign: Record<Position, Align> = {
+  top: 'end',
+  bottom: 'start',
+  left: 'end',
+  right: 'start'
+}
+
+interface PlacementAndOffset {
+  top: number
+  left: number
+  placement: Placement
+}
+
+export function getPlacementAndOffsetOfFollower (
   placement: Placement,
   targetRect: Rect,
   followerRect: Rect,
+  flipLevel: FlipLevel,
   flip: boolean,
   overlap: boolean
-): Placement {
+): PlacementAndOffset {
   if (!flip || overlap) {
-    return placement
+    return { placement: placement, top: 0, left: 0 }
   }
   const [position, align] = placement.split('-') as [Position, Align]
   let properAlign = align ?? 'center'
-  if (align !== 'center') {
+  let left = 0
+  let top = 0
+
+  // TODO: fix it
+  // calculate offset
+  // const deriveOffset = (
+  //   oppositeAlignCssSizeProp: 'width' | 'height',
+  //   currentAlignCssPositionProp: Position,
+  //   offsetVertically: boolean
+  // ): void => {
+  //   if (flipLevel < 2) return
+  //   const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+  //   if (diff) {
+  //     if (offsetVertically) {
+  //       top = keepOffsetDirection[currentAlignCssPositionProp] ? diff : -diff
+  //     } else {
+  //       left = keepOffsetDirection[currentAlignCssPositionProp] ? diff : -diff
+  //     }
+  //   }
+  // }
+  // const offsetVertically = position === 'left' || position === 'right'
+
+  // choose proper placement for non-center align
+  if (properAlign !== 'center') {
     const oppositeAlignCssPositionProp = oppositeAlignCssPositionProps[placement as NonCenterPlacement]
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
     const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp]
@@ -82,21 +126,29 @@ export function getProperPlacementOfFollower (
     //           [     follower     ]
     // [     follower     ] <---->
     if (followerRect[oppositeAlignCssSizeProp] > targetRect[oppositeAlignCssSizeProp]) {
-      // [ target ]---|
-      // [ follower   |  ]
       if (
-        // overflow screen
-        (targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] <= followerRect[oppositeAlignCssSizeProp]) &&
-        // opposite align has larger space
-        (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp])
+        // current space is not enough
+        targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] < followerRect[oppositeAlignCssSizeProp]
       ) {
-        properAlign = oppositeAligns[align]
+        const followerOverTargetSize = (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2
+        if ((targetRect[oppositeAlignCssPositionProp] < followerOverTargetSize) || (targetRect[currentAlignCssPositionProp] < followerOverTargetSize)) {
+          // opposite align has larger space
+          if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
+            properAlign = oppositeAligns[align]
+          } 
+          // TODO: fix it
+          // deriveOffset(oppositeAlignCssSizeProp, oppositeAlignCssPositionProp, offsetVertically)
+        } else {
+          // 'center' align is better
+          properAlign = 'center'
+        }
       }
     }
     // if follower rect is smaller than target rect in align direction
     // [     target     ]
     // [ follower ]         <---->
-    if (followerRect[oppositeAlignCssSizeProp] < targetRect[oppositeAlignCssSizeProp]) {
+    else if (followerRect[oppositeAlignCssSizeProp] < targetRect[oppositeAlignCssSizeProp]) {
+      // TODO: maybe center is better
       if (
         targetRect[currentAlignCssPositionProp] < 0 &&
         // opposite align has larger space
@@ -105,17 +157,42 @@ export function getProperPlacementOfFollower (
         properAlign = oppositeAligns[align]
       }
     }
+  } else {
+    const possibleAlternativeAlignCssPositionProp1 = (position === 'bottom' || position === 'top') ? 'left' : 'top'
+    const possibleAlternativeAlignCssPositionProp2 = oppositionPositions[possibleAlternativeAlignCssPositionProp1]
+    const alternativeAlignCssSizeProp = propToCompare[possibleAlternativeAlignCssPositionProp1]
+    const followerOverTargetSize = (followerRect[alternativeAlignCssSizeProp] - targetRect[alternativeAlignCssSizeProp]) / 2
+    if (
+      // center is not enough
+      (targetRect[possibleAlternativeAlignCssPositionProp1] < followerOverTargetSize) ||
+      (targetRect[possibleAlternativeAlignCssPositionProp2] < followerOverTargetSize)
+    ) {
+      // alternative 2 position's space is larger
+      if (targetRect[possibleAlternativeAlignCssPositionProp1] > targetRect[possibleAlternativeAlignCssPositionProp2]) {
+        properAlign = cssPositionToOppositeAlign[possibleAlternativeAlignCssPositionProp1]
+      } else {
+        // alternative 1 position's space is larger
+        properAlign = cssPositionToOppositeAlign[possibleAlternativeAlignCssPositionProp2]
+      }
+      // TODO: fix it
+      // deriveOffset(alternativeAlignCssSizeProp, possibleAlternativeAlignCssPositionProp1, offsetVertically)
+    }
   }
+
   let properPosition = position
   if (
     // space is not enough
-    !(targetRect[position] >= followerRect[propToCompare[position]]) &&
+    targetRect[position] < followerRect[propToCompare[position]] &&
     // opposite position's space is larger
-    targetRect[oppositionPositions[position]] >= followerRect[propToCompare[position]]
+    targetRect[position] < targetRect[oppositionPositions[position]]
   ) {
     properPosition = oppositionPositions[position]
   }
-  return properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition
+  return {
+    placement: properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition,
+    left,
+    top
+  }
 }
 
 export function getProperTransformOrigin (placement: Placement, overlap: boolean): TransformOrigin {
@@ -135,10 +212,14 @@ interface PlacementOffset {
 // | [target] |
 // |          |
 // ------------
+
+// TODO: refactor it to remove dup logic
 export function getOffset (
   placement: Placement,
   offsetRect: Rect,
   targetRect: Rect,
+  offsetTopToStandardPlacement: number,
+  offsetLeftToStandardPlacement: number,
   overlap: boolean
 ): PlacementOffset {
   if (overlap) {
@@ -222,75 +303,75 @@ export function getOffset (
   switch (placement) {
     case 'bottom-start':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + offsetLeftToStandardPlacement)}px`,
         transform: ''
       }
     case 'bottom-end':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width + offsetLeftToStandardPlacement)}px`,
         transform: 'translateX(-100%)'
       }
     case 'top-start':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + offsetLeftToStandardPlacement)}px`,
         transform: 'translateY(-100%)'
       }
     case 'top-end':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width + offsetLeftToStandardPlacement)}px`,
         transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'right-start':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width + offsetLeftToStandardPlacement)}px`,
         transform: ''
       }
     case 'right-end':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width + offsetLeftToStandardPlacement)}px`,
         transform: 'translateY(-100%)'
       }
     case 'left-start':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + offsetLeftToStandardPlacement)}px`,
         transform: 'translateX(-100%)'
       }
     case 'left-end':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + offsetLeftToStandardPlacement)}px`,
         transform: 'translateX(-100%) translateY(-100%)'
       }
     case 'top':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2 + offsetLeftToStandardPlacement)}px`,
         transform: 'translateY(-100%) translateX(-50%)'
       }
     case 'right':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2 + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width + offsetLeftToStandardPlacement)}px`,
         transform: 'translateY(-50%)'
       }
     case 'left':
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height / 2 + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + offsetLeftToStandardPlacement)}px`,
         transform: 'translateY(-50%) translateX(-100%)'
       }
     case 'bottom':
     default:
       return {
-        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height)}px`,
-        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2)}px`,
+        top: `${Math.round(targetRect.top - offsetRect.top + targetRect.height + offsetTopToStandardPlacement)}px`,
+        left: `${Math.round(targetRect.left - offsetRect.left + targetRect.width / 2 + offsetLeftToStandardPlacement)}px`,
         transform: 'translateX(-50%)'
       }
   }

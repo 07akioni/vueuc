@@ -15,11 +15,11 @@ import {
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { BinderInstance, Placement } from './interface'
+import { BinderInstance, Placement, FlipLevel } from './interface'
 import { c } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
-  getProperPlacementOfFollower,
+  getPlacementAndOffsetOfFollower,
   getProperTransformOrigin,
   getOffset
 } from './get-placement-style'
@@ -74,6 +74,10 @@ export default defineComponent({
     flip: {
       type: Boolean,
       default: true
+    },
+    flipLevel: {
+      type: Number as PropType<FlipLevel>,
+      default: 1 // do not apply offset by default
     },
     x: Number,
     y: Number,
@@ -145,7 +149,7 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
-      const { width, minWidth, placement, flip } = props
+      const { width, minWidth, placement, flipLevel, flip } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -170,10 +174,15 @@ export default defineComponent({
       }
       const followerRect = getRect(follower)
       const offsetContainerRect = getRect(offsetContainerRef.value!)
-      const properPlacement = getProperPlacementOfFollower(
+      const {
+        left: offsetLeftToStandardPlacement,
+        top: offsetTopToStandardPlacement,
+        placement: properPlacement
+      } = getPlacementAndOffsetOfFollower(
         placement,
         targetRect,
         followerRect,
+        flipLevel,
         flip,
         overlap
       )
@@ -185,12 +194,15 @@ export default defineComponent({
         properPlacement,
         offsetContainerRect,
         targetRect,
+        offsetTopToStandardPlacement,
+        offsetLeftToStandardPlacement,
         overlap
       )
-
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
-      follower.setAttribute('v-placement', properPlacement)
+      follower.setAttribute('v-placement', placement)
+      follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
+      follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
@@ -208,7 +220,7 @@ export default defineComponent({
         .catch((e) => console.error(e))
     };
     (
-      ['placement', 'x', 'y', 'flip', 'width', 'overlap', 'minWidth'] as const
+      ['placement', 'x', 'y', 'flipLevel', 'flip', 'width', 'overlap', 'minWidth'] as const
     ).forEach((prop) => {
       watch(toRef(props, prop), syncPosition)
     });

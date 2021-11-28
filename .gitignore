@@ -4,3 +4,4 @@ coverage
 site
 es
 lib
+pnpm-lock.yaml
