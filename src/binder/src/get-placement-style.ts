@@ -61,12 +61,12 @@ const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
   'left-end': 'top'
 }
 
-const keepOffsetDirection: Record<Position, boolean> = {
-  top: true, // top++
-  bottom: false, // top--
-  left: true, // left++
-  right: false // left--
-}
+// const keepOffsetDirection: Record<Position, boolean> = {
+//   top: true, // top++
+//   bottom: false, // top--
+//   left: true, // left++
+//   right: false // left--
+// }
 
 const cssPositionToOppositeAlign: Record<Position, Align> = {
   top: 'end',
