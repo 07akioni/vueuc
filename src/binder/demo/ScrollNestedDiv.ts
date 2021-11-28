@@ -6,7 +6,7 @@ const TrackedContent = defineComponent({
   render () {
     return h('div', {
       style: {
-        marginTop: '400px',
+        marginTop: '1000px',
         height: '100px',
         width: '600px',
         backgroundColor: 'grey'
@@ -54,7 +54,7 @@ export default defineComponent({
         }, [
           h('div', {
             style: {
-              height: '2000px'
+              height: '3000px'
             }
           }, [
             h(Binder, null, {
