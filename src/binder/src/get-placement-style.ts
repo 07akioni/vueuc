@@ -61,12 +61,12 @@ const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
   'left-end': 'top'
 }
 
-const keepOffsetDirection: Record<Position, boolean> = {
-  top: true, // top++
-  bottom: false, // top--
-  left: true, // left++
-  right: false // left--
-}
+// const keepOffsetDirection: Record<Position, boolean> = {
+//   top: true, // top++
+//   bottom: false, // top--
+//   left: true, // left++
+//   right: false // left--
+// }
 
 const cssPositionToOppositeAlign: Record<Position, Align> = {
   top: 'end',
@@ -94,8 +94,8 @@ export function getPlacementAndOffsetOfFollower (
   }
   const [position, align] = placement.split('-') as [Position, Align]
   let properAlign = align ?? 'center'
-  let left = 0
-  let top = 0
+  const left = 0
+  const top = 0
 
   // TODO: fix it
   // calculate offset
@@ -135,7 +135,7 @@ export function getPlacementAndOffsetOfFollower (
           // opposite align has larger space
           if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
             properAlign = oppositeAligns[align]
-          } 
+          }
           // TODO: fix it
           // deriveOffset(oppositeAlignCssSizeProp, oppositeAlignCssPositionProp, offsetVertically)
         } else {

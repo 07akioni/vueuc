@@ -200,9 +200,10 @@ export default defineComponent({
       )
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
-      follower.setAttribute('v-placement', placement)
-      follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
-      follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
+      follower.setAttribute('v-placement', properPlacement)
+      // TODO: add it
+      // follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
+      // follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
