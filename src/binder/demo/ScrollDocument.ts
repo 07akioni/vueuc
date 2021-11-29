@@ -18,11 +18,11 @@ const TrackingContent = defineComponent({
   render () {
     return h('div', {
       style: {
-        height: '600px',
+        height: '800px',
         backgroundColor: 'green'
       }
     }, [
-      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
+      'scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document scroll document'
     ])
   }
 })
