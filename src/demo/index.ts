@@ -9,6 +9,7 @@ import BinderDemo from '../binder/demo'
 import XScrollDemo from '../x-scroll/demo'
 import OverflowDemo from '../overflow/demo'
 import App from './App'
+import FocusLockerDemo from '../focus-locker/demo'
 
 const routes = [
   {
@@ -34,6 +35,10 @@ const routes = [
   {
     path: '/overflow',
     component: OverflowDemo
+  },
+  {
+    path: '/focus-locker',
+    component: FocusLockerDemo
   }
 ]
 
