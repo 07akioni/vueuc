@@ -79,6 +79,7 @@ export const FocusLocker = defineComponent({
     const { active, focusableStyle } = this
     return h(Fragment, null, [
       h('div', {
+        ariaHidden: 'true',
         tabindex: active ? '0' : '-1',
         ref: 'focusableStartRef',
         style: focusableStyle
@@ -86,6 +87,7 @@ export const FocusLocker = defineComponent({
       defaultSlot(),
       h('div', {
         onFocus: this.resetFocus,
+        ariaHidden: 'true',
         style: focusableStyle,
         ref: 'focusableEndRef',
         tabindex: active ? '0' : '-1'
