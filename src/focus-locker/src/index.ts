@@ -5,7 +5,7 @@ import {
   ref,
   Fragment,
   onMounted,
-  onUnmounted
+  onBeforeUnmount
 } from 'vue'
 import { createId } from 'seemly'
 import { focusFirstDescendant, focusLastDescendant } from './utils'
@@ -22,40 +22,46 @@ export const FocusLocker = defineComponent({
     const id = createId()
     const focusableStartRef = ref<HTMLElement | null>(null)
     const focusableEndRef = ref<HTMLElement | null>(null)
-    let mounted = false
     let activated = false
+    let ignoreInternalFocusChange = false
     const lastFocusedElement: Element | null = document.activeElement
-    let listenToStartFocus = true
-    let onMountedCallback: undefined | (() => void)
+
+    // I can't use onMounted in watchEffect
     onMounted(() => {
-      onMountedCallback?.()
-      mounted = true
+      watchEffect(() => {
+        if (props.active) {
+          stack.push(id)
+          resetFocusTo('first')
+          activated = true
+        } else if (activated) {
+          deactivate()
+        }
+      })
     })
-    onUnmounted(() => {
+    onBeforeUnmount(() => {
       if (activated) deactivate()
     })
+    function getMainEl (): ChildNode | null {
+      const focusableStartEl = focusableStartRef.value
+      if (focusableStartEl === null) return null
+      let mainEl: ChildNode | null = focusableStartEl
+      while (true) {
+        mainEl = mainEl.nextSibling
+        if (mainEl === null) break
+        if (mainEl instanceof Element && mainEl.tagName === 'DIV') {
+          break
+        }
+      }
+      return mainEl
+    }
     function deactivate (): void {
       stack = stack.filter((idInStack) => idInStack !== id)
       if (lastFocusedElement instanceof HTMLElement) {
+        ignoreInternalFocusChange = true
         lastFocusedElement.focus()
+        ignoreInternalFocusChange = false
       }
     }
-    watchEffect(() => {
-      if (props.active) {
-        stack.push(id)
-        if (!mounted) {
-          onMountedCallback = () => {
-            resetFocusTo('first')
-            activated = true
-          }
-        } else {
-          resetFocusTo('first')
-          activated = true
-        }
-      } else if (activated) {
-        deactivate()
-      }
-    })
     function resetFocusTo (target: 'last' | 'first'): void {
       const currentActiveId = stack[stack.length - 1]
       if (currentActiveId !== id) return
@@ -63,34 +69,31 @@ export const FocusLocker = defineComponent({
         const focusableStartEl = focusableStartRef.value
         const focusableEndEl = focusableEndRef.value
         if (focusableStartEl !== null && focusableEndEl !== null) {
-          let mainEl: ChildNode | null = focusableStartEl
-          while (true) {
-            mainEl = mainEl.nextSibling
-            if (mainEl === null) break
-            if (mainEl instanceof Element && mainEl.tagName === 'DIV') {
-              break
-            }
-          }
+          const mainEl = getMainEl()
           if (mainEl == null || mainEl === focusableEndEl) {
+            ignoreInternalFocusChange = true
             focusableStartEl.focus()
+            ignoreInternalFocusChange = false
             return
           }
+          ignoreInternalFocusChange = true
+
           const focused =
             target === 'first'
               ? focusFirstDescendant(mainEl)
               : focusLastDescendant(mainEl)
+          ignoreInternalFocusChange = false
           if (!focused) {
-            listenToStartFocus = false
+            ignoreInternalFocusChange = true
             focusableStartEl.focus()
-            listenToStartFocus = true
+            ignoreInternalFocusChange = false
           }
         }
       }
     }
     function handleStartFocus (): void {
-      if (listenToStartFocus) {
-        resetFocusTo('last')
-      }
+      if (ignoreInternalFocusChange) return
+      resetFocusTo('last')
     }
     return {
       focusableStartRef,
