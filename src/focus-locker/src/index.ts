@@ -1,6 +1,14 @@
-import { h, defineComponent, watchEffect, ref, Fragment, onMounted } from 'vue'
+import {
+  h,
+  defineComponent,
+  watchEffect,
+  ref,
+  Fragment,
+  onMounted,
+  onUnmounted
+} from 'vue'
 import { createId } from 'seemly'
-import { focusFirstDescendant } from './utils'
+import { focusFirstDescendant, focusLastDescendant } from './utils'
 
 let stack: string[] = []
 
@@ -17,32 +25,38 @@ export const FocusLocker = defineComponent({
     let mounted = false
     let activated = false
     const lastFocusedElement: Element | null = document.activeElement
+    let listenToStartFocus = true
     let onMountedCallback: undefined | (() => void)
     onMounted(() => {
       onMountedCallback?.()
       mounted = true
     })
+    onUnmounted(() => {
+      if (activated) deactivate()
+    })
+    function deactivate (): void {
+      stack = stack.filter((idInStack) => idInStack !== id)
+      if (lastFocusedElement instanceof HTMLElement) {
+        lastFocusedElement.focus()
+      }
+    }
     watchEffect(() => {
       if (props.active) {
         stack.push(id)
         if (!mounted) {
           onMountedCallback = () => {
-            resetFocus()
+            resetFocusTo('first')
             activated = true
           }
         } else {
-          resetFocus()
+          resetFocusTo('first')
           activated = true
         }
       } else if (activated) {
-        activated = false
-        stack = stack.filter((idInStack) => idInStack !== id)
-        if (lastFocusedElement instanceof HTMLElement) {
-          lastFocusedElement.focus()
-        }
+        deactivate()
       }
     })
-    function resetFocus (): void {
+    function resetFocusTo (target: 'last' | 'first'): void {
       const currentActiveId = stack[stack.length - 1]
       if (currentActiveId !== id) return
       if (props.active && props.focusFirstDescendant) {
@@ -57,20 +71,33 @@ export const FocusLocker = defineComponent({
               break
             }
           }
-
           if (mainEl == null || mainEl === focusableEndEl) {
             focusableStartEl.focus()
             return
           }
-          focusFirstDescendant(mainEl)
+          const focused =
+            target === 'first'
+              ? focusFirstDescendant(mainEl)
+              : focusLastDescendant(mainEl)
+          if (!focused) {
+            listenToStartFocus = false
+            focusableStartEl.focus()
+            listenToStartFocus = true
+          }
         }
+      }
+    }
+    function handleStartFocus (): void {
+      if (listenToStartFocus) {
+        resetFocusTo('last')
       }
     }
     return {
       focusableStartRef,
       focusableEndRef,
       focusableStyle: 'position: absolute; height: 0; width: 0;',
-      resetFocus
+      handleStartFocus,
+      handleEndFocus: () => resetFocusTo('first')
     }
   },
   render () {
@@ -82,15 +109,16 @@ export const FocusLocker = defineComponent({
         ariaHidden: 'true',
         tabindex: active ? '0' : '-1',
         ref: 'focusableStartRef',
-        style: focusableStyle
+        style: focusableStyle,
+        onFocus: this.handleStartFocus
       }),
       defaultSlot(),
       h('div', {
-        onFocus: this.resetFocus,
         ariaHidden: 'true',
         style: focusableStyle,
         ref: 'focusableEndRef',
-        tabindex: active ? '0' : '-1'
+        tabindex: active ? '0' : '-1',
+        onFocus: this.handleEndFocus
       })
     ])
   }
