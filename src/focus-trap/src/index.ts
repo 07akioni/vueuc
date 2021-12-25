@@ -31,7 +31,6 @@ export const FocusTrap = defineComponent({
       return currentActiveId === id
     }
 
-    // I can't use onMounted in watchEffect
     onMounted(() => {
       watchEffect(() => {
         if (props.active) {
@@ -52,6 +51,7 @@ export const FocusTrap = defineComponent({
         if (mainEl === null) return
         if (mainEl.contains(e.target as any)) return
         // I don't handle shift + tab status since it's too tricky to handle
+        // Not impossible but I need to sleep
         resetFocusTo('first')
       }
     }
