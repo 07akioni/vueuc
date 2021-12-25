@@ -81,7 +81,7 @@ export const FocusTrap = defineComponent({
       if (isCurrentActive()) return
       if (lastFocusedElement instanceof HTMLElement) {
         ignoreInternalFocusChange = true
-        lastFocusedElement.focus()
+        lastFocusedElement.focus({ preventScroll: true })
         ignoreInternalFocusChange = false
       }
     }
@@ -94,7 +94,7 @@ export const FocusTrap = defineComponent({
           const mainEl = getMainEl()
           if (mainEl == null || mainEl === focusableEndEl) {
             ignoreInternalFocusChange = true
-            focusableStartEl.focus()
+            focusableStartEl.focus({ preventScroll: true })
             ignoreInternalFocusChange = false
             return
           }
@@ -107,23 +107,34 @@ export const FocusTrap = defineComponent({
           ignoreInternalFocusChange = false
           if (!focused) {
             ignoreInternalFocusChange = true
-            focusableStartEl.focus()
+            focusableStartEl.focus({ preventScroll: true })
             ignoreInternalFocusChange = false
           }
         }
       }
     }
-    function handleStartFocus (): void {
+    function handleStartFocus (e: FocusEvent): void {
       if (ignoreInternalFocusChange) return
-      resetFocusTo('last')
+      const mainEl = getMainEl()
+      if (mainEl === null) return
+      if (e.relatedTarget !== null && mainEl.contains(e.relatedTarget as any)) {
+        // if it comes from inner, focus last
+        resetFocusTo('last')
+      } else {
+        // otherwise focus first
+        resetFocusTo('first')
+      }
     }
     function handleEndFocus (e: FocusEvent): void {
+      if (ignoreInternalFocusChange) return
       if (
         e.relatedTarget !== null &&
         e.relatedTarget === focusableStartRef.value
       ) {
+        // if it comes from first, focus last
         resetFocusTo('last')
       } else {
+        // otherwise focus first
         resetFocusTo('first')
       }
     }
@@ -141,7 +152,7 @@ export const FocusTrap = defineComponent({
     const { active, focusableStyle } = this
     return h(Fragment, null, [
       h('div', {
-        ariaHidden: 'true',
+        'aria-hidden': 'true',
         tabindex: active ? '0' : '-1',
         ref: 'focusableStartRef',
         style: focusableStyle,
@@ -149,7 +160,7 @@ export const FocusTrap = defineComponent({
       }),
       defaultSlot(),
       h('div', {
-        ariaHidden: 'true',
+        'aria-hidden': 'true',
         style: focusableStyle,
         ref: 'focusableEndRef',
         tabindex: active ? '0' : '-1',
