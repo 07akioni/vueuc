@@ -1,5 +1,5 @@
 import { h, defineComponent, ref, Teleport } from 'vue'
-import { FocusLocker } from '../../index'
+import { FocusTrap } from '../../index'
 
 const modalStyle = 'position: fixed; left: 100px; top: 100px;'
 
@@ -22,7 +22,7 @@ export default defineComponent({
           showRef.value
             ? h('div', { style: modalStyle }, [
               h(
-                FocusLocker,
+                FocusTrap,
                 {
                   active: showRef.value,
                   focusFirstDescendant: true
@@ -72,7 +72,7 @@ export default defineComponent({
               style: modalStyle
             }, [
               h(
-                FocusLocker,
+                FocusTrap,
                 {
                   active: show2Ref.value,
                   focusFirstDescendant: true

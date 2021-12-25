@@ -1,1 +1,0 @@
-export { FocusLocker } from './src'

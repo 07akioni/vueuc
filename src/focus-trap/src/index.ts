@@ -12,8 +12,8 @@ import { focusFirstDescendant, focusLastDescendant } from './utils'
 
 let stack: string[] = []
 
-export const FocusLocker = defineComponent({
-  name: 'FocusLocker',
+export const FocusTrap = defineComponent({
+  name: 'FocusTrap',
   props: {
     active: Boolean,
     focusFirstDescendant: Boolean
@@ -26,13 +26,16 @@ export const FocusLocker = defineComponent({
     let ignoreInternalFocusChange = false
     const lastFocusedElement: Element | null = document.activeElement
 
+    function isCurrentActive (): boolean {
+      const currentActiveId = stack[stack.length - 1]
+      return currentActiveId === id
+    }
+
     // I can't use onMounted in watchEffect
     onMounted(() => {
       watchEffect(() => {
         if (props.active) {
-          stack.push(id)
-          resetFocusTo('first')
-          activated = true
+          activate()
         } else if (activated) {
           deactivate()
         }
@@ -41,6 +44,18 @@ export const FocusLocker = defineComponent({
     onBeforeUnmount(() => {
       if (activated) deactivate()
     })
+
+    function handleDocumentFocus (e: FocusEvent): void {
+      if (ignoreInternalFocusChange) return
+      if (isCurrentActive()) {
+        const mainEl = getMainEl()
+        if (mainEl === null) return
+        if (mainEl.contains(e.target as any)) return
+        // I don't handle shift + tab status since it's too tricky to handle
+        resetFocusTo('first')
+      }
+    }
+
     function getMainEl (): ChildNode | null {
       const focusableStartEl = focusableStartRef.value
       if (focusableStartEl === null) return null
@@ -54,8 +69,16 @@ export const FocusLocker = defineComponent({
       }
       return mainEl
     }
+    function activate (): void {
+      stack.push(id)
+      resetFocusTo('first')
+      activated = true
+      document.addEventListener('focus', handleDocumentFocus, true)
+    }
     function deactivate (): void {
+      document.removeEventListener('focus', handleDocumentFocus, true)
       stack = stack.filter((idInStack) => idInStack !== id)
+      if (isCurrentActive()) return
       if (lastFocusedElement instanceof HTMLElement) {
         ignoreInternalFocusChange = true
         lastFocusedElement.focus()
@@ -63,8 +86,7 @@ export const FocusLocker = defineComponent({
       }
     }
     function resetFocusTo (target: 'last' | 'first'): void {
-      const currentActiveId = stack[stack.length - 1]
-      if (currentActiveId !== id) return
+      if (!isCurrentActive()) return
       if (props.active && props.focusFirstDescendant) {
         const focusableStartEl = focusableStartRef.value
         const focusableEndEl = focusableEndRef.value
@@ -95,12 +117,22 @@ export const FocusLocker = defineComponent({
       if (ignoreInternalFocusChange) return
       resetFocusTo('last')
     }
+    function handleEndFocus (e: FocusEvent): void {
+      if (
+        e.relatedTarget !== null &&
+        e.relatedTarget === focusableStartRef.value
+      ) {
+        resetFocusTo('last')
+      } else {
+        resetFocusTo('first')
+      }
+    }
     return {
       focusableStartRef,
       focusableEndRef,
       focusableStyle: 'position: absolute; height: 0; width: 0;',
       handleStartFocus,
-      handleEndFocus: () => resetFocusTo('first')
+      handleEndFocus
     }
   },
   render () {

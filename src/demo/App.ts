@@ -68,9 +68,9 @@ export default defineComponent({
             ),
             h('li', [
               h(RouterLink, {
-                to: '/focus-locker'
+                to: '/focus-trap'
               }, {
-                default: () => 'FocusLocker'
+                default: () => 'FocusTrap'
               })
             ])
           ])

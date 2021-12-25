@@ -32,4 +32,4 @@ export {
 export type {
   VOverflowInst
 } from './overflow'
-export { FocusLocker } from './focus-locker'
+export { FocusTrap } from './focus-trap'
