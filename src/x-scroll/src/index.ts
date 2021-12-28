@@ -1,6 +1,6 @@
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 import { defineComponent, h, PropType, ref } from 'vue'
-import { c } from '../../shared'
+import { c, cssrAnchorMetaName } from '../../shared'
 import type { VXScrollInst } from './interface'
 export type { VXScrollInst } from './interface'
 
@@ -39,6 +39,7 @@ export default defineComponent({
     styles.mount({
       id: 'vueuc/x-scroll',
       head: true,
+      anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
 
