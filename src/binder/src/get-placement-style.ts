@@ -1,4 +1,4 @@
-import { Placement, FlipLevel, NonCenterPlacement, Rect, Align, Position, TransformOrigin } from './interface'
+import { Placement, NonCenterPlacement, Rect, Align, Position, TransformOrigin } from './interface'
 
 const oppositionPositions: Record<Position, Position> = {
   top: 'bottom',
@@ -61,12 +61,12 @@ const oppositeAlignCssPositionProps: Record<NonCenterPlacement, Position> = {
   'left-end': 'top'
 }
 
-// const keepOffsetDirection: Record<Position, boolean> = {
-//   top: true, // top++
-//   bottom: false, // top--
-//   left: true, // left++
-//   right: false // left--
-// }
+const keepOffsetDirection: Record<Position, boolean> = {
+  top: true, // top++
+  bottom: false, // top--
+  left: true, // left++
+  right: false // left--
+}
 
 const cssPositionToOppositeAlign: Record<Position, Align> = {
   top: 'end',
@@ -85,7 +85,7 @@ export function getPlacementAndOffsetOfFollower (
   placement: Placement,
   targetRect: Rect,
   followerRect: Rect,
-  flipLevel: FlipLevel,
+  shift: boolean,
   flip: boolean,
   overlap: boolean
 ): PlacementAndOffset {
@@ -94,27 +94,54 @@ export function getPlacementAndOffsetOfFollower (
   }
   const [position, align] = placement.split('-') as [Position, Align]
   let properAlign = align ?? 'center'
-  const left = 0
-  const top = 0
+  let properOffset = {
+    top: 0,
+    left: 0
+  }
 
-  // TODO: fix it
-  // calculate offset
-  // const deriveOffset = (
-  //   oppositeAlignCssSizeProp: 'width' | 'height',
-  //   currentAlignCssPositionProp: Position,
-  //   offsetVertically: boolean
-  // ): void => {
-  //   if (flipLevel < 2) return
-  //   const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[currentAlignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
-  //   if (diff) {
-  //     if (offsetVertically) {
-  //       top = keepOffsetDirection[currentAlignCssPositionProp] ? diff : -diff
-  //     } else {
-  //       left = keepOffsetDirection[currentAlignCssPositionProp] ? diff : -diff
-  //     }
-  //   }
-  // }
-  // const offsetVertically = position === 'left' || position === 'right'
+  const deriveOffset = (
+    oppositeAlignCssSizeProp: 'width' | 'height',
+    alignCssPositionProp: Position,
+    offsetVertically: boolean
+  ): {left: number, top: number} => {
+    let left = 0
+    let top = 0
+    const diff = followerRect[oppositeAlignCssSizeProp] - targetRect[alignCssPositionProp] - targetRect[oppositeAlignCssSizeProp]
+    if (diff > 0 && shift) {
+      if (offsetVertically) {
+        //       screen border
+        // |-----------------------------------------|
+        // |                    | f  |               |
+        // |                    | o  |               |
+        // |                    | l  |               |
+        // |                    | l  |----           |
+        // |                    | o  |tar |          |
+        // |                    | w  |get |          |
+        // |                    | e  |    |          |
+        // |                    | r  |----           |
+        // |                     ----                |
+        // |-----------------------------------------|
+        top = keepOffsetDirection[alignCssPositionProp] ? diff : -diff
+      } else {
+        //       screen border
+        // |----------------------------------------|
+        // |                                        |
+        // |          ----------                    |
+        // |          | target |                    |
+        // |       ----------------------------------
+        // |       |       follower                 |
+        // |       ----------------------------------
+        // |                                        |
+        // |----------------------------------------|
+        left = keepOffsetDirection[alignCssPositionProp] ? diff : -diff
+      }
+    }
+    return {
+      left,
+      top
+    }
+  }
+  const offsetVertically = position === 'left' || position === 'right'
 
   // choose proper placement for non-center align
   if (properAlign !== 'center') {
@@ -122,36 +149,42 @@ export function getPlacementAndOffsetOfFollower (
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp]
     const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp]
     // if follower rect is larger than target rect in align direction
-    //           [ target ]
-    //           [     follower     ]
-    // [     follower     ] <---->
+    // ----------[ target ]---------|
+    // ----------[     follower     ]
     if (followerRect[oppositeAlignCssSizeProp] > targetRect[oppositeAlignCssSizeProp]) {
       if (
         // current space is not enough
+        // ----------[ target ]---------|
+        // -------[     follower        ]
         targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] < followerRect[oppositeAlignCssSizeProp]
       ) {
         const followerOverTargetSize = (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2
         if ((targetRect[oppositeAlignCssPositionProp] < followerOverTargetSize) || (targetRect[currentAlignCssPositionProp] < followerOverTargetSize)) {
           // opposite align has larger space
+          // -------[ target ]-----------|
+          // -------[     follower     ]-|
           if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
             properAlign = oppositeAligns[align]
+            properOffset = deriveOffset(oppositeAlignCssSizeProp, currentAlignCssPositionProp, offsetVertically)
+          } else {
+            // ----------------[ target ]----|
+            // --------[   follower     ]----|
+            properOffset = deriveOffset(oppositeAlignCssSizeProp, oppositeAlignCssPositionProp, offsetVertically)
           }
-          // TODO: fix it
-          // deriveOffset(oppositeAlignCssSizeProp, oppositeAlignCssPositionProp, offsetVertically)
         } else {
           // 'center' align is better
+          // ------------[ target ]--------|
+          // -------[       follower    ]--|
           properAlign = 'center'
         }
       }
-    }
-    // if follower rect is smaller than target rect in align direction
-    // [     target     ]
-    // [ follower ]         <---->
-    else if (followerRect[oppositeAlignCssSizeProp] < targetRect[oppositeAlignCssSizeProp]) {
+    } else if (followerRect[oppositeAlignCssSizeProp] < targetRect[oppositeAlignCssSizeProp]) {
       // TODO: maybe center is better
       if (
         targetRect[currentAlignCssPositionProp] < 0 &&
         // opposite align has larger space
+        // ------------[   target   ]
+        // ----------------[follower]
         targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]
       ) {
         properAlign = oppositeAligns[align]
@@ -164,18 +197,20 @@ export function getPlacementAndOffsetOfFollower (
     const followerOverTargetSize = (followerRect[alternativeAlignCssSizeProp] - targetRect[alternativeAlignCssSizeProp]) / 2
     if (
       // center is not enough
+      // ----------- [ target ]--|
+      // -------[     follower     ]
       (targetRect[possibleAlternativeAlignCssPositionProp1] < followerOverTargetSize) ||
       (targetRect[possibleAlternativeAlignCssPositionProp2] < followerOverTargetSize)
     ) {
       // alternative 2 position's space is larger
       if (targetRect[possibleAlternativeAlignCssPositionProp1] > targetRect[possibleAlternativeAlignCssPositionProp2]) {
         properAlign = cssPositionToOppositeAlign[possibleAlternativeAlignCssPositionProp1]
+        properOffset = deriveOffset(alternativeAlignCssSizeProp, possibleAlternativeAlignCssPositionProp1, offsetVertically)
       } else {
         // alternative 1 position's space is larger
         properAlign = cssPositionToOppositeAlign[possibleAlternativeAlignCssPositionProp2]
+        properOffset = deriveOffset(alternativeAlignCssSizeProp, possibleAlternativeAlignCssPositionProp2, offsetVertically)
       }
-      // TODO: fix it
-      // deriveOffset(alternativeAlignCssSizeProp, possibleAlternativeAlignCssPositionProp1, offsetVertically)
     }
   }
 
@@ -190,8 +225,8 @@ export function getPlacementAndOffsetOfFollower (
   }
   return {
     placement: properAlign !== 'center' ? `${properPosition}-${properAlign}` as Placement : properPosition,
-    left,
-    top
+    left: properOffset.left,
+    top: properOffset.top
   }
 }
 

@@ -1,5 +1,5 @@
 import { defineComponent, h, Fragment, ref, computed } from 'vue'
-import { Placement, FlipLevel } from '../src/interface'
+import { Placement } from '../src/interface'
 import PlacementGroup from './PlacementGroup'
 import ScrollDocument from './ScrollDocument'
 import ScrollNestedDiv from './ScrollNestedDiv'
@@ -19,7 +19,7 @@ export default defineComponent({
       syncOnResize: syncOnResizeRef,
       syncOnScroll: syncOnScrollRef,
       flip: ref(false),
-      flipLevel: ref<FlipLevel>(1),
+      shift: ref(false),
       useTargetWidth: ref(false),
       x: ref<number | undefined>(undefined),
       y: ref<number | undefined>(undefined),
@@ -42,7 +42,7 @@ export default defineComponent({
       show: this.show,
       syncTrigger: this.syncTrigger,
       flip: this.flip,
-      flipLevel: this.flipLevel,
+      shift: this.shift,
       useTargetWidth: this.useTargetWidth,
       teleportDisabled: this.teleportDisabled,
       x: this.x,
@@ -74,14 +74,10 @@ export default defineComponent({
         'button',
         {
           onClick: () => {
-            if (this.flipLevel === 2) {
-              this.flipLevel = 1
-            } else {
-              this.flipLevel += 1
-            }
+            this.shift = !this.shift
           }
         },
-        ['flipLevel: ', this.flipLevel.toString()]
+        ['shift: ', this.shift.toString()]
       ),
       h(
         'button',

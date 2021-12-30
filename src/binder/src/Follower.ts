@@ -15,7 +15,7 @@ import {
 import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { BinderInstance, Placement, FlipLevel } from './interface'
+import { BinderInstance, Placement } from './interface'
 import { c, cssrAnchorMetaName } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
@@ -75,10 +75,7 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    flipLevel: {
-      type: Number as PropType<FlipLevel>,
-      default: 1 // do not apply offset by default
-    },
+    shift: Boolean,
     x: Number,
     y: Number,
     width: String as PropType<'target' | string>,
@@ -150,7 +147,7 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
-      const { width, minWidth, placement, flipLevel, flip } = props
+      const { width, minWidth, placement, shift, flip } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -183,7 +180,7 @@ export default defineComponent({
         placement,
         targetRect,
         followerRect,
-        flipLevel,
+        shift,
         flip,
         overlap
       )
@@ -202,9 +199,8 @@ export default defineComponent({
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
-      // TODO: add it
-      // follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
-      // follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
+      follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
+      follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
@@ -222,7 +218,7 @@ export default defineComponent({
         .catch((e) => console.error(e))
     };
     (
-      ['placement', 'x', 'y', 'flipLevel', 'flip', 'width', 'overlap', 'minWidth'] as const
+      ['placement', 'x', 'y', 'shift', 'flip', 'width', 'overlap', 'minWidth'] as const
     ).forEach((prop) => {
       watch(toRef(props, prop), syncPosition)
     });
