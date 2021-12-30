@@ -70,7 +70,7 @@ export default defineComponent({
                     placement: this.placement,
                     syncTrigger: this.syncTrigger,
                     flip: this.flip,
-                    flipLevel: this.flipLevel,
+                    shiftshift: this.shift,
                     width: this.useTargetWidth ? 'target' : undefined,
                     teleportDisabled: this.teleportDisabled,
                     x: this.x,
