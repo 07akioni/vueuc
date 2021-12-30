@@ -16,7 +16,7 @@ import { zindexable } from 'vdirs'
 import { useMemo, useIsMounted, onFontsReady } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 import { BinderInstance, Placement, FlipLevel } from './interface'
-import { c } from '../../shared'
+import { c, cssrAnchorMetaName } from '../../shared'
 import LazyTeleport from '../../lazy-teleport/src/index'
 import {
   getPlacementAndOffsetOfFollower,
@@ -122,6 +122,7 @@ export default defineComponent({
     style.mount({
       id: 'vueuc/binder',
       head: true,
+      anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
     onBeforeUnmount(() => {

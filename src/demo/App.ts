@@ -65,7 +65,14 @@ export default defineComponent({
               }, {
                 default: () => 'Overflow'
               })]
-            )
+            ),
+            h('li', [
+              h(RouterLink, {
+                to: '/focus-trap'
+              }, {
+                default: () => 'FocusTrap'
+              })
+            ])
           ])
         ]),
         h('div', {

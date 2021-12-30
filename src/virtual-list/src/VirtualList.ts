@@ -13,7 +13,7 @@ import {
 import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
 import { ItemData, VScrollToOptions } from './type'
-import { c, FinweckTree } from '../../shared'
+import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 
@@ -102,6 +102,7 @@ export default defineComponent({
     styles.mount({
       id: 'vueuc/virtual-list',
       head: true,
+      anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
     onMounted(() => {

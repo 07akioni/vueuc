@@ -9,7 +9,7 @@ import {
   nextTick
 } from 'vue'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { c } from '../../shared'
+import { c, cssrAnchorMetaName } from '../../shared'
 
 const hiddenAttr = 'v-hidden'
 
@@ -110,6 +110,7 @@ export default defineComponent({
     style.mount({
       id: 'vueuc/overflow',
       head: true,
+      anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
     onMounted(deriveCounter)

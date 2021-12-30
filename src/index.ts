@@ -15,20 +15,9 @@ export {
   default as ResizeObserver,
   default as VResizeObserver
 } from './resize-observer/src'
-export type {
-  VResizeObserverOnResize
-} from './resize-observer/src'
-export {
-  default as XScroll,
-  default as VXScroll
-} from './x-scroll/src'
-export type {
-  VXScrollInst
-} from './x-scroll/src'
-export {
-  VOverflow,
-  Overflow
-} from './overflow'
-export type {
-  VOverflowInst
-} from './overflow'
+export type { VResizeObserverOnResize } from './resize-observer/src'
+export { default as XScroll, default as VXScroll } from './x-scroll/src'
+export type { VXScrollInst } from './x-scroll/src'
+export { VOverflow, Overflow } from './overflow'
+export type { VOverflowInst } from './overflow'
+export { FocusTrap, FocusTrap as VFocusTrap } from './focus-trap'

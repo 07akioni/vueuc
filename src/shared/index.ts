@@ -2,7 +2,8 @@ export {
   warn
 } from './warn'
 export {
-  c
+  c,
+  cssrAnchorMetaName
 } from './cssr'
 export {
   getFirstVNode,
