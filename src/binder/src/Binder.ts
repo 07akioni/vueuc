@@ -8,9 +8,9 @@ import {
   onBeforeUnmount
 } from 'vue'
 import { beforeNextFrameOnce } from 'seemly'
+import { on, off } from 'evtd'
 import { getSlot } from '../../shared/v-node'
 import { getScrollParent } from './utils'
-import { on, off } from 'evtd'
 import { BinderInstance } from './interface'
 
 const Binder = defineComponent({

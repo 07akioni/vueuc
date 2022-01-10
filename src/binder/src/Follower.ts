@@ -75,7 +75,7 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    shift: Boolean,
+    internalShift: Boolean,
     x: Number,
     y: Number,
     width: String as PropType<'target' | string>,
@@ -147,7 +147,7 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
-      const { width, minWidth, placement, shift, flip } = props
+      const { width, minWidth, placement, internalShift, flip } = props
 
       follower.setAttribute('v-placement', placement)
       if (overlap) {
@@ -180,7 +180,7 @@ export default defineComponent({
         placement,
         targetRect,
         followerRect,
-        shift,
+        internalShift,
         flip,
         overlap
       )
@@ -199,8 +199,14 @@ export default defineComponent({
       // we assume that the content size doesn't change after flip,
       // nor we need to make sync logic more complex
       follower.setAttribute('v-placement', properPlacement)
-      follower.style.setProperty('--v-offset-left', `${Math.round(offsetLeftToStandardPlacement)}px`)
-      follower.style.setProperty('--v-offset-top', `${Math.round(offsetTopToStandardPlacement)}px`)
+      follower.style.setProperty(
+        '--v-offset-left',
+        `${Math.round(offsetLeftToStandardPlacement)}px`
+      )
+      follower.style.setProperty(
+        '--v-offset-top',
+        `${Math.round(offsetTopToStandardPlacement)}px`
+      )
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
       follower.style.transformOrigin = properTransformOrigin
     }
@@ -218,7 +224,16 @@ export default defineComponent({
         .catch((e) => console.error(e))
     };
     (
-      ['placement', 'x', 'y', 'shift', 'flip', 'width', 'overlap', 'minWidth'] as const
+      [
+        'placement',
+        'x',
+        'y',
+        'internalShift',
+        'flip',
+        'width',
+        'overlap',
+        'minWidth'
+      ] as const
     ).forEach((prop) => {
       watch(toRef(props, prop), syncPosition)
     });
@@ -238,18 +253,17 @@ export default defineComponent({
       }
     })
     const isMountedRef = useIsMounted()
-    const mergedToRef = useMemo<string | HTMLElement | undefined>(():
-    | HTMLElement
-    | string
-    | undefined => {
-      const { to } = props
-      if (to !== undefined) return to
-      if (isMountedRef.value) {
-        // TODO: find proper container
+    const mergedToRef = useMemo<string | HTMLElement | undefined>(
+      (): HTMLElement | string | undefined => {
+        const { to } = props
+        if (to !== undefined) return to
+        if (isMountedRef.value) {
+          // TODO: find proper container
+          return undefined
+        }
         return undefined
       }
-      return undefined
-    })
+    )
     return {
       VBinder,
       mergedEnabled: mergedEnabledRef,
