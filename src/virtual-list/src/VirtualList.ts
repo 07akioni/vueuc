@@ -17,22 +17,33 @@ import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 
-const styles = c('.v-vl', {
-  maxHeight: 'inherit',
-  height: '100%',
-  overflow: 'auto',
-  minWidth: '1px' // a zero width container won't be scrollable
-}, [
-  c('&:not(.v-vl--show-scrollbar)', {
-    scrollbarWidth: 'none'
-  }, [
-    c('&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb', {
-      width: 0,
-      height: 0,
-      display: 'none'
-    })
-  ])
-])
+const styles = c(
+  '.v-vl',
+  {
+    maxHeight: 'inherit',
+    height: '100%',
+    overflow: 'auto',
+    minWidth: '1px' // a zero width container won't be scrollable
+  },
+  [
+    c(
+      '&:not(.v-vl--show-scrollbar)',
+      {
+        scrollbarWidth: 'none'
+      },
+      [
+        c(
+          '&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb',
+          {
+            width: 0,
+            height: 0,
+            display: 'none'
+          }
+        )
+      ]
+    )
+  ]
+)
 
 export interface CommonScrollToOptions {
   behavior?: ScrollBehavior
@@ -106,10 +117,7 @@ export default defineComponent({
       ssr: ssrAdapter
     })
     onMounted(() => {
-      const {
-        defaultScrollIndex,
-        defaultScrollKey
-      } = props
+      const { defaultScrollIndex, defaultScrollKey } = props
       if (defaultScrollIndex !== undefined && defaultScrollIndex !== null) {
         scrollTo({ index: defaultScrollIndex })
       } else if (defaultScrollKey !== undefined && defaultScrollKey !== null) {
@@ -143,7 +151,9 @@ export default defineComponent({
     const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
       return Math.max(
-        finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop)) - 1,
+        finweckTreeRef.value.getBound(
+          scrollTopRef.value - depx(props.paddingTop)
+        ) - 1,
         0
       )
     })
@@ -152,7 +162,10 @@ export default defineComponent({
       if (listHeight === undefined) return []
       const { items, itemSize } = props
       const startIndex = startIndexRef.value
-      const endIndex = Math.min(startIndex + Math.ceil(listHeight / itemSize + 1), items.length - 1)
+      const endIndex = Math.min(
+        startIndex + Math.ceil(listHeight / itemSize + 1),
+        items.length - 1
+      )
       const viewportItems = []
       for (let i = startIndex; i <= endIndex; ++i) {
         viewportItems.push(items[i])
@@ -182,7 +195,11 @@ export default defineComponent({
         scrollToPosition(0, 0, behavior)
       }
     }
-    function scrollToIndex (index: number, behavior: ScrollToOptions['behavior'], debounce: boolean): void {
+    function scrollToIndex (
+      index: number,
+      behavior: ScrollToOptions['behavior'],
+      debounce: boolean
+    ): void {
       const { value: ft } = finweckTreeRef
       const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
@@ -192,10 +209,7 @@ export default defineComponent({
           behavior
         })
       } else {
-        const {
-          scrollTop,
-          offsetHeight
-        } = listElRef.value as HTMLDivElement
+        const { scrollTop, offsetHeight } = listElRef.value as HTMLDivElement
         if (targetTop > scrollTop) {
           const itemSize = ft.get(index)
           if (targetTop + itemSize <= scrollTop + offsetHeight) {
@@ -228,11 +242,17 @@ export default defineComponent({
         behavior
       })
     }
-    function handleItemResize (key: string | number, entry: ResizeObserverEntry): void {
+    function handleItemResize (
+      key: string | number,
+      entry: ResizeObserverEntry
+    ): void {
       if (props.ignoreItemResize) return
+      if (isHideByVShow(entry.target as HTMLElement)) return
       const { value: ft } = finweckTreeRef
       const index = keyIndexMapRef.value.get(key)
-      const height = (entry.target as HTMLElement).offsetHeight
+      const previousHeight = ft.get(index)
+      const height = entry.contentRect.height
+      if (height === previousHeight) return
       // height offset based on itemSize
       // used when rebuild the finweck tree
       const offset = height - props.itemSize
@@ -242,7 +262,7 @@ export default defineComponent({
         keyToHeightOffset.set(key, height - props.itemSize)
       }
       // delta height based on finweck tree data
-      const delta = height - ft.get(index)
+      const delta = height - previousHeight
       if (delta === 0) return
       if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
         listElRef.value?.scrollBy(0, delta)
@@ -256,6 +276,10 @@ export default defineComponent({
       if (onScroll !== undefined) onScroll(e)
     }
     function handleListResize (entry: ResizeObserverEntry): void {
+      // List is HTMLElement
+      if (isHideByVShow(entry.target as HTMLElement)) return
+      // If height is same, return
+      if (entry.contentRect.height === listHeightRef.value) return
       listHeightRef.value = entry.contentRect.height
       const { onResize } = props
       if (onResize !== undefined) onResize(entry)
@@ -270,6 +294,14 @@ export default defineComponent({
       lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
       lastScrollAnchorIndex = undefined
       scrollTopRef.value = (listElRef.value as Element).scrollTop
+    }
+    function isHideByVShow (el: HTMLElement): boolean {
+      let cursor: HTMLElement | null = el
+      while (cursor !== null) {
+        if (cursor.style.display === 'none') return true
+        cursor = cursor.parentElement
+      }
+      return false
     }
     return {
       listHeight: listHeightRef,
@@ -297,7 +329,9 @@ export default defineComponent({
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         finweckTreeUpdateTrigger.value
         return {
-          transform: `translate3d(0, ${pxfy(finweckTreeRef.value.sum(startIndexRef.value))}, 0)`
+          transform: `translate3d(0, ${pxfy(
+            finweckTreeRef.value.sum(startIndexRef.value)
+          )}, 0)`
         }
       }),
       viewportItems: viewportItemsRef,
@@ -311,50 +345,74 @@ export default defineComponent({
   },
   render () {
     const { itemResizable, keyField, keyToIndex, visibleItemsTag } = this
-    return h(VResizeObserver, {
-      onResize: this.handleListResize
-    }, {
-      default: () => {
-        return h('div', mergeProps(
-          this.$attrs, {
-            class: [
-              'v-vl',
-              this.showScrollbar && 'v-vl--show-scrollbar'
-            ],
-            onScroll: this.handleListScroll,
-            onWheel: this.onWheel,
-            ref: 'listElRef'
-          }), [
-          this.items.length !== 0
-            ? h('div', {
-              ref: 'itemsElRef',
-              class: 'v-vl-items',
-              style: this.itemsStyle
-            }, [
-              h(visibleItemsTag as any, Object.assign({
-                class: 'v-vl-visible-items',
-                style: this.visibleItemsStyle
-              }, this.visibleItemsProps), {
-                default: () => this.viewportItems.map(item => {
-                  const key = item[keyField]
-                  const index = keyToIndex.get(key)
-                  const itemVNode = (this.$slots.default as any)({ item, index })[0]
-                  if (itemResizable) {
-                    return h(VResizeObserver, {
-                      key,
-                      onResize: (entry: ResizeObserverEntry) => this.handleItemResize(key, entry)
-                    }, {
-                      default: () => itemVNode
-                    })
-                  }
-                  itemVNode.key = key
-                  return itemVNode
-                })
-              })
-            ])
-            : this.$slots.empty?.()
-        ])
+    return h(
+      VResizeObserver,
+      {
+        onResize: this.handleListResize
+      },
+      {
+        default: () => {
+          return h(
+            'div',
+            mergeProps(this.$attrs, {
+              class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
+              onScroll: this.handleListScroll,
+              onWheel: this.onWheel,
+              ref: 'listElRef'
+            }),
+            [
+              this.items.length !== 0
+                ? h(
+                  'div',
+                  {
+                    ref: 'itemsElRef',
+                    class: 'v-vl-items',
+                    style: this.itemsStyle
+                  },
+                  [
+                    h(
+                      visibleItemsTag as any,
+                      Object.assign(
+                        {
+                          class: 'v-vl-visible-items',
+                          style: this.visibleItemsStyle
+                        },
+                        this.visibleItemsProps
+                      ),
+                      {
+                        default: () =>
+                          this.viewportItems.map((item) => {
+                            const key = item[keyField]
+                            const index = keyToIndex.get(key)
+                            const itemVNode = (this.$slots.default as any)({
+                              item,
+                              index
+                            })[0]
+                            if (itemResizable) {
+                              return h(
+                                VResizeObserver,
+                                {
+                                  key,
+                                  onResize: (entry: ResizeObserverEntry) =>
+                                    this.handleItemResize(key, entry)
+                                },
+                                {
+                                  default: () => itemVNode
+                                }
+                              )
+                            }
+                            itemVNode.key = key
+                            return itemVNode
+                          })
+                      }
+                    )
+                  ]
+                )
+                : this.$slots.empty?.()
+            ]
+          )
+        }
       }
-    })
+    )
   }
 })
