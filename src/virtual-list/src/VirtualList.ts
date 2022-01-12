@@ -329,9 +329,9 @@ export default defineComponent({
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         finweckTreeUpdateTrigger.value
         return {
-          transform: `translate3d(0, ${pxfy(
+          transform: `translateY(${pxfy(
             finweckTreeRef.value.sum(startIndexRef.value)
-          )}, 0)`
+          )})`
         }
       }),
       viewportItems: viewportItemsRef,
