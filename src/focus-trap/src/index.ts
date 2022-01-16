@@ -9,6 +9,7 @@ import {
 } from 'vue'
 import { createId } from 'seemly'
 import { focusFirstDescendant, focusLastDescendant } from './utils'
+import { resolveTo } from '../../shared'
 
 let stack: string[] = []
 
@@ -17,7 +18,16 @@ export const FocusTrap = defineComponent({
   props: {
     disabled: Boolean,
     active: Boolean,
-    focusFirstDescendant: Boolean
+    autoFocus: {
+      type: Boolean,
+      default: true
+    },
+    initialFocusTo: String,
+    finalFocusTo: String,
+    returnFocusOnDeactivated: {
+      type: Boolean,
+      default: true
+    }
   },
   setup (props) {
     const id = createId()
@@ -73,7 +83,14 @@ export const FocusTrap = defineComponent({
     function activate (): void {
       if (props.disabled) return
       stack.push(id)
-      resetFocusTo('first')
+      if (props.autoFocus) {
+        const { initialFocusTo } = props
+        if (initialFocusTo === undefined) {
+          resetFocusTo('first')
+        } else {
+          resolveTo(initialFocusTo)?.focus()
+        }
+      }
       activated = true
       document.addEventListener('focus', handleDocumentFocus, true)
     }
@@ -82,15 +99,20 @@ export const FocusTrap = defineComponent({
       document.removeEventListener('focus', handleDocumentFocus, true)
       stack = stack.filter((idInStack) => idInStack !== id)
       if (isCurrentActive()) return
-      if (lastFocusedElement instanceof HTMLElement) {
-        ignoreInternalFocusChange = true
-        lastFocusedElement.focus({ preventScroll: true })
-        ignoreInternalFocusChange = false
+      const { finalFocusTo } = props
+      if (finalFocusTo !== undefined) {
+        resolveTo(finalFocusTo)?.focus()
+      } else if (props.returnFocusOnDeactivated) {
+        if (lastFocusedElement instanceof HTMLElement) {
+          ignoreInternalFocusChange = true
+          lastFocusedElement.focus({ preventScroll: true })
+          ignoreInternalFocusChange = false
+        }
       }
     }
     function resetFocusTo (target: 'last' | 'first'): void {
       if (!isCurrentActive()) return
-      if (props.active && props.focusFirstDescendant) {
+      if (props.active) {
         const focusableStartEl = focusableStartRef.value
         const focusableEndEl = focusableEndRef.value
         if (focusableStartEl !== null && focusableEndEl !== null) {
