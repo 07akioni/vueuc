@@ -15,6 +15,7 @@ let stack: string[] = []
 export const FocusTrap = defineComponent({
   name: 'FocusTrap',
   props: {
+    disabled: Boolean,
     active: Boolean,
     focusFirstDescendant: Boolean
   },
@@ -70,12 +71,14 @@ export const FocusTrap = defineComponent({
       return mainEl
     }
     function activate (): void {
+      if (props.disabled) return
       stack.push(id)
       resetFocusTo('first')
       activated = true
       document.addEventListener('focus', handleDocumentFocus, true)
     }
     function deactivate (): void {
+      if (props.disabled) return
       document.removeEventListener('focus', handleDocumentFocus, true)
       stack = stack.filter((idInStack) => idInStack !== id)
       if (isCurrentActive()) return
@@ -149,6 +152,7 @@ export const FocusTrap = defineComponent({
   render () {
     const { default: defaultSlot } = this.$slots
     if (defaultSlot === undefined) return null
+    if (this.disabled) return defaultSlot()
     const { active, focusableStyle } = this
     return h(Fragment, null, [
       h('div', {
