@@ -1,13 +1,15 @@
 import {
   h,
   defineComponent,
-  watchEffect,
   ref,
   Fragment,
   onMounted,
-  onBeforeUnmount
+  onBeforeUnmount,
+  PropType,
+  watch
 } from 'vue'
 import { createId } from 'seemly'
+import { on, off } from 'evtd'
 import { focusFirstDescendant, focusLastDescendant } from './utils'
 import { resolveTo } from '../../shared'
 
@@ -22,6 +24,7 @@ export const FocusTrap = defineComponent({
       type: Boolean,
       default: true
     },
+    onEsc: Function as PropType<() => void>,
     initialFocusTo: String,
     finalFocusTo: String,
     returnFocusOnDeactivated: {
@@ -42,16 +45,31 @@ export const FocusTrap = defineComponent({
       return currentActiveId === id
     }
 
-    onMounted(() => {
-      watchEffect(() => {
-        if (props.active) {
-          activate()
-        } else if (activated) {
-          deactivate()
+    function handleDocumentKeydown (e: KeyboardEvent): void {
+      if (e.code === 'Escape') {
+        if (isCurrentActive()) {
+          props.onEsc?.()
         }
+      }
+    }
+
+    onMounted(() => {
+      watch(() => props.active, (value) => {
+        if (value) {
+          activate()
+          on('keydown', document, handleDocumentKeydown)
+        } else {
+          off('keydown', document, handleDocumentKeydown)
+          if (activated) {
+            deactivate()
+          }
+        }
+      }, {
+        immediate: true
       })
     })
     onBeforeUnmount(() => {
+      off('keydown', document, handleDocumentKeydown)
       if (activated) deactivate()
     })
 
