@@ -282,7 +282,6 @@ export default defineComponent({
         disabled: this.teleportDisabled
       },
       {
-        _: 3,
         default: () => {
           const vNode = h(
             'div',
