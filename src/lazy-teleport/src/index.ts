@@ -27,14 +27,14 @@ export default defineComponent({
   render () {
     return this.showTeleport
       ? this.disabled
-        ? getSlot(this.$slots)
+        ? getSlot('lazy-teleport', this.$slots)
         : h(
           Teleport,
           {
             disabled: this.disabled,
             to: this.mergedTo
           },
-          getSlot(this.$slots)
+          getSlot('lazy-teleport', this.$slots)
         )
       : null
   }

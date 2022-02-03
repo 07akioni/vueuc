@@ -25,8 +25,10 @@ export default defineComponent({
      * target sync logic manually.
      */
     if (syncTarget) {
-      return withDirectives(getFirstVNode(this.$slots), [[setTargetDirective]])
+      return withDirectives(getFirstVNode('follower', this.$slots), [
+        [setTargetDirective]
+      ])
     }
-    return getFirstVNode(this.$slots)
+    return getFirstVNode('follower', this.$slots)
   }
 })

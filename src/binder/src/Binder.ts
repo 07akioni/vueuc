@@ -136,7 +136,7 @@ const Binder = defineComponent({
     }
   },
   render () {
-    return getSlot(this.$slots)
+    return getSlot('binder', this.$slots)
   }
 })
 
