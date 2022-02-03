@@ -282,6 +282,7 @@ export default defineComponent({
         disabled: this.teleportDisabled
       },
       {
+        _: 3,
         default: () => {
           const vNode = h(
             'div',
@@ -296,7 +297,7 @@ export default defineComponent({
                   class: 'v-binder-follower-content',
                   ref: 'followerRef'
                 },
-                this.$slots
+                this.$slots.default?.()
               )
             ]
           )
