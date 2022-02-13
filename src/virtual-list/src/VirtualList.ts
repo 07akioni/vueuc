@@ -126,7 +126,7 @@ export default defineComponent({
       }
     })
     onActivated(() => {
-      scrollTopRef.value = 0
+      scrollTo({ top: scrollTopRef.value })
     })
     const keyIndexMapRef = computed(() => {
       const map = new Map()
