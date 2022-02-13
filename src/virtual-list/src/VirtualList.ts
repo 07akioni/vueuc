@@ -8,7 +8,8 @@ import {
   ref,
   onMounted,
   h,
-  CSSProperties
+  CSSProperties,
+  onActivated
 } from 'vue'
 import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
@@ -123,6 +124,9 @@ export default defineComponent({
       } else if (defaultScrollKey !== undefined && defaultScrollKey !== null) {
         scrollTo({ key: defaultScrollKey })
       }
+    })
+    onActivated(() => {
+      scrollTo({ top: scrollTopRef.value })
     })
     const keyIndexMapRef = computed(() => {
       const map = new Map()
