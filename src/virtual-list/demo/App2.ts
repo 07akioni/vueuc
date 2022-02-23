@@ -112,17 +112,17 @@ export default defineComponent({
       h('div', [
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ index: 200, behavior: this.scrollBehavior })
           }
         }, [
-          'scrollTo({ index: 10 })'
+          'scrollTo({ index: 200 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior })
           }
         }, [
-          'scrollTo({ key: 200 })'
+          'scrollTo({ key: 2000 })'
         ]),
         h('button', {
           onClick: () => {

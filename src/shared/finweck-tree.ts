@@ -4,35 +4,45 @@ function lowBit (n: number): number {
 
 export class FinweckTree {
   l: number
-  min: number
   ft: number[]
+  map: Map<number, number>
 
   /**
    * @param l length of the array
-   * @param min min value of the array
    */
-  constructor (l: number, min: number) {
+  constructor (l: number) {
     this.l = l
-    this.min = min
-    const ft = new Array(l + 1)
-    for (let i = 0; i < l + 1; ++i) {
-      ft[i] = 0
-    }
-    this.ft = ft
+    this.ft = Array(l + 1).fill(0)
+    this.map = new Map()
   }
 
   /**
    * Add arr[i] by n, start from 0
    * @param i the index of the element to be added
    * @param n the value to be added
+   * @returns the value was successfully added
    */
   add (i: number, n: number): void {
-    if (n === 0) return
     const { l, ft } = this
+    if (n === 0 || i >= l) return
+    this.map.set(i, this.map.get(i) ?? 0 + n)
     i += 1
     while (i <= l) {
       ft[i] += n
       i += lowBit(i)
+    }
+  }
+
+  /**
+   * Update arr[i] by v, start from 0
+   * @param i the index of the element to be added
+   * @param v the value to be updated
+   * @returns the value was successfully updated
+   */
+  update (i: number, v: number): void {
+    const pre = this.map.get(i) ?? 0
+    if (pre !== v) {
+      return this.add(i, v - pre)
     }
   }
 
@@ -42,7 +52,7 @@ export class FinweckTree {
    * @returns value of the index
    */
   get (i: number): number {
-    return this.sum(i + 1) - this.sum(i)
+    return this.map.get(i) ?? 0
   }
 
   /**
@@ -52,15 +62,15 @@ export class FinweckTree {
    */
   sum (i?: number): number {
     if (i === 0) return 0
-    const { ft, min, l } = this
-    if (i === undefined) i = l
+    const { ft, l } = this
+    if (i === undefined) i = l - 1
     if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
-    let ret = i * min
+    let sum = 0
     while (i > 0) {
-      ret += ft[i]
+      sum += ft[i]
       i -= lowBit(i)
     }
-    return ret
+    return sum
   }
 
   /**

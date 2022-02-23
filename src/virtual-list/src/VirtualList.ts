@@ -4,19 +4,20 @@ import {
   mergeProps,
   computed,
   defineComponent,
-  PropType,
   ref,
   onMounted,
   h,
-  CSSProperties,
-  onActivated
+  onActivated,
+  watch
 } from 'vue'
-import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
+import type { PropType, CSSProperties } from 'vue'
+import { pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
 import { ItemData, VScrollToOptions } from './type'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
+import { frameMotion, FrameMotionUserControls } from '../../frame-motion'
 
 const styles = c(
   '.v-vl',
@@ -62,6 +63,38 @@ export interface VirtualListInst {
   itemsElRef: HTMLElement | null
   scrollTo: ScrollTo
 }
+
+type ItemKey = string | number
+
+interface RenderedItem {
+  key: ItemKey
+  index: number
+  original: ItemData
+}
+
+function isHideByVShow (el: HTMLElement): boolean {
+  let cursor: HTMLElement | null = el
+  while (cursor !== null) {
+    if (cursor.style.display === 'none') return true
+    cursor = cursor.parentElement
+  }
+  return false
+}
+
+function cacheResultFunction<T extends (key: any) => any> (fn: T): T {
+  const cache = new Map()
+  return ((key, ...args) => {
+    if (cache.has(key)) {
+      return cache.get(key)
+    }
+    const result = fn(key, ...args)
+    cache.set(key, result)
+    return result
+  }) as T
+}
+
+const preReservation = 1
+const postReservation = 4
 
 export default defineComponent({
   name: 'VirtualList',
@@ -117,65 +150,358 @@ export default defineComponent({
       anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
-    onMounted(() => {
-      const { defaultScrollIndex, defaultScrollKey } = props
-      if (defaultScrollIndex !== undefined && defaultScrollIndex !== null) {
-        scrollTo({ index: defaultScrollIndex })
-      } else if (defaultScrollKey !== undefined && defaultScrollKey !== null) {
-        scrollTo({ key: defaultScrollKey })
-      }
-    })
-    onActivated(() => {
-      scrollTo({ top: scrollTopRef.value })
-    })
-    const keyIndexMapRef = computed(() => {
-      const map = new Map()
-      const { keyField } = props
-      props.items.forEach((item, index) => {
-        map.set(item[keyField], index)
-      })
-      return map
-    })
+
+    const resizeableRef = computed(
+      () => props.itemResizable && !props.ignoreItemResize
+    )
+
     const listElRef = ref<null | Element>(null)
-    const listHeightRef = ref<undefined | number>(undefined)
-    const keyToHeightOffset = new Map<string | number, number>()
-    const finweckTreeRef = computed(() => {
-      const { items, itemSize, keyField } = props
-      const ft = new FinweckTree(items.length, itemSize)
-      items.forEach((item, index) => {
-        const key: string | number = item[keyField]
-        const heightOffset = keyToHeightOffset.get(key)
-        if (heightOffset !== undefined) {
-          ft.add(index, heightOffset)
-        }
-      })
-      return ft
+    const listHeightRef = computed(() => {
+      const height = props.items.length * props.itemSize
+      if (!resizeableRef.value) {
+        return height
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      finweckTreeUpdateTrigger.value
+      return height + offsetFinweckTreeRef.value.sum()
+    })
+
+    const viewportHeightRef = ref(0)
+    const scrollTopRef = ref(0)
+
+    const getViewportRect = (): {
+      height: number
+      top: number
+      bottom: number
+    } => {
+      const { value: height } = viewportHeightRef
+      const { value: top } = scrollTopRef
+      return {
+        height,
+        top,
+        bottom: top + height
+      }
+    }
+
+    const offsetFinweckTreeRef = computed(() => {
+      return new FinweckTree(resizeableRef.value ? props.items.length : 0)
     })
     const finweckTreeUpdateTrigger = ref(0)
-    const scrollTopRef = ref(0)
-    const startIndexRef = useMemo(() => {
-      return Math.max(
-        finweckTreeRef.value.getBound(
-          scrollTopRef.value - depx(props.paddingTop)
-        ) - 1,
-        0
-      )
-    })
-    const viewportItemsRef = computed(() => {
-      const { value: listHeight } = listHeightRef
-      if (listHeight === undefined) return []
-      const { items, itemSize } = props
-      const startIndex = startIndexRef.value
-      const endIndex = Math.min(
-        startIndex + Math.ceil(listHeight / itemSize + 1),
-        items.length - 1
-      )
-      const viewportItems = []
-      for (let i = startIndex; i <= endIndex; ++i) {
-        viewportItems.push(items[i])
+
+    const renderedItemsRef = ref<RenderedItem[]>([])
+    const renderedItemIndexMap = new Map<ItemKey, number>()
+    const renderedItemOffsetMap = new Map<ItemKey, number>()
+    const setItemOffset = (key: ItemKey, offset: number): void => {
+      const perviousOffset = renderedItemOffsetMap.get(key)
+      const increment = offset - (perviousOffset ?? 0)
+      if (perviousOffset !== undefined && increment === 0) {
+        return
       }
-      return viewportItems
+      const index = getIndex(key)
+      if (validateIndex(index)) {
+        renderedItemOffsetMap.set(key, offset)
+
+        offsetFinweckTreeRef.value.add(index, increment)
+        finweckTreeUpdateTrigger.value++
+      }
+    }
+
+    const validateIndex = (index?: number): boolean => {
+      return index !== undefined || index !== -1 || index < props.items.length
+    }
+
+    const getIndex = (keyOrItem: ItemKey | ItemData): number => {
+      const { keyField } = props
+      const isItem = typeof keyOrItem === 'object'
+      const key = isItem ? keyOrItem[keyField] : keyOrItem
+
+      let index = renderedItemIndexMap.get(key)
+      if (index === undefined) {
+        index = props.items.findIndex((item) => item[keyField] === key)
+        if (index === -1) {
+          return -1
+        }
+        renderedItemIndexMap.set(key, index)
+      }
+
+      return index
+    }
+
+    const getHeight = (index: number): number => {
+      const { itemSize } = props
+      if (!resizeableRef.value) {
+        return itemSize
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      finweckTreeUpdateTrigger.value
+      return (
+        itemSize +
+        offsetFinweckTreeRef.value.get(Math.min(index, props.items.length))
+      )
+    }
+
+    const getPosition = (index: number): number => {
+      if (index === 0) return 0
+      const position = index * props.itemSize
+      if (!resizeableRef.value) {
+        return position
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      finweckTreeUpdateTrigger.value
+      return (
+        position +
+        offsetFinweckTreeRef.value.sum(Math.min(index, props.items.length))
+      )
+    }
+
+    const getRelativeIndex = (scrollTop: number): number =>
+      Math.round(scrollTop / props.itemSize)
+
+    const getNewestVisibleIndex = (
+      scrollTop: number,
+      getItemHeight = getHeight
+    ): number => {
+      const relativeIndex = getRelativeIndex(scrollTop)
+      if (!resizeableRef.value) {
+        return relativeIndex
+      } else {
+        return measureNewestVisibleIndex(
+          scrollTop,
+          relativeIndex,
+          getItemHeight
+        )
+      }
+    }
+
+    const measureNewestVisibleIndex = (
+      scrollTop: number,
+      relativeIndex: number,
+      getItemHeight = getHeight
+    ): number => {
+      if (!resizeableRef.value) {
+        return Math.round(scrollTop / props.itemSize)
+      } else {
+        const { items } = props
+        let newestVisibleIndex = relativeIndex
+        let startPosition = getPosition(newestVisibleIndex)
+
+        const shouldBackwards = startPosition > scrollTop
+        if (shouldBackwards) {
+          while (newestVisibleIndex >= 0 && startPosition > scrollTop) {
+            newestVisibleIndex--
+            startPosition -= getItemHeight(newestVisibleIndex)
+          }
+        } else {
+          while (
+            newestVisibleIndex < items.length &&
+            startPosition < scrollTop
+          ) {
+            newestVisibleIndex++
+            startPosition += getItemHeight(newestVisibleIndex)
+          }
+          if (startPosition !== scrollTop && newestVisibleIndex !== 0) {
+            newestVisibleIndex--
+          }
+        }
+
+        return newestVisibleIndex
+      }
+    }
+
+    const getRenderCandidates = (
+      newestVisibleIndex: number
+    ): RenderedItem[] => {
+      let startIdx = newestVisibleIndex
+      let endIdx
+      // 所有项的高度都是已知并相等的，即 newestVisibleIndex === startIndex
+      if (!resizeableRef.value) {
+        endIdx =
+          newestVisibleIndex +
+          Math.round(viewportHeightRef.value / props.itemSize)
+      } else {
+        // 存在动态变化的高度，即可能 newestVisibleIndex !== startIndex
+        // 需要进一步的进行推算 startIndex 的位置
+        const { items } = props
+        const { top, bottom } = getViewportRect()
+
+        // 避免重复运行
+        const getItemHeight = cacheResultFunction(getHeight)
+
+        startIdx = measureNewestVisibleIndex(
+          top,
+          newestVisibleIndex,
+          getItemHeight
+        )
+        endIdx = startIdx
+
+        let endPosition = getPosition(startIdx)
+        while (endIdx < items.length && endPosition < bottom) {
+          endIdx++
+          endPosition += getItemHeight(endIdx)
+        }
+      }
+
+      startIdx = Math.max(0, startIdx - preReservation)
+      endIdx += postReservation
+
+      const { items, keyField } = props
+      return items
+        .slice(startIdx, endIdx)
+        .reduce<RenderedItem[]>((candidates, item, index) => {
+        candidates.push({
+          index: index + startIdx,
+          key: item[keyField],
+          original: item
+        })
+        return candidates
+      }, [])
+    }
+
+    const newestVisibleIndexRef = useMemo(() =>
+      Math.round(scrollTopRef.value / props.itemSize)
+    )
+    const getFinalRenderedItemsMemoized = (): RenderedItem[] => {
+      const renderedItems = getRenderCandidates(newestVisibleIndexRef.value)
+      const { keyField } = props
+      renderedItems.forEach((item) => {
+        renderedItemIndexMap.set(item.original[keyField], item.index)
+      })
+      return renderedItems
+    }
+
+    watch(getFinalRenderedItemsMemoized, (finalRenderedItems) => {
+      const { value: renderedItems } = renderedItemsRef
+      if (
+        renderedItems.length !== finalRenderedItems.length ||
+        renderedItems.some((item, index) => {
+          return (
+            item.key !== finalRenderedItems[index].key ||
+            item.index !== finalRenderedItems[index].index
+          )
+        })
+      ) {
+        renderedItemsRef.value = finalRenderedItems
+      }
     })
+
+    const startIndexRef = computed(() => renderedItemsRef.value[0]?.index ?? -1)
+
+    const itemsPositionRef = computed(() => {
+      const { value: startIndex } = startIndexRef
+      if (!validateIndex(startIndex)) {
+        return 0
+      }
+      const position = startIndex * props.itemSize
+      if (!resizeableRef.value) {
+        return position
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      finweckTreeUpdateTrigger.value
+      return position + offsetFinweckTreeRef.value.sum(startIndex)
+    })
+
+    const handleScroll = (e: Event): void => {
+      beforeNextFrameOnce(syncViewport)
+      props.onScroll?.(e)
+
+      if (shouldPositionedTo !== null) {
+        shouldPositionedTo = null
+      }
+    }
+
+    const syncViewport = (): void => {
+      const { value: listEl } = listElRef
+      // sometime ref el can be null
+      // https://github.com/TuSimple/naive-ui/issues/811
+      if (listEl !== null) {
+        scrollTopRef.value = (listEl as HTMLElement).scrollTop
+      }
+    }
+
+    let scrollFrame: FrameMotionUserControls | null = null
+    let shouldPositionedTo: { index: number, debounce?: boolean } | null = null
+
+    const scrollToKey = (
+      key: ItemKey,
+      behavior: ScrollBehavior = 'auto',
+      debounce?: boolean
+    ): void => {
+      scrollToIndex(getIndex(key), behavior, debounce)
+    }
+
+    const scrollToIndex = (
+      index: number,
+      behavior: ScrollBehavior = 'auto',
+      debounce?: boolean
+    ): void => {
+      if (!validateIndex(index)) {
+        return
+      }
+      if (scrollFrame !== null) {
+        scrollFrame.stop()
+      }
+      shouldPositionedTo = null
+
+      const target = getPosition(index)
+      if (target === scrollTopRef.value) {
+        return
+      }
+
+      const scrollToTop = (top: number): void => {
+        scrollToPosition({
+          top,
+          left: 0,
+          behavior: 'auto'
+        })
+      }
+
+      const onComplete = (): void => {
+        resizeableRef.value &&
+          // 等 scroll 事件触发之后再赋值
+          requestAnimationFrame(() => {
+            shouldPositionedTo = {
+              index,
+              debounce
+            }
+            if (behavior === 'smooth') {
+              measurePositionedIndex()
+            }
+          })
+      }
+
+      if (behavior === 'smooth') {
+        const start = scrollTopRef.value
+        const distance = target - start
+        const cur = (scrollFrame = frameMotion({
+          autoplay: true,
+          duration: Math.max(Math.min(400, Math.abs(distance) * 2), 32),
+          onComplete: () => {
+            cur === scrollFrame && (scrollFrame = null)
+            onComplete()
+          },
+          easing: (t: number) => t ** 3,
+          onUpdate: (progress: number) => {
+            if (distance === 0) {
+              scrollFrame?.stop()
+            } else {
+              scrollToTop(start + distance * progress)
+            }
+          }
+        }))
+      } else {
+        scrollToTop(target)
+        onComplete()
+      }
+    }
+
+    const scrollToPosition = (options: {
+      left: number | undefined
+      top: number | undefined
+      behavior: ScrollToOptions['behavior']
+    }): void => {
+      ;(listElRef.value as HTMLElement).scrollTo(options)
+    }
+
     const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
       const {
         left,
@@ -187,137 +513,101 @@ export default defineComponent({
         debounce = true
       } = options
       if (left !== undefined || top !== undefined) {
-        scrollToPosition(left, top, behavior)
+        scrollToPosition({
+          left,
+          top,
+          behavior
+        })
       } else if (index !== undefined) {
         scrollToIndex(index, behavior, debounce)
       } else if (key !== undefined) {
-        const toIndex = keyIndexMapRef.value.get(key)
-        if (toIndex !== undefined) scrollToIndex(toIndex, behavior, debounce)
+        scrollToKey(key, behavior, debounce)
       } else if (position === 'bottom') {
-        scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
-      } else if (position === 'top') {
-        scrollToPosition(0, 0, behavior)
-      }
-    }
-    function scrollToIndex (
-      index: number,
-      behavior: ScrollToOptions['behavior'],
-      debounce: boolean
-    ): void {
-      const { value: ft } = finweckTreeRef
-      const targetTop = ft.sum(index) + depx(props.paddingTop)
-      if (!debounce) {
-        (listElRef.value as HTMLDivElement).scrollTo({
+        scrollToPosition({
+          top: listHeightRef.value,
           left: 0,
-          top: targetTop,
           behavior
         })
-      } else {
-        const { scrollTop, offsetHeight } = listElRef.value as HTMLDivElement
-        if (targetTop > scrollTop) {
-          const itemSize = ft.get(index)
-          if (targetTop + itemSize <= scrollTop + offsetHeight) {
-            // do nothing
-          } else {
-            (listElRef.value as HTMLDivElement).scrollTo({
-              left: 0,
-              top: targetTop + itemSize - offsetHeight,
-              behavior
-            })
-          }
-        } else {
-          (listElRef.value as HTMLDivElement).scrollTo({
-            left: 0,
-            top: targetTop,
-            behavior
-          })
-        }
+      } else if (position === 'top') {
+        scrollToPosition({
+          top: 0,
+          left: 0,
+          behavior
+        })
       }
-      lastScrollAnchorIndex = index
     }
-    function scrollToPosition (
-      left: number | undefined,
-      top: number | undefined,
-      behavior: ScrollToOptions['behavior']
-    ): void {
-      (listElRef.value as HTMLDivElement).scrollTo({
-        left,
-        top,
-        behavior
+
+    const handleResize = (key: ItemKey, entry: ResizeObserverEntry): void => {
+      if (isHideByVShow(entry.target as HTMLElement)) {
+        return
+      }
+      const index = getIndex(key)
+      if (validateIndex(index)) {
+        const height = entry.borderBoxSize[0].blockSize
+        setItemOffset(key, height - props.itemSize)
+      }
+      // measure
+      if (shouldPositionedTo !== null) {
+        beforeNextFrameOnce(measurePositionedIndex)
+      }
+    }
+
+    const measurePositionedIndex = (): void => {
+      if (shouldPositionedTo === null) {
+        return
+      }
+      const { index, debounce } = shouldPositionedTo
+      shouldPositionedTo = null
+      if (
+        renderedItemsRef.value.some((item) => item.index === index) ||
+        index !== getNewestVisibleIndex(scrollTopRef.value)
+      ) {
+        scrollToIndex(index, 'auto', debounce)
+      }
+    }
+
+    const handleViewportResize = (entry: ResizeObserverEntry): void => {
+      if (isHideByVShow(entry.target as HTMLElement)) {
+        return
+      }
+      viewportHeightRef.value = entry.contentRect.height
+      props.onResize?.(entry)
+    }
+
+    watch(offsetFinweckTreeRef, () => {
+      renderedItemOffsetMap.forEach((offset, key) => {
+        setItemOffset(key, offset)
       })
-    }
-    function handleItemResize (
-      key: string | number,
-      entry: ResizeObserverEntry
-    ): void {
-      if (props.ignoreItemResize) return
-      if (isHideByVShow(entry.target as HTMLElement)) return
-      const { value: ft } = finweckTreeRef
-      const index = keyIndexMapRef.value.get(key)
-      const previousHeight = ft.get(index)
-      const height = entry.contentRect.height
-      if (height === previousHeight) return
-      // height offset based on itemSize
-      // used when rebuild the finweck tree
-      const offset = height - props.itemSize
-      if (offset === 0) {
-        keyToHeightOffset.delete(key)
-      } else {
-        keyToHeightOffset.set(key, height - props.itemSize)
+    })
+
+    watch(
+      computed(() => props.itemSize),
+      (size, perviousSize) => {
+        const sizeOffset = size - perviousSize
+        renderedItemOffsetMap.forEach((offset, key) => {
+          setItemOffset(key, offset + sizeOffset)
+        })
       }
-      // delta height based on finweck tree data
-      const delta = height - previousHeight
-      if (delta === 0) return
-      if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
-        listElRef.value?.scrollBy(0, delta)
+    )
+
+    onActivated(() => {
+      scrollTo({ top: scrollTopRef.value })
+    })
+    onMounted(() => {
+      const { defaultScrollIndex, defaultScrollKey } = props
+      if (defaultScrollIndex !== undefined && defaultScrollIndex !== null) {
+        scrollTo({ index: defaultScrollIndex })
+      } else if (defaultScrollKey !== undefined && defaultScrollKey !== null) {
+        scrollTo({ key: defaultScrollKey })
       }
-      ft.add(index, delta)
-      finweckTreeUpdateTrigger.value++
-    }
-    function handleListScroll (e: UIEvent): void {
-      beforeNextFrameOnce(syncViewport)
-      const { onScroll } = props
-      if (onScroll !== undefined) onScroll(e)
-    }
-    function handleListResize (entry: ResizeObserverEntry): void {
-      // List is HTMLElement
-      if (isHideByVShow(entry.target as HTMLElement)) return
-      // If height is same, return
-      if (entry.contentRect.height === listHeightRef.value) return
-      listHeightRef.value = entry.contentRect.height
-      const { onResize } = props
-      if (onResize !== undefined) onResize(entry)
-    }
-    let lastScrollAnchorIndex: number | undefined
-    let lastAnchorIndex: number | undefined
-    function syncViewport (): void {
-      const { value: listEl } = listElRef
-      // sometime ref el can be null
-      // https://github.com/TuSimple/naive-ui/issues/811
-      if (listEl == null) return
-      lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
-      lastScrollAnchorIndex = undefined
-      scrollTopRef.value = (listElRef.value as Element).scrollTop
-    }
-    function isHideByVShow (el: HTMLElement): boolean {
-      let cursor: HTMLElement | null = el
-      while (cursor !== null) {
-        if (cursor.style.display === 'none') return true
-        cursor = cursor.parentElement
-      }
-      return false
-    }
+    })
     return {
-      listHeight: listHeightRef,
       listStyle: {
         overflow: 'auto'
       },
-      keyToIndex: keyIndexMapRef,
       itemsStyle: computed(() => {
         const { itemResizable } = props
-        const height = pxfy(finweckTreeRef.value.sum())
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
+        const height = pxfy(listHeightRef.value)
         return [
           props.itemsStyle,
           {
@@ -329,30 +619,23 @@ export default defineComponent({
           }
         ]
       }),
-      visibleItemsStyle: computed(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
-        return {
-          transform: `translateY(${pxfy(
-            finweckTreeRef.value.sum(startIndexRef.value)
-          )})`
-        }
-      }),
-      viewportItems: viewportItemsRef,
       listElRef,
       itemsElRef: ref<null | Element>(null),
-      scrollTo,
-      handleListResize,
-      handleListScroll,
-      handleItemResize
+      resizeable: resizeableRef,
+      renderedItems: renderedItemsRef,
+      itemsPosition: itemsPositionRef,
+      handleResize,
+      handleScroll,
+      handleViewportResize,
+      scrollTo
     }
   },
   render () {
-    const { itemResizable, keyField, keyToIndex, visibleItemsTag } = this
+    const { visibleItemsTag } = this
     return h(
       VResizeObserver,
       {
-        onResize: this.handleListResize
+        onResize: this.handleViewportResize
       },
       {
         default: () => {
@@ -360,7 +643,7 @@ export default defineComponent({
             'div',
             mergeProps(this.$attrs, {
               class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
-              onScroll: this.handleListScroll,
+              onScroll: this.handleScroll,
               onWheel: this.onWheel,
               ref: 'listElRef'
             }),
@@ -379,26 +662,27 @@ export default defineComponent({
                       Object.assign(
                         {
                           class: 'v-vl-visible-items',
-                          style: this.visibleItemsStyle
+                          style: {
+                            transform: `translateY(${this.itemsPosition}px)`
+                          }
                         },
                         this.visibleItemsProps
                       ),
                       {
-                        default: () =>
-                          this.viewportItems.map((item) => {
-                            const key = item[keyField]
-                            const index = keyToIndex.get(key)
+                        default: () => {
+                          const { resizeable, handleResize } = this
+                          return this.renderedItems.map((item) => {
+                            const { key, index, original } = item
                             const itemVNode = (this.$slots.default as any)({
-                              item,
+                              item: original,
                               index
                             })[0]
-                            if (itemResizable) {
+                            if (resizeable) {
                               return h(
                                 VResizeObserver,
                                 {
                                   key,
-                                  onResize: (entry: ResizeObserverEntry) =>
-                                    this.handleItemResize(key, entry)
+                                  onResize: handleResize.bind(null, key)
                                 },
                                 {
                                   default: () => itemVNode
@@ -408,6 +692,7 @@ export default defineComponent({
                             itemVNode.key = key
                             return itemVNode
                           })
+                        }
                       }
                     )
                   ]
