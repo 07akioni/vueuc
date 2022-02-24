@@ -126,6 +126,13 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
+            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior, debounce: true })
+          }
+        }, [
+          'scrollTo({ key: 2000, debounce: true })'
+        ]),
+        h('button', {
+          onClick: () => {
             this.listElRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
           }
         }, [

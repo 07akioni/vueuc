@@ -8,7 +8,8 @@ import {
   onMounted,
   h,
   onActivated,
-  watch
+  watch,
+  nextTick
 } from 'vue'
 import type { PropType, CSSProperties } from 'vue'
 import { pxfy, beforeNextFrameOnce } from 'seemly'
@@ -313,18 +314,18 @@ export default defineComponent({
     ): RenderedItem[] => {
       let startIdx = newestVisibleIndex
       let endIdx
-      // 所有项的高度都是已知并相等的，即 newestVisibleIndex === startIndex
+      // The heights of all items are known and equal, which newestVisibleIndex === startIndex
       if (!resizeableRef.value) {
         endIdx =
           newestVisibleIndex +
           Math.round(viewportHeightRef.value / props.itemSize)
       } else {
-        // 存在动态变化的高度，即可能 newestVisibleIndex !== startIndex
-        // 需要进一步的进行推算 startIndex 的位置
+        // There is a dynamically changing height, which may be newestVisibleIndex !== startIndex
+        // Need to further calculate the position of startIndex
         const { items } = props
         const { top, bottom } = getViewportRect()
 
-        // 避免重复运行
+        // avoid repeated runs
         const getItemHeight = cacheResultFunction(getHeight)
 
         startIdx = measureNewestVisibleIndex(
@@ -384,8 +385,8 @@ export default defineComponent({
       }
     })
 
-    const startIndexRef = computed(() => renderedItemsRef.value[0]?.index ?? -1)
-
+    // Scroll
+    const startIndexRef = useMemo(() => renderedItemsRef.value[0]?.index ?? -1)
     const itemsPositionRef = computed(() => {
       const { value: startIndex } = startIndexRef
       if (!validateIndex(startIndex)) {
@@ -418,125 +419,7 @@ export default defineComponent({
       }
     }
 
-    let scrollFrame: FrameMotionUserControls | null = null
-    let shouldPositionedTo: { index: number, debounce?: boolean } | null = null
-
-    const scrollToKey = (
-      key: ItemKey,
-      behavior: ScrollBehavior = 'auto',
-      debounce?: boolean
-    ): void => {
-      scrollToIndex(getIndex(key), behavior, debounce)
-    }
-
-    const scrollToIndex = (
-      index: number,
-      behavior: ScrollBehavior = 'auto',
-      debounce?: boolean
-    ): void => {
-      if (!validateIndex(index)) {
-        return
-      }
-      if (scrollFrame !== null) {
-        scrollFrame.stop()
-      }
-      shouldPositionedTo = null
-
-      const target = getPosition(index)
-      if (target === scrollTopRef.value) {
-        return
-      }
-
-      const scrollToTop = (top: number): void => {
-        scrollToPosition({
-          top,
-          left: 0,
-          behavior: 'auto'
-        })
-      }
-
-      const onComplete = (): void => {
-        resizeableRef.value &&
-          // 等 scroll 事件触发之后再赋值
-          requestAnimationFrame(() => {
-            shouldPositionedTo = {
-              index,
-              debounce
-            }
-            if (behavior === 'smooth') {
-              measurePositionedIndex()
-            }
-          })
-      }
-
-      if (behavior === 'smooth') {
-        const start = scrollTopRef.value
-        const distance = target - start
-        const cur = (scrollFrame = frameMotion({
-          autoplay: true,
-          duration: Math.max(Math.min(400, Math.abs(distance) * 2), 32),
-          onComplete: () => {
-            cur === scrollFrame && (scrollFrame = null)
-            onComplete()
-          },
-          easing: (t: number) => t ** 3,
-          onUpdate: (progress: number) => {
-            if (distance === 0) {
-              scrollFrame?.stop()
-            } else {
-              scrollToTop(start + distance * progress)
-            }
-          }
-        }))
-      } else {
-        scrollToTop(target)
-        onComplete()
-      }
-    }
-
-    const scrollToPosition = (options: {
-      left: number | undefined
-      top: number | undefined
-      behavior: ScrollToOptions['behavior']
-    }): void => {
-      ;(listElRef.value as HTMLElement).scrollTo(options)
-    }
-
-    const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
-      const {
-        left,
-        top,
-        index,
-        key,
-        position,
-        behavior,
-        debounce = true
-      } = options
-      if (left !== undefined || top !== undefined) {
-        scrollToPosition({
-          left,
-          top,
-          behavior
-        })
-      } else if (index !== undefined) {
-        scrollToIndex(index, behavior, debounce)
-      } else if (key !== undefined) {
-        scrollToKey(key, behavior, debounce)
-      } else if (position === 'bottom') {
-        scrollToPosition({
-          top: listHeightRef.value,
-          left: 0,
-          behavior
-        })
-      } else if (position === 'top') {
-        scrollToPosition({
-          top: 0,
-          left: 0,
-          behavior
-        })
-      }
-    }
-
+    // Resize
     const handleResize = (key: ItemKey, entry: ResizeObserverEntry): void => {
       if (isHideByVShow(entry.target as HTMLElement)) {
         return
@@ -558,10 +441,19 @@ export default defineComponent({
       }
       const { index, debounce } = shouldPositionedTo
       shouldPositionedTo = null
+
+      const newestVisibleIndex = getNewestVisibleIndex(scrollTopRef.value)
       if (
-        renderedItemsRef.value.some((item) => item.index === index) ||
-        index !== getNewestVisibleIndex(scrollTopRef.value)
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        debounce &&
+        index >= newestVisibleIndex &&
+        getPosition(Math.min(props.items.length, index + 1)) <=
+          scrollTopRef.value + viewportHeightRef.value
       ) {
+        // If debounce is true, just need it in the viewport
+        return
+      }
+      if (index !== newestVisibleIndex) {
         scrollToIndex(index, 'auto', debounce)
       }
     }
@@ -601,6 +493,143 @@ export default defineComponent({
         scrollTo({ key: defaultScrollKey })
       }
     })
+
+    // Scroll Methods
+    let scrollFrame: FrameMotionUserControls | null = null
+    let shouldPositionedTo: { index: number, debounce?: boolean } | null = null
+
+    const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
+      const {
+        left,
+        top,
+        index,
+        key,
+        position,
+        behavior,
+        debounce = false
+      } = options
+      if (left !== undefined || top !== undefined) {
+        scrollToPosition({
+          left,
+          top,
+          behavior
+        })
+      } else if (index !== undefined) {
+        scrollToIndex(index, behavior, debounce)
+      } else if (key !== undefined) {
+        scrollToKey(key, behavior, debounce)
+      } else if (position === 'bottom') {
+        scrollToPosition({
+          top: listHeightRef.value,
+          left: 0,
+          behavior
+        })
+      } else if (position === 'top') {
+        scrollToPosition({
+          top: 0,
+          left: 0,
+          behavior
+        })
+      }
+    }
+
+    const scrollToKey = (
+      key: ItemKey,
+      behavior?: ScrollBehavior,
+      debounce?: boolean
+    ): void => {
+      scrollToIndex(getIndex(key), behavior, debounce)
+    }
+
+    const scrollToIndex = (
+      index: number,
+      behavior?: ScrollBehavior,
+      debounce?: boolean
+    ): void => {
+      if (!validateIndex(index)) {
+        return
+      }
+      scrollToPosition(
+        {
+          top: getPosition(index),
+          left: 0,
+          behavior
+        },
+        (): void => {
+          resizeableRef.value &&
+            requestAnimationFrame(() => {
+              // Wait until the scroll event fires before assigning
+              shouldPositionedTo = {
+                index,
+                debounce
+              }
+              if (behavior === 'smooth') {
+                measurePositionedIndex()
+              } else {
+                void nextTick(measurePositionedIndex)
+              }
+            })
+        }
+      )
+    }
+
+    const scrollToPosition = (
+      options: ScrollToOptions,
+      callback?: Function
+    ): void => {
+      if (scrollFrame !== null) {
+        scrollFrame.stop()
+        scrollFrame = null
+      }
+      shouldPositionedTo = null
+
+      const { value: listEl } = listElRef
+      if (listEl === null) {
+        return
+      }
+
+      const {
+        top = listEl.scrollTop,
+        left = listEl.scrollLeft,
+        behavior = 'auto'
+      } = options
+
+      if (behavior === 'auto') {
+        listEl.scrollTop = top
+        listEl.scrollLeft = left
+        callback?.()
+      } else {
+        const startTop = listEl.scrollTop
+        const startLeft = listEl.scrollLeft
+        const distanceTop = top - startTop
+        const distanceLeft = left - startLeft
+
+        const duration = Math.max(
+          Math.min(575, Math.abs(distanceTop) * 1.2),
+          32
+        )
+        const onComplete = (): void => {
+          cur === scrollFrame && (scrollFrame = null)
+          callback?.()
+        }
+
+        const cur = (scrollFrame = frameMotion({
+          duration,
+          autoplay: true,
+          onComplete,
+          onUpdate: (progress: number) => {
+            if (listEl.scrollTop === top && listEl.scrollLeft === left) {
+              cur.stop()
+              onComplete()
+              return
+            }
+            listEl.scrollTop = startTop + distanceTop * progress
+            listEl.scrollLeft = startLeft + distanceLeft * progress
+          }
+        }))
+      }
+    }
+
     return {
       listStyle: {
         overflow: 'auto'

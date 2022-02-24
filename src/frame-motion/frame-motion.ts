@@ -79,7 +79,7 @@ export function frameMotion (
       schedule.onPlay?.(currentTime)
       onPlay?.(currentTime)
 
-      work(currentTime)
+      schedule.onNextFrame(() => work(currentTime))
     }
 
     if (isContinue) {
