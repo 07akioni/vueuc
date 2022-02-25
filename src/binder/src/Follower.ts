@@ -147,6 +147,14 @@ export default defineComponent({
         x !== undefined && y !== undefined
           ? getPointRect(x, y)
           : getRect(target)
+      follower.style.setProperty(
+        '--v-target-width',
+        `${Math.round(targetRect.width)}px`
+      )
+      follower.style.setProperty(
+        '--v-target-height',
+        `${Math.round(targetRect.height)}px`
+      )
       const { width, minWidth, placement, internalShift, flip } = props
 
       follower.setAttribute('v-placement', placement)
