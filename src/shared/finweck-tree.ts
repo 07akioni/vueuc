@@ -25,7 +25,7 @@ export class FinweckTree {
   add (i: number, n: number): void {
     const { l, ft } = this
     if (n === 0 || i >= l) return
-    this.map.set(i, this.map.get(i) ?? 0 + n)
+    this.map.set(i, this.get(i) + n)
     i += 1
     while (i <= l) {
       ft[i] += n
@@ -63,7 +63,7 @@ export class FinweckTree {
   sum (i?: number): number {
     if (i === 0) return 0
     const { ft, l } = this
-    if (i === undefined) i = l - 1
+    if (i === undefined) i = l
     if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
     let sum = 0
     while (i > 0) {

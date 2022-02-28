@@ -423,7 +423,7 @@ export default defineComponent({
       return position + offsetFinweckTreeRef.value.sum(startIndex)
     })
 
-    const handleScroll = (e: Event): void => {
+    const handleListScroll = (e: Event): void => {
       beforeNextFrameOnce(syncViewport)
       props.onScroll?.(e)
 
@@ -457,28 +457,19 @@ export default defineComponent({
 
       if (increment !== 0) {
         setItemOffset(key, offset)
-
-        const { value: startIndex } = startIndexRef
-        if (
-          !shouldMeasurePositioned &&
-          startIndex > preReservation &&
-          getIndex(key) < startIndex + preReservation
-        ) {
-          // Make up for the gap caused by dynamic height
-          listElRef.value?.scrollBy(0, increment)
-        }
       }
-
       // measure
       if (shouldMeasurePositioned) {
         beforeNextFrameOnce(measurePositionedIndex)
       }
     }
 
-    const handleViewportResize = (entry: ResizeObserverEntry): void => {
+    const handleListResize = (entry: ResizeObserverEntry): void => {
       if (isHideByVShow(entry.target as HTMLElement)) {
         return
       }
+      // If height is same, return
+      if (entry.contentRect.height === listHeightRef.value) return
       viewportHeightRef.value = entry.contentRect.height
       props.onResize?.(entry)
     }
@@ -689,9 +680,9 @@ export default defineComponent({
       itemsElRef: ref<null | Element>(null),
       resizeable: resizeableRef,
       renderedItems: renderedItemsRef,
-      handleViewportResize,
+      handleListResize,
+      handleListScroll,
       handleItemResize,
-      handleScroll,
       scrollTo
     }
   },
@@ -700,7 +691,7 @@ export default defineComponent({
     return h(
       VResizeObserver,
       {
-        onResize: this.handleViewportResize
+        onResize: this.handleListResize
       },
       {
         default: () => {
@@ -708,7 +699,7 @@ export default defineComponent({
             'div',
             mergeProps(this.$attrs, {
               class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
-              onScroll: this.handleScroll,
+              onScroll: this.handleListScroll,
               onWheel: this.onWheel,
               ref: 'listElRef'
             }),
