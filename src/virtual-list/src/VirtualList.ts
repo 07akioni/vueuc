@@ -168,21 +168,8 @@ export default defineComponent({
       return height + offsetFinweckTreeRef.value.sum()
     })
 
-    const scrollTopRef = ref(0)
     const viewportHeightRef = ref(0)
-    const getViewportRect = (): {
-      height: number
-      top: number
-      bottom: number
-    } => {
-      const { value: height } = viewportHeightRef
-      const { value: top } = scrollTopRef
-      return {
-        height,
-        top,
-        bottom: top + height
-      }
-    }
+    const scrollTopRef = ref(0)
 
     const finweckTreeUpdateTrigger = ref(0)
     const offsetFinweckTreeRef = computed(() => {
@@ -336,7 +323,9 @@ export default defineComponent({
         // Need to further calculate the position of startIndex
         const { items } = props
         const { length } = items
-        const { top, bottom } = getViewportRect()
+        const { value: top } = scrollTopRef
+        const { value: height } = viewportHeightRef
+        const bottom = top + height
 
         // avoid repeated runs
         const getItemHeight = cacheResultFunction(getHeight)
@@ -423,13 +412,34 @@ export default defineComponent({
       return position + offsetFinweckTreeRef.value.sum(startIndex)
     })
 
+    let allowCompensateVisualBias = false
+    let currentScrolFromWheel = false
+
     const handleListScroll = (e: Event): void => {
       beforeNextFrameOnce(syncViewport)
       props.onScroll?.(e)
-
+      if (!currentScrolFromWheel) {
+        allowCompensateVisualBias = true
+      }
       if (shouldPositionedTo !== null) {
         shouldPositionedTo = null
       }
+    }
+
+    let timer: NodeJS.Timer | null = null
+    const handleListWheel = (e: WheelEvent): void => {
+      if (Math.abs(e.deltaY) % 100 === 0) {
+        allowCompensateVisualBias = false
+        currentScrolFromWheel = true
+
+        if (timer !== null) {
+          clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+          currentScrolFromWheel = false
+        }, 200)
+      }
+      props.onWheel?.(e)
     }
 
     const syncViewport = (): void => {
@@ -457,6 +467,17 @@ export default defineComponent({
 
       if (increment !== 0) {
         setItemOffset(key, offset)
+
+        if (!shouldMeasurePositioned && allowCompensateVisualBias) {
+          const { value: startIndex } = startIndexRef
+          if (
+            startIndex > preReservation &&
+            getIndex(key) < startIndex + preReservation
+          ) {
+            // Make up for the gap caused by dynamic height
+            listElRef.value?.scrollBy(0, increment)
+          }
+        }
       }
       // measure
       if (shouldMeasurePositioned) {
@@ -682,6 +703,7 @@ export default defineComponent({
       renderedItems: renderedItemsRef,
       handleListResize,
       handleListScroll,
+      handleListWheel,
       handleItemResize,
       scrollTo
     }
@@ -700,7 +722,7 @@ export default defineComponent({
             mergeProps(this.$attrs, {
               class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
               onScroll: this.handleListScroll,
-              onWheel: this.onWheel,
+              onWheel: this.handleListWheel,
               ref: 'listElRef'
             }),
             [
