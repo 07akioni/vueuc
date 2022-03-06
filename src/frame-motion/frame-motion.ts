@@ -121,7 +121,7 @@ export function frameMotion (
       onUpdate?.(progress, timeElapsed)
     }
 
-    if (progress === 1) {
+    if (progress >= 1 || timeElapsed >= duration) {
       completed = true
       schedule.onComplete?.(currentTime)
       onComplete?.(currentTime)

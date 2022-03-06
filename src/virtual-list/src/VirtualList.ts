@@ -524,9 +524,7 @@ export default defineComponent({
     })
 
     // Scroll Methods
-    let scrollFrame: FrameMotionUserControls | null = null
     let shouldPositionedTo: { index: number, debounce?: boolean } | null = null
-
     const measurePositionedIndex = (): void => {
       if (shouldPositionedTo === null) {
         return
@@ -551,35 +549,35 @@ export default defineComponent({
     }
 
     const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
-      const {
-        left,
-        top,
-        index,
-        key,
-        position,
-        behavior,
-        debounce = false
-      } = options
-      if (left !== undefined || top !== undefined) {
+      const { behavior, debounce } = options
+      if (options.left !== undefined) {
         scrollToPosition({
-          left,
-          top,
+          direction: 'left',
+          position: options.left,
           behavior
         })
-      } else if (index !== undefined) {
-        scrollToIndex(index, behavior, debounce)
-      } else if (key !== undefined) {
-        scrollToKey(key, behavior, debounce)
-      } else if (position === 'bottom') {
+      } else if (options.top !== undefined) {
         scrollToPosition({
-          top: listHeightRef.value,
-          left: 0,
+          direction: 'top',
+          position: options.top,
+          behavior
+        })
+      } else if (options.index !== undefined) {
+        scrollToIndex(options.index, behavior, debounce)
+      } else if (options.key !== undefined) {
+        scrollToKey(options.key, behavior, debounce)
+      }
+      const { position } = options
+      if (position === 'bottom') {
+        scrollToPosition({
+          direction: 'top',
+          position: listHeightRef.value,
           behavior
         })
       } else if (position === 'top') {
         scrollToPosition({
-          top: 0,
-          left: 0,
+          direction: 'top',
+          position: 0,
           behavior
         })
       }
@@ -601,10 +599,15 @@ export default defineComponent({
       if (!validateIndex(index)) {
         return
       }
+      scrollToPosition({
+        direction: 'left',
+        position: 0,
+        behavior
+      })
       scrollToPosition(
         {
-          top: getPosition(index),
-          left: 0,
+          direction: 'top',
+          position: getPosition(index),
           behavior
         },
         (): void => {
@@ -621,60 +624,57 @@ export default defineComponent({
       )
     }
 
+    interface ScrollToPositionOptions {
+      direction: 'top' | 'left'
+      position: number
+      behavior?: ScrollBehavior
+    }
+    const scrollAnimationMap = new Map<string, FrameMotionUserControls>()
     const scrollToPosition = (
-      options: ScrollToOptions,
-      callback?: Function
+      options: ScrollToPositionOptions,
+      onComplete?: () => void
     ): void => {
-      if (scrollFrame !== null) {
-        scrollFrame.stop()
-        scrollFrame = null
+      const { direction, position, behavior = 'auto' } = options
+      if (scrollAnimationMap.has(direction)) {
+        scrollAnimationMap.get(direction)?.stop()
+        scrollAnimationMap.delete(direction)
       }
       shouldPositionedTo = null
-
       const { value: listEl } = listElRef
       if (listEl === null) {
         return
       }
 
-      const {
-        top = listEl.scrollTop,
-        left = listEl.scrollLeft,
-        behavior = 'auto'
-      } = options
-
+      const field = `scroll${direction
+        .charAt(0)
+        .toLocaleUpperCase()}${direction.slice(1)}` as
+        | 'scrollTop'
+        | 'scrollLeft'
       if (behavior === 'auto') {
-        listEl.scrollTop = top
-        listEl.scrollLeft = left
-        callback?.()
+        listEl[field] = position
       } else {
-        const startTop = listEl.scrollTop
-        const startLeft = listEl.scrollLeft
-        const distanceTop = top - startTop
-        const distanceLeft = left - startLeft
-
-        const duration = Math.max(
-          Math.min(575, Math.abs(distanceTop) * 1.2),
-          16
-        )
-        const onComplete = (): void => {
-          cur === scrollFrame && (scrollFrame = null)
-          callback?.()
+        const startPos = listEl[field]
+        const distance = position - startPos
+        const handleComplete = (): void => {
+          if (scrollAnimationMap.get(direction) === animation) {
+            scrollAnimationMap.delete(direction)
+          }
+          onComplete?.()
         }
-
-        const cur = (scrollFrame = frameMotion({
-          duration,
+        const animation = frameMotion({
+          duration: 648,
           autoplay: true,
-          onComplete,
+          onComplete: handleComplete,
+          easing: (t) => 0.5 * (1 - Math.cos(Math.PI * t)),
           onUpdate: (progress: number) => {
-            if (listEl.scrollTop === top && listEl.scrollLeft === left) {
-              cur.stop()
-              onComplete()
+            if (listEl[field] === position) {
+              animation?.stop()
+              handleComplete()
               return
             }
-            listEl.scrollTop = startTop + distanceTop * progress
-            listEl.scrollLeft = startLeft + distanceLeft * progress
+            listEl[field] = startPos + distance * progress
           }
-        }))
+        })
       }
     }
 
