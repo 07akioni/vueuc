@@ -40,10 +40,10 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ key: 200, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior })
           }
         }, [
-          'scrollTo({ key: 200 })'
+          'scrollTo({ key: 2000 })'
         ]),
         h('button', {
           onClick: () => {
