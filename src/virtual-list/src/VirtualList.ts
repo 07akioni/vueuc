@@ -14,6 +14,7 @@ import {
 import type { PropType, CSSProperties } from 'vue'
 import { pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
+import bezier from 'bezier-easing'
 import type { ItemData, VScrollToOptions } from './type'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
@@ -661,11 +662,16 @@ export default defineComponent({
           }
           onComplete?.()
         }
+        const DurationDivisor = 60.0
+        const ImpulseMaxDurationMs = 500.0
         const animation = frameMotion({
-          duration: 648,
+          duration: Math.max(
+            DurationDivisor,
+            Math.min(Math.abs(distance), ImpulseMaxDurationMs) * 1.5
+          ),
           autoplay: true,
           onComplete: handleComplete,
-          easing: (t) => 0.5 * (1 - Math.cos(Math.PI * t)),
+          easing: bezier(0.42, 0.0, 0.58, 1),
           onUpdate: (progress: number) => {
             if (listEl[field] === position) {
               animation?.stop()
