@@ -42,7 +42,7 @@ export class FinweckTree {
   update (i: number, v: number): void {
     const pre = this.map.get(i) ?? 0
     if (pre !== v) {
-      return this.add(i, v - pre)
+      this.add(i, v - pre)
     }
   }
 
