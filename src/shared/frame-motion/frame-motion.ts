@@ -35,13 +35,10 @@ export function createFrameMotion ({
     if (completed) {
       return
     }
-
     const currentTime = (startTime = getTimeStamp())
-
     const doWork = (): void => {
       requestFrame(() => work(currentTime))
     }
-
     doWork()
   }
 
