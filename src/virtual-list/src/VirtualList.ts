@@ -441,7 +441,10 @@ export default defineComponent({
 
       // abort smooth scroll
       // https://drafts.csswg.org/cssom-view/#scrolling
-      scrollMotionController?.stop()
+      if (scrollMotionController !== null) {
+        scrollMotionController.abort()
+        scrollMotionController = null
+      }
     }
 
     const syncViewport = (): void => {
@@ -642,7 +645,7 @@ export default defineComponent({
       scrollToIndexOptions = null
       const { direction, position, behavior = 'auto' } = options
       if (scrollMotionController !== null) {
-        scrollMotionController.stop()
+        scrollMotionController.abort()
         scrollMotionController = null
       }
       const { value: listEl } = listElRef
@@ -666,7 +669,7 @@ export default defineComponent({
 
       const handleComplete = (): void => {
         if (scrollMotionController !== null) {
-          scrollMotionController.stop()
+          scrollMotionController.abort()
           scrollMotionController = null
         }
         onComplete?.()

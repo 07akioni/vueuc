@@ -62,7 +62,7 @@ export function createFrameMotion ({
     frameId = requestFrame(work)
   }
 
-  const stop = (): void => {
+  const abort = (): void => {
     if (!completed) {
       // abort the motion
       completed = true
@@ -75,6 +75,6 @@ export function createFrameMotion ({
 
   return {
     play,
-    stop
+    abort
   }
 }
