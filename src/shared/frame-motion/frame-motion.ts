@@ -1,66 +1,45 @@
 import {
-  framer,
-  timer,
-  cancelFrameRequest,
+  cancelFrame,
   getTimeStamp,
-  onNextFrame
-} from './schedulers'
+  requestFrame,
+  calculateProgress,
+  normalizeProgress
+} from './utils'
 import { easings } from './easing'
 import type {
   FrameMotionScheduler,
-  FrameMotionUserControls,
-  FrameMotionUserOptions
+  FrameMotionController,
+  FrameMotionOptions
 } from './interface'
-import { calculateProgress, normalizeProgress } from './utils'
 
 type ScheduleRequireKey =
   | 'getTimeStamp'
-  | 'onNextFrame'
-  | 'cancelFrameRequest'
+  | 'requestFrame'
+  | 'cancelFrame'
   | 'process'
 type Schedule = Omit<FrameMotionScheduler, ScheduleRequireKey> &
 Required<Pick<FrameMotionScheduler, ScheduleRequireKey>>
 
-export function frameMotion (
-  userOptions: FrameMotionUserOptions
-): FrameMotionUserControls {
-  const options = {
-    delay: 0,
-    interval: 0,
-    duration: 500,
-    easing: easings.linear,
-    autoplay: false,
-    ...userOptions
-  }
-
-  const {
-    duration,
-    interval,
-    delay,
-    autoplay,
-    easing,
-    onPlay,
-    onStop,
-    onComplete,
-    onUpdate
-  } = options
-
+export function createFrameMotion ({
+  duration = 500,
+  easing = easings.linear,
+  onPlay,
+  onStop,
+  onComplete,
+  onUpdate
+}: FrameMotionOptions): FrameMotionController {
   const schedule: Schedule = {
     getTimeStamp,
-    onNextFrame,
-    cancelFrameRequest,
+    requestFrame,
+    cancelFrame,
     process: (timeElapsed, duration, easing) => {
       return easing(calculateProgress(timeElapsed, duration))
-    },
-    ...(options.scheduler ??
-      // When the interval is fixed, setTimeout tends to be more accurate
-      (interval > 0 ? timer(options) : framer()))
+    }
   }
 
   let startTime: number | null = null
   let timeElapsed = 0
 
-  let delayTimer: NodeJS.Timeout | null = null
   let frameId: any = null
 
   let stopping = false
@@ -79,7 +58,7 @@ export function frameMotion (
       schedule.onPlay?.(currentTime)
       onPlay?.(currentTime)
 
-      schedule.onNextFrame(() => work(currentTime))
+      schedule.requestFrame(() => work(currentTime))
     }
 
     if (isContinue) {
@@ -87,19 +66,8 @@ export function frameMotion (
       // When restarting, we need to make up for the time that's gone by.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       startTime -= timeElapsed
-      doWork()
-    } else {
-      if (delayTimer !== null) {
-        // in delay
-        return
-      }
-
-      if (delay > 0) {
-        delayTimer = setTimeout(doWork, delay)
-      } else {
-        doWork()
-      }
     }
+    doWork()
   }
 
   const work = (currentTime: number): void => {
@@ -128,7 +96,7 @@ export function frameMotion (
       return
     }
 
-    frameId = schedule.onNextFrame(work)
+    frameId = schedule.requestFrame(work)
   }
 
   const stop = (): void => {
@@ -136,23 +104,14 @@ export function frameMotion (
       const stopTime = schedule.getTimeStamp()
       stopping = true
 
-      if (delayTimer !== null) {
-        clearTimeout(delayTimer)
-        delayTimer = null
-      }
-
       if (frameId !== null) {
-        schedule.cancelFrameRequest(frameId)
+        schedule.cancelFrame(frameId)
         frameId = null
       }
 
       schedule.onStop?.(stopTime)
       onStop?.(stopTime)
     }
-  }
-
-  if (autoplay) {
-    play()
   }
 
   return {

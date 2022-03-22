@@ -15,12 +15,16 @@ import type { PropType, CSSProperties } from 'vue'
 import { pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
 import bezier from 'bezier-easing'
-import type { ItemData, VScrollToOptions } from './type'
-import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
-import VResizeObserver from '../../resize-observer/src'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { frameMotion } from '../../frame-motion'
-import type { FrameMotionUserControls } from '../../frame-motion'
+import VResizeObserver from '../../resize-observer/src/VResizeObserver'
+import type { FrameMotionController } from '../../shared'
+import {
+  c,
+  cssrAnchorMetaName,
+  FinweckTree,
+  createFrameMotion
+} from '../../shared'
+import type { ItemData, VScrollToOptions } from './type'
 
 const styles = c(
   '.v-vl',
@@ -105,8 +109,8 @@ function getScrollAnimationDuration (delta: number): number {
   )
 }
 
-const preReservation = 1
-const postReservation = 4
+const PRE_RESERVATION = 1
+const POST_RESERVATION = 4
 
 export default defineComponent({
   name: 'VirtualList',
@@ -350,8 +354,8 @@ export default defineComponent({
         }
       }
 
-      startIdx = Math.max(0, startIdx - preReservation)
-      endIdx += postReservation
+      startIdx = Math.max(0, startIdx - PRE_RESERVATION)
+      endIdx += POST_RESERVATION
 
       const { items, keyField } = props
       return items
@@ -410,29 +414,30 @@ export default defineComponent({
     })
 
     let allowCompensateVisualBias = false
-    let scrollFromWheel = false
+    let wheelTriggeredRecently = false
 
     const handleListScroll = (e: Event): void => {
       beforeNextFrameOnce(syncViewport)
       props.onScroll?.(e)
-      if (!scrollFromWheel) {
+      if (!wheelTriggeredRecently) {
         allowCompensateVisualBias = true
       }
       scrollToIndexOptions = null
     }
 
-    let timer: NodeJS.Timer | null = null
+    let wheelTriggeredTimerId: number | null = null
     const handleListWheel = (e: WheelEvent): void => {
-      if (Math.abs(e.deltaY) % 100 === 0) {
-        scrollFromWheel = true
-        allowCompensateVisualBias = false
-
-        if (timer !== null) clearTimeout(timer)
-        timer = setTimeout(() => {
-          scrollFromWheel = false
-        }, 200)
-      }
       props.onWheel?.(e)
+
+      wheelTriggeredRecently = true
+      allowCompensateVisualBias = false
+
+      if (wheelTriggeredTimerId !== null) {
+        window.clearTimeout(wheelTriggeredTimerId)
+      }
+      wheelTriggeredTimerId = window.setTimeout(() => {
+        wheelTriggeredRecently = false
+      }, 200)
     }
 
     const syncViewport = (): void => {
@@ -464,8 +469,8 @@ export default defineComponent({
         if (!shouldMeasurePositioned && allowCompensateVisualBias) {
           const { value: startIndex } = startIndexRef
           if (
-            startIndex > preReservation &&
-            getItemIndex(key) < startIndex + preReservation
+            startIndex > PRE_RESERVATION &&
+            getItemIndex(key) < startIndex + PRE_RESERVATION
           ) {
             // Make up for the gap caused by dynamic height
             listElRef.value?.scrollBy(0, increment)
@@ -624,23 +629,7 @@ export default defineComponent({
       position: number
       behavior?: ScrollBehavior
     }
-    const createScrollPositionAPI = (
-      direction: ScrollDirection,
-      target: Element
-    ): { get: () => number, set: (position: number) => void } => {
-      const property = `scroll${direction
-        .charAt(0)
-        .toLocaleUpperCase()}${direction.slice(1)}` as
-        | 'scrollTop'
-        | 'scrollLeft'
-      return {
-        get: (): number => target[property],
-        set: (position: number): void => {
-          target[property] = position
-        }
-      }
-    }
-    const scrollMotionControlsMap = new Map<string, FrameMotionUserControls>()
+    let scrollMotionController: FrameMotionController | null = null
     const scrollToPosition = (
       options: ScrollToPositionOptions,
       onComplete?: () => void
@@ -648,47 +637,58 @@ export default defineComponent({
       // If there is a new scroll work, stop last work
       scrollToIndexOptions = null
       const { direction, position, behavior = 'auto' } = options
-      if (scrollMotionControlsMap.has(direction)) {
-        // @ts-expect-error
-        scrollMotionControlsMap.get(direction).stop()
-        scrollMotionControlsMap.delete(direction)
+      if (scrollMotionController !== null) {
+        scrollMotionController.stop()
+        scrollMotionController = null
       }
       const { value: listEl } = listElRef
       if (listEl === null) {
         return
       }
-      const { get: getPosition, set: setPosition } = createScrollPositionAPI(
-        direction,
-        listEl
-      )
-      if (behavior === 'auto') {
-        setPosition(position)
-      } else {
-        const handleComplete = (): void => {
-          if (scrollMotionControlsMap.get(direction) === motionControls) {
-            scrollMotionControlsMap.delete(direction)
-          }
-          onComplete?.()
-        }
-        const startPosition = getPosition()
-        const delta = position - startPosition
-        const duration = getScrollAnimationDuration(delta)
-        const motionControls = frameMotion({
-          duration,
-          autoplay: true,
-          onComplete: handleComplete,
-          easing: bezier(0.42, 0.0, 0.58, 1),
-          onUpdate: (progress) => {
-            if (getPosition() === position) {
-              motionControls?.stop()
-              handleComplete()
-              return
+
+      const setScrollPosition =
+        direction === 'left'
+          ? (value: number) => {
+              listEl.scrollLeft = value
             }
-            setPosition(startPosition + delta * progress)
-          }
-        })
-        scrollMotionControlsMap.set(direction, motionControls)
+          : (value: number) => {
+              listEl.scrollTop = value
+            }
+
+      if (behavior === 'auto') {
+        setScrollPosition(options.position)
+        return
       }
+
+      const handleComplete = (): void => {
+        if (scrollMotionController !== null) {
+          scrollMotionController.stop()
+          scrollMotionController = null
+        }
+        onComplete?.()
+      }
+
+      const getScrollPosition =
+        direction === 'left' ? () => listEl.scrollLeft : () => listEl.scrollTop
+
+      const startPosition = getScrollPosition()
+      const delta = position - startPosition
+      const duration = getScrollAnimationDuration(delta)
+      scrollMotionController = createFrameMotion({
+        duration,
+        easing: bezier(0.42, 0.0, 0.58, 1),
+        onComplete: handleComplete,
+        onUpdate: (progress) => {
+          // 我感觉这个逻辑不是必须的
+          // if (getScrollPosition() === position) {
+          //   scrollMotionController?.stop()
+          //   handleComplete()
+          //   return
+          // }
+          setScrollPosition(startPosition + delta * progress)
+        }
+      })
+      scrollMotionController.play()
     }
 
     return {

@@ -1,17 +1,7 @@
-export {
-  warn
-} from './warn'
-export {
-  c,
-  cssrAnchorMetaName
-} from './cssr'
-export {
-  getFirstVNode,
-  getSlot
-} from './v-node'
-export {
-  FinweckTree
-} from './finweck-tree'
-export {
-  resolveTo
-} from './resolve-to'
+export { warn } from './warn'
+export { c, cssrAnchorMetaName } from './cssr'
+export { getFirstVNode, getSlot } from './v-node'
+export { FinweckTree } from './finweck-tree'
+export { resolveTo } from './resolve-to'
+export { createFrameMotion } from './frame-motion'
+export type { FrameMotionController } from './frame-motion'

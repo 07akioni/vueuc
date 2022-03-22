@@ -9,43 +9,28 @@ export interface FrameMotionHooks {
 
 export interface FrameMotionOptions extends FrameMotionHooks {
   /**
-   * default: 0
-   */
-  delay: number
-  /**
-   * default: 0
-   */
-  interval: number
-  /**
    * default: 500
    */
-  duration: number
+  duration?: number
   /**
    * default: (t) => t
    */
-  easing: Easing
-  /**
-   * default: false
-   */
-  autoplay?: boolean
-  scheduler?: FrameMotionScheduler
+  easing?: Easing
 }
-
-export type FrameMotionUserOptions = Partial<FrameMotionOptions>
 
 export interface FrameMotionScheduler
   extends Omit<FrameMotionHooks, 'onUpdate'> {
   // time scheduler
   getTimeStamp?: () => number
-  onNextFrame?: (callback: (currentTime: number) => void) => any
-  cancelFrameRequest?: (handle: any) => void
+  requestFrame?: (callback: (currentTime: number) => void) => any
+  cancelFrame?: (handle: any) => void
 
   shouldCallUpdate?: (currentTime: number, timeElapsed: number) => boolean
   onUpdate?: (time: number) => void
   process?: (timeElapsed: number, duration: number, easing: Easing) => number
 }
 
-export interface FrameMotionUserControls {
+export interface FrameMotionController {
   play: () => void
   stop: () => void
 }
