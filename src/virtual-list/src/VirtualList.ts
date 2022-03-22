@@ -438,6 +438,10 @@ export default defineComponent({
       wheelTriggeredTimerId = window.setTimeout(() => {
         wheelTriggeredRecently = false
       }, 200)
+
+      // abort smooth scroll
+      // https://drafts.csswg.org/cssom-view/#scrolling
+      scrollMotionController?.stop()
     }
 
     const syncViewport = (): void => {
