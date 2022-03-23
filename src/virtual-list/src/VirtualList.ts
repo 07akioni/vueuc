@@ -71,6 +71,13 @@ export interface VirtualListInst {
   scrollTo: ScrollTo
 }
 
+interface ViewportRect {
+  top: number
+  bottom: number
+  height: number
+  // TODO: horizontal
+}
+
 type ItemKey = string | number
 
 interface RenderedItem {
@@ -79,12 +86,10 @@ interface RenderedItem {
   original: ItemData
 }
 
-function cacheResultFunction<T extends (key: any) => any> (fn: T): T {
+function createResultMemoFunction<T extends (key: any) => any> (fn: T): T {
   const cache = new Map()
   return ((key) => {
-    if (cache.has(key)) {
-      return cache.get(key)
-    }
+    if (cache.has(key)) return cache.get(key)
     const result = fn(key)
     cache.set(key, result)
     return result
@@ -170,23 +175,33 @@ export default defineComponent({
     const scrollTopRef = ref(0)
     const listElRef = ref<null | Element>(null)
     const listHeightRef = ref(0)
+    const getViewportRect = (): ViewportRect => {
+      const { value: top } = scrollTopRef
+      const { value: height } = listHeightRef
+      return {
+        top: top - +(props.paddingTop ?? 0),
+        height,
+        bottom: top + height
+      }
+    }
 
-    const finweckTreeUpdateTrigger = ref(0)
     const offsetFinweckTreeRef = computed(() => {
       return new FinweckTree(resizeableRef.value ? props.items.length : 0)
     })
+    const finweckTreeUpdateTrigger = ref(0)
 
     const resizeableRef = computed(
       () => props.itemResizable && !props.ignoreItemResize
     )
-    const itemsHeightRef = computed(() => {
-      const height = props.items.length * props.itemSize
+    const itemsSizeRef = computed(() => {
+      const { length } = props.items
+      const assumedItemsSize = length * props.itemSize
       if (!resizeableRef.value) {
-        return height
+        return assumedItemsSize
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       finweckTreeUpdateTrigger.value
-      return height + offsetFinweckTreeRef.value.sum()
+      return assumedItemsSize + offsetFinweckTreeRef.value.sum(length)
     })
 
     const renderedItemsRef = ref<RenderedItem[]>([])
@@ -218,139 +233,110 @@ export default defineComponent({
         }
         renderedItemIndexMap.set(key, index)
       }
-
       return index
     }
 
-    const getItemHeight = (index: number): number => {
-      const { itemSize } = props
+    const getItemSize = (index: number): number => {
+      const { itemSize: assumedItemSize } = props
       if (!resizeableRef.value) {
-        return itemSize
+        return assumedItemSize
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       finweckTreeUpdateTrigger.value
-      return itemSize + offsetFinweckTreeRef.value.get(index)
+      return assumedItemSize + offsetFinweckTreeRef.value.get(index)
     }
 
     const getItemPosition = (index: number): number => {
       if (index === 0) return 0
-      const position = index * props.itemSize
+      const assumedPosition = index * props.itemSize
       if (!resizeableRef.value) {
-        return position
+        return assumedPosition
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       finweckTreeUpdateTrigger.value
-      return (
-        position +
-        offsetFinweckTreeRef.value.sum(Math.min(index, props.items.length))
-      )
+      return assumedPosition + offsetFinweckTreeRef.value.sum(index)
     }
 
-    const getCurrentVisibleIndex = (scrollTop: number): number =>
-      Math.floor((scrollTop / itemsHeightRef.value) * props.items.length)
+    const getFirstVisibleIndexByPosition = (position: number): number =>
+      Math.floor((position / itemsSizeRef.value) * props.items.length)
 
-    const getNewestVisibleIndex = (
-      scrollTop: number,
-      getHeight = getItemHeight
-    ): number => {
-      const newestVisibleIndex = getCurrentVisibleIndex(scrollTop)
-      if (!resizeableRef.value) {
-        return newestVisibleIndex
+    const measureFirstVisibleIndex = (index: number, top: number): number => {
+      const { items } = props
+      let start = getItemPosition(index)
+      if (start > top) {
+        /**
+         *      ┏━ ━━ ━┓
+         *        ┌──┐
+         *      ┃ │  │ ┃
+         *        └──┘
+         *      ┗━ ━━ ━┛
+         */
+        while (start > top && index > 0) {
+          index--
+          start -= getItemSize(index)
+        }
       } else {
-        return measureNewestVisibleIndex(
-          scrollTop,
-          newestVisibleIndex,
-          getHeight
+        const { length } = items
+        /**
+         *        ┌──┐
+         *      ┏━│━━│━┓
+         *        └──┘
+         *      ┃      ┃
+         *
+         *      ┗━ ━━ ━┛
+         */
+        while (start < top && index < length - 1) {
+          index++
+          start += getItemSize(index)
+        }
+
+        /**
+         *      ┏━ ━━ ━┓
+         *        ┌──┐
+         *      ┃ │  │ ┃
+         *        └──┘
+         *      ┗━ ━━ ━┛
+         */
+        if (start > top && index > 0) {
+          index--
+        }
+      }
+      return index
+    }
+
+    const getNewestVisibleIndex = (position: number): number => {
+      if (!resizeableRef.value) {
+        return getFirstVisibleIndexByPosition(position)
+      } else {
+        return measureFirstVisibleIndex(
+          getFirstVisibleIndexByPosition(position),
+          position
         )
       }
     }
 
-    const measureNewestVisibleIndex = (
-      scrollTop: number,
-      newestVisibleIndex: number,
-      getHeight = getItemHeight
-    ): number => {
-      if (!resizeableRef.value) {
-        return getCurrentVisibleIndex(scrollTop)
-      } else {
-        const { items } = props
-        let startPosition = getItemPosition(newestVisibleIndex)
-        if (startPosition > scrollTop) {
-          while (startPosition > scrollTop && newestVisibleIndex > 0) {
-            /**
-             *      ┏━ ━━ ━┓
-             *        ┌──┐
-             *      ┃ │  │ ┃
-             *        └──┘
-             *      ┗━ ━━ ━┛
-             */
-            newestVisibleIndex--
-            startPosition -= getHeight(newestVisibleIndex)
-          }
-        } else {
-          const { length } = items
-          while (startPosition < scrollTop && newestVisibleIndex < length - 1) {
-            /**
-             *        ┌──┐
-             *      ┏━│━━│━┓
-             *        └──┘
-             *      ┃      ┃
-             *
-             *      ┗━ ━━ ━┛
-             */
-            newestVisibleIndex++
-            startPosition += getHeight(newestVisibleIndex)
-          }
-
-          if (startPosition > scrollTop && newestVisibleIndex > 0) {
-            /**
-             *      ┏━ ━━ ━┓
-             *        ┌──┐
-             *      ┃ │  │ ┃
-             *        └──┘
-             *      ┗━ ━━ ━┛
-             */
-            newestVisibleIndex--
-          }
-        }
-
-        return newestVisibleIndex
-      }
-    }
-
-    const getRenderCandidates = (newestVisibleIdx: number): RenderedItem[] => {
-      let startIdx = newestVisibleIdx
+    const getRenderCandidates = (
+      firstVisibleIdx: number,
+      viewportRect: ViewportRect
+    ): RenderedItem[] => {
+      let startIdx = firstVisibleIdx
       let endIdx
       // The heights of all items are known and equal,
       // which newestVisibleIndex === startIndex
       if (!resizeableRef.value) {
-        endIdx = newestVisibleIdx + getNewestVisibleIndex(listHeightRef.value)
+        endIdx = startIdx + getFirstVisibleIndexByPosition(listHeightRef.value)
       } else {
         // avoid repeated runs
-        const getHeight = cacheResultFunction(getItemHeight)
-        // There is a dynamically changing height, which may be newestVisibleIndex !== startIndex
+        const getItemSizeMemo = createResultMemoFunction(getItemSize)
+        // There is a dynamically changing size, which may be newestVisibleIndex !== startIndex
         // Need to further calculate the position of startIndex
-        const { items } = props
-        const { length } = items
-        const { value: top } = scrollTopRef
-        const { value: height } = listHeightRef
-        const bottom = top + height
+        const { length } = props.items
+        const { bottom } = viewportRect
 
-        startIdx = measureNewestVisibleIndex(top, newestVisibleIdx, getHeight)
         endIdx = startIdx
-
-        let endPosition = getItemPosition(startIdx)
-        while (endPosition < bottom && endIdx < length - 1) {
-          /**
-           *      ┏━ ━━ ━┓
-           *
-           *      ┃      ┃
-           *        ┌──┐
-           *      ┗━│━━│━┛
-           *        └──┘
-           */
-          endIdx++
-          endPosition += getHeight(endIdx)
+        let end = getItemPosition(startIdx)
+        while (end < bottom && endIdx++ < length - 1) {
+          end += getItemSizeMemo(endIdx)
         }
       }
 
@@ -370,11 +356,14 @@ export default defineComponent({
       }, [])
     }
 
-    const newestVisibleIndexRef = useMemo(() =>
-      getCurrentVisibleIndex(scrollTopRef.value)
+    const firstVisibleIndexRef = useMemo(() =>
+      getNewestVisibleIndex(getViewportRect().top)
     )
     const getFinalRenderedItemsMemoized = (): RenderedItem[] => {
-      const renderedItems = getRenderCandidates(newestVisibleIndexRef.value)
+      const renderedItems = getRenderCandidates(
+        firstVisibleIndexRef.value,
+        getViewportRect()
+      )
       const { keyField } = props
       renderedItems.forEach((item) => {
         renderedItemIndexMap.set(item.original[keyField], item.index)
@@ -387,9 +376,10 @@ export default defineComponent({
       if (
         renderedItems.length !== finalRenderedItems.length ||
         renderedItems.some((item, index) => {
+          const finalRenderedItem = finalRenderedItems[index]
           return (
-            item.key !== finalRenderedItems[index].key ||
-            item.index !== finalRenderedItems[index].index
+            item.key !== finalRenderedItem.key ||
+            item.index !== finalRenderedItem.index
           )
         })
       ) {
@@ -398,19 +388,19 @@ export default defineComponent({
     })
 
     // Scroll
-    const startIndexRef = useMemo(() => renderedItemsRef.value[0]?.index ?? -1)
+    const startIndexRef = useMemo(() => renderedItemsRef.value[0]?.index ?? 0)
     const itemsPositionRef = computed(() => {
       const { value: startIndex } = startIndexRef
       if (!validateIndex(startIndex)) {
         return 0
       }
-      const position = startIndex * props.itemSize
+      const assumedPosition = startIndex * props.itemSize
       if (!resizeableRef.value) {
-        return position
+        return assumedPosition
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       finweckTreeUpdateTrigger.value
-      return position + offsetFinweckTreeRef.value.sum(startIndex)
+      return assumedPosition + offsetFinweckTreeRef.value.sum(startIndex)
     })
 
     let allowCompensateVisualBias = false
@@ -429,15 +419,17 @@ export default defineComponent({
     const handleListWheel = (e: WheelEvent): void => {
       props.onWheel?.(e)
 
-      wheelTriggeredRecently = true
-      allowCompensateVisualBias = false
+      if (Math.abs(e.deltaY) % 100 === 0) {
+        wheelTriggeredRecently = true
+        allowCompensateVisualBias = false
 
-      if (wheelTriggeredTimerId !== null) {
-        window.clearTimeout(wheelTriggeredTimerId)
+        if (wheelTriggeredTimerId !== null) {
+          window.clearTimeout(wheelTriggeredTimerId)
+        }
+        wheelTriggeredTimerId = window.setTimeout(() => {
+          wheelTriggeredRecently = false
+        }, 200)
       }
-      wheelTriggeredTimerId = window.setTimeout(() => {
-        wheelTriggeredRecently = false
-      }, 200)
 
       // abort smooth scroll
       // https://drafts.csswg.org/cssom-view/#scrolling
@@ -495,7 +487,7 @@ export default defineComponent({
         return
       }
       // If height is same, return
-      if (entry.contentRect.height === itemsHeightRef.value) return
+      if (entry.contentRect.height === itemsSizeRef.value) return
       listHeightRef.value = entry.contentRect.height
       props.onResize?.(entry)
     }
@@ -579,7 +571,7 @@ export default defineComponent({
       if (position === 'bottom') {
         scrollToPosition({
           direction: 'top',
-          position: itemsHeightRef.value,
+          position: itemsSizeRef.value,
           behavior
         })
       } else if (position === 'top') {
@@ -613,7 +605,7 @@ export default defineComponent({
       scrollToPosition(
         {
           direction: 'top',
-          position: getItemPosition(index),
+          position: getItemPosition(index) + +(props.paddingTop ?? 0),
           behavior
         },
         (): void => {
@@ -686,12 +678,6 @@ export default defineComponent({
         easing: bezier(0.42, 0.0, 0.58, 1),
         onComplete: handleComplete,
         onUpdate: (progress) => {
-          // 我感觉这个逻辑不是必须的
-          // if (getScrollPosition() === position) {
-          //   scrollMotionController?.stop()
-          //   handleComplete()
-          //   return
-          // }
           setScrollPosition(startPosition + delta * progress)
         }
       })
@@ -704,7 +690,7 @@ export default defineComponent({
       },
       itemsStyle: computed(() => {
         const { itemResizable } = props
-        const height = pxfy(itemsHeightRef.value)
+        const height = pxfy(itemsSizeRef.value)
         return [
           props.itemsStyle,
           {
