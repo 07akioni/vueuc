@@ -403,33 +403,45 @@ export default defineComponent({
       return assumedPosition + offsetFinweckTreeRef.value.sum(startIndex)
     })
 
-    let allowCompensateVisualBias = false
-    let wheelTriggeredRecently = false
-
     const handleListScroll = (e: Event): void => {
       beforeNextFrameOnce(syncViewport)
       props.onScroll?.(e)
-      if (!wheelTriggeredRecently) {
-        allowCompensateVisualBias = true
-      }
       scrollToIndexOptions = null
     }
 
+    let wheelTriggeredRecently = false
     let wheelTriggeredTimerId: number | null = null
+    let prevEvent:
+    | {
+      time: number
+      delta: number
+      direction: number
+    }
+    | undefined
     const handleListWheel = (e: WheelEvent): void => {
       props.onWheel?.(e)
+      if (wheelTriggeredTimerId !== null) {
+        window.clearTimeout(wheelTriggeredTimerId)
+      }
 
-      if (Math.abs(e.deltaY) % 100 === 0) {
-        wheelTriggeredRecently = true
-        allowCompensateVisualBias = false
-
-        if (wheelTriggeredTimerId !== null) {
-          window.clearTimeout(wheelTriggeredTimerId)
-        }
+      const newEvent = {
+        time: Date.now(),
+        delta: Math.abs(e.deltaY),
+        direction: Math.sign(e.deltaY)
+      }
+      wheelTriggeredRecently =
+        !wheelTriggeredRecently &&
+        prevEvent != null &&
+        newEvent.direction === -1 &&
+        prevEvent.direction === newEvent.direction &&
+        prevEvent.delta === newEvent.delta &&
+        prevEvent.delta > 15
+      if (wheelTriggeredRecently) {
         wheelTriggeredTimerId = window.setTimeout(() => {
           wheelTriggeredRecently = false
         }, 200)
       }
+      prevEvent = newEvent
 
       // abort smooth scroll
       // https://drafts.csswg.org/cssom-view/#scrolling
@@ -465,7 +477,7 @@ export default defineComponent({
       if (increment !== 0) {
         setItemOffset(key, offset)
 
-        if (!shouldMeasurePositioned && allowCompensateVisualBias) {
+        if (!shouldMeasurePositioned && !wheelTriggeredRecently) {
           const { value: startIndex } = startIndexRef
           if (
             startIndex > PRE_RESERVATION &&
