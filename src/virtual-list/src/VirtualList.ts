@@ -255,7 +255,8 @@ export default defineComponent({
       const { value: ft } = finweckTreeRef
       const index = keyIndexMapRef.value.get(key)
       const previousHeight = ft.get(index)
-      const height = entry.contentRect.height
+      const height =
+        entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height
       if (height === previousHeight) return
       // height offset based on itemSize
       // used when rebuild the finweck tree
