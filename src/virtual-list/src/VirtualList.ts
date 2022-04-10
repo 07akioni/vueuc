@@ -22,7 +22,8 @@ import {
   c,
   cssrAnchorMetaName,
   FinweckTree,
-  createFrameMotion
+  createFrameMotion,
+  isHideByVShow
 } from '../../shared'
 import type { ItemData, VScrollToOptions } from './type'
 
@@ -65,6 +66,7 @@ export interface ScrollTo {
   (options: { key: string | number } & CommonScrollToOptions): void
   (options: { position: 'top' | 'bottom' } & CommonScrollToOptions): void
 }
+
 export interface VirtualListInst {
   listElRef: HTMLElement
   itemsElRef: HTMLElement | null
@@ -75,7 +77,7 @@ interface ViewportRect {
   top: number
   bottom: number
   height: number
-  // TODO: horizontal
+  width: number
 }
 
 type ItemKey = string | number
@@ -83,38 +85,24 @@ type ItemKey = string | number
 interface RenderedItem {
   key: ItemKey
   index: number
-  original: ItemData
+  data: ItemData
 }
 
-function createResultMemoFunction<T extends (key: any) => any> (fn: T): T {
-  const cache = new Map()
-  return ((key) => {
-    if (cache.has(key)) return cache.get(key)
-    const result = fn(key)
-    cache.set(key, result)
-    return result
-  }) as T
-}
-
-function isHideByVShow (el: HTMLElement): boolean {
-  let cursor: HTMLElement | null = el
-  while (cursor !== null) {
-    if (cursor.style.display === 'none') return true
-    cursor = cursor.parentElement
-  }
-  return false
-}
-
-const DurationDivisor = 60.0
+// https://source.chromium.org/chromium/chromium/src/+/main:cc/animation/scroll_offset_animation_curve.cc;l=259;drc=401f9911c6a32a0900f3968258393a9e729da625;bpv=0;bpt=1
+const ImpulseMinDurationMs = 200.0
 const ImpulseMaxDurationMs = 500.0
+const ImpulseMillisecondsPerPixel = 1.5
 function getScrollAnimationDuration (delta: number): number {
   return Math.max(
-    DurationDivisor,
-    Math.min(Math.abs(delta), ImpulseMaxDurationMs) * 1.5
+    ImpulseMinDurationMs,
+    Math.min(
+      Math.abs(delta) * ImpulseMillisecondsPerPixel,
+      ImpulseMaxDurationMs
+    )
   )
 }
 
-const PRE_RESERVATION = 1
+const PRE_RESERVATION = 2
 const POST_RESERVATION = 4
 
 export default defineComponent({
@@ -155,11 +143,11 @@ export default defineComponent({
     // ResizeObserver + footer & header is not enough.
     // Too complex for simple case
     paddingTop: {
-      type: [Number, String],
+      type: Number,
       default: 0
     },
     paddingBottom: {
-      type: [Number, String],
+      type: Number,
       default: 0
     }
   },
@@ -179,49 +167,48 @@ export default defineComponent({
       const { value: top } = scrollTopRef
       const { value: height } = listHeightRef
       return {
-        top: top - +(props.paddingTop ?? 0),
+        top: top - props.paddingTop,
         height,
-        bottom: top + height
+        bottom: top + height,
+        width: 0
       }
     }
 
+    const resizeableRef = computed(
+      () => props.itemResizable && !props.ignoreItemResize
+    )
     const offsetFinweckTreeRef = computed(() => {
       return new FinweckTree(resizeableRef.value ? props.items.length : 0)
     })
     const finweckTreeUpdateTrigger = ref(0)
 
-    const resizeableRef = computed(
-      () => props.itemResizable && !props.ignoreItemResize
-    )
-    const itemsSizeRef = computed(() => {
+    const renderedItemsHeightRef = computed(() => {
       const { length } = props.items
-      const assumedItemsSize = length * props.itemSize
+      const minRenderedItemsHeight = length * props.itemSize
       if (!resizeableRef.value) {
-        return assumedItemsSize
+        return minRenderedItemsHeight
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       finweckTreeUpdateTrigger.value
-      return assumedItemsSize + offsetFinweckTreeRef.value.sum(length)
+      return minRenderedItemsHeight + offsetFinweckTreeRef.value.sum(length)
     })
 
     const renderedItemsRef = ref<RenderedItem[]>([])
     const renderedItemIndexMap = new Map<ItemKey, number>()
     const renderedItemOffsetMap = new Map<ItemKey, number>()
+    const validateIndex = (index: number | undefined): boolean => {
+      return index !== undefined && index >= 0 && index < props.items.length
+    }
     const setItemOffset = (key: ItemKey, offset: number): void => {
       const perviousOffset = renderedItemOffsetMap.get(key)
       if (perviousOffset !== offset) {
         const index = getItemIndex(key)
         if (validateIndex(index)) {
           renderedItemOffsetMap.set(key, offset)
-
           offsetFinweckTreeRef.value.update(index, offset)
           finweckTreeUpdateTrigger.value++
         }
       }
-    }
-
-    const validateIndex = (index?: number): boolean => {
-      return index !== undefined && index >= 0 && index < props.items.length
     }
     const getItemIndex = (key: ItemKey): number => {
       let index = renderedItemIndexMap.get(key)
@@ -258,7 +245,9 @@ export default defineComponent({
     }
 
     const getFirstVisibleIndexByPosition = (position: number): number =>
-      Math.floor((position / itemsSizeRef.value) * props.items.length)
+      Math.floor(
+        (position / renderedItemsHeightRef.value) * props.items.length
+      )
 
     const measureFirstVisibleIndex = (index: number, top: number): number => {
       const { items } = props
@@ -326,8 +315,6 @@ export default defineComponent({
       if (!resizeableRef.value) {
         endIdx = startIdx + getFirstVisibleIndexByPosition(listHeightRef.value)
       } else {
-        // avoid repeated runs
-        const getItemSizeMemo = createResultMemoFunction(getItemSize)
         // There is a dynamically changing size, which may be newestVisibleIndex !== startIndex
         // Need to further calculate the position of startIndex
         const { length } = props.items
@@ -336,7 +323,7 @@ export default defineComponent({
         endIdx = startIdx
         let end = getItemPosition(startIdx)
         while (end < bottom && endIdx++ < length - 1) {
-          end += getItemSizeMemo(endIdx)
+          end += getItemSize(endIdx)
         }
       }
 
@@ -350,7 +337,7 @@ export default defineComponent({
         candidates.push({
           index: index + startIdx,
           key: item[keyField],
-          original: item
+          data: item
         })
         return candidates
       }, [])
@@ -366,7 +353,7 @@ export default defineComponent({
       )
       const { keyField } = props
       renderedItems.forEach((item) => {
-        renderedItemIndexMap.set(item.original[keyField], item.index)
+        renderedItemIndexMap.set(item.data[keyField], item.index)
       })
       return renderedItems
     }
@@ -499,7 +486,7 @@ export default defineComponent({
         return
       }
       // If height is same, return
-      if (entry.contentRect.height === itemsSizeRef.value) return
+      if (entry.contentRect.height === renderedItemsHeightRef.value) return
       listHeightRef.value = entry.contentRect.height
       props.onResize?.(entry)
     }
@@ -583,7 +570,7 @@ export default defineComponent({
       if (position === 'bottom') {
         scrollToPosition({
           direction: 'top',
-          position: itemsSizeRef.value,
+          position: renderedItemsHeightRef.value,
           behavior
         })
       } else if (position === 'top') {
@@ -702,7 +689,7 @@ export default defineComponent({
       },
       itemsStyle: computed(() => {
         const { itemResizable } = props
-        const height = pxfy(itemsSizeRef.value)
+        const height = pxfy(renderedItemsHeightRef.value)
         return [
           props.itemsStyle,
           {
@@ -727,7 +714,6 @@ export default defineComponent({
     }
   },
   render () {
-    const { visibleItemsTag } = this
     return h(
       VResizeObserver,
       {
@@ -754,7 +740,7 @@ export default defineComponent({
                   },
                   [
                     h(
-                      visibleItemsTag as any,
+                      this.visibleItemsTag as any,
                       Object.assign(
                         {
                           class: 'v-vl-visible-items',
@@ -767,26 +753,32 @@ export default defineComponent({
                       {
                         default: () => {
                           const { resizeable, handleItemResize } = this
-                          return this.renderedItems.map((item) => {
-                            const { key, index, original } = item
-                            const itemVNode = (this.$slots.default as any)({
-                              item: original,
-                              index
-                            })[0]
+                          return this.renderedItems.map((renderedItem) => {
+                            const { key, index, data } = renderedItem
                             if (resizeable) {
                               return h(
                                 VResizeObserver,
                                 {
                                   key,
-                                  onResize: handleItemResize.bind(null, key)
+                                  onResize: (entry) =>
+                                    handleItemResize(key, entry)
                                 },
                                 {
-                                  default: () => itemVNode
+                                  default: () =>
+                                    (this.$slots.default as any)({
+                                      item: data,
+                                      index
+                                    })[0]
                                 }
                               )
+                            } else {
+                              const itemVNode = (this.$slots.default as any)({
+                                item: data,
+                                index
+                              })[0]
+                              itemVNode.key = key
+                              return itemVNode
                             }
-                            itemVNode.key = key
-                            return itemVNode
                           })
                         }
                       }
