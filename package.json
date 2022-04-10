@@ -43,8 +43,9 @@
     "vue-router": "^4.0.12"
   },
   "dependencies": {
-    "css-render": "^0.15.7",
     "@css-render/vue3-ssr": "^0.15.7",
+    "bezier-easing": "^2.1.0",
+    "css-render": "^0.15.7",
     "evtd": "^0.2.2",
     "resize-observer-polyfill": "^1.5.1",
     "seemly": "^0.3.1",
