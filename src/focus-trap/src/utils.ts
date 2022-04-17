@@ -34,7 +34,7 @@ function attemptFocus (element: HTMLElement): boolean {
     return false
   }
   try {
-    element.focus()
+    element.focus({ preventScroll: true })
   } catch (e) {}
   return document.activeElement === element
 }

@@ -54,19 +54,23 @@ export const FocusTrap = defineComponent({
     }
 
     onMounted(() => {
-      watch(() => props.active, (value) => {
-        if (value) {
-          activate()
-          on('keydown', document, handleDocumentKeydown)
-        } else {
-          off('keydown', document, handleDocumentKeydown)
-          if (activated) {
-            deactivate()
+      watch(
+        () => props.active,
+        (value) => {
+          if (value) {
+            activate()
+            on('keydown', document, handleDocumentKeydown)
+          } else {
+            off('keydown', document, handleDocumentKeydown)
+            if (activated) {
+              deactivate()
+            }
           }
+        },
+        {
+          immediate: true
         }
-      }, {
-        immediate: true
-      })
+      )
     })
     onBeforeUnmount(() => {
       off('keydown', document, handleDocumentKeydown)
@@ -106,7 +110,7 @@ export const FocusTrap = defineComponent({
         if (initialFocusTo === undefined) {
           resetFocusTo('first')
         } else {
-          resolveTo(initialFocusTo)?.focus()
+          resolveTo(initialFocusTo)?.focus({ preventScroll: true })
         }
       }
       activated = true
@@ -119,7 +123,7 @@ export const FocusTrap = defineComponent({
       if (isCurrentActive()) return
       const { finalFocusTo } = props
       if (finalFocusTo !== undefined) {
-        resolveTo(finalFocusTo)?.focus()
+        resolveTo(finalFocusTo)?.focus({ preventScroll: true })
       } else if (props.returnFocusOnDeactivated) {
         if (lastFocusedElement instanceof HTMLElement) {
           ignoreInternalFocusChange = true
