@@ -21,7 +21,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@css-render/vue3-ssr": "^0.15.7",
+    "@css-render/vue3-ssr": "^0.15.10",
     "@types/jasmine": "^3.5.14",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "eslint": "^7.10.0",
@@ -40,12 +40,13 @@
     "typescript": "^4.2.2",
     "vite": "^2.0.1",
     "vue": "^3.0.11",
-    "vue-router": "^4.0.12"
+    "vue-router": "^4.0.12",
+    "@typescript-eslint/parser": "^4.33.0"
   },
   "dependencies": {
-    "@css-render/vue3-ssr": "^0.15.7",
+    "@css-render/vue3-ssr": "^0.15.10",
     "@juggle/resize-observer": "^3.3.1",
-    "css-render": "^0.15.7",
+    "css-render": "^0.15.10",
     "evtd": "^0.2.2",
     "seemly": "^0.3.1",
     "vdirs": "^0.1.4",
