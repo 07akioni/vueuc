@@ -46,7 +46,6 @@
   "dependencies": {
     "@css-render/vue3-ssr": "^0.15.10",
     "@juggle/resize-observer": "^3.3.1",
-    "@vue/shared": "^3.2.34",
     "css-render": "^0.15.10",
     "evtd": "^0.2.2",
     "seemly": "^0.3.1",
