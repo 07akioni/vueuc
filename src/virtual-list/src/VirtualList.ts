@@ -135,7 +135,7 @@ export default defineComponent({
         return
       }
       // remount
-      scrollTo({ top: scrollTopRef.value })
+      scrollTo({ top: scrollTopRef.value, left: scrollLeft })
     })
     onDeactivated(() => {
       isDeactivated = true
@@ -167,6 +167,7 @@ export default defineComponent({
       return ft
     })
     const finweckTreeUpdateTrigger = ref(0)
+    let scrollLeft: number = 0
     const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
       return Math.max(
@@ -316,6 +317,7 @@ export default defineComponent({
       lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
       lastScrollAnchorIndex = undefined
       scrollTopRef.value = (listElRef.value as Element).scrollTop
+      scrollLeft = (listElRef.value as Element).scrollLeft
     }
     function isHideByVShow (el: HTMLElement): boolean {
       let cursor: HTMLElement | null = el
