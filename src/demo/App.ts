@@ -40,6 +40,13 @@ export default defineComponent({
             ),
             h('li',
               [h(RouterLink, {
+                to: '/virtual-list-3'
+              }, {
+                default: () => 'Virtual List(keep alive)'
+              })]
+            ),
+            h('li',
+              [h(RouterLink, {
                 to: '/resize-observer'
               }, {
                 default: () => 'Resize Observer'

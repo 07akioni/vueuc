@@ -9,7 +9,8 @@ import {
   onMounted,
   h,
   CSSProperties,
-  onActivated
+  onActivated,
+  onDeactivated
 } from 'vue'
 import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
@@ -125,8 +126,22 @@ export default defineComponent({
         scrollTo({ key: defaultScrollKey })
       }
     })
+    let isDeactivated = false
+    let activateStateInitialized = false
     onActivated(() => {
+      isDeactivated = false
+      if (!activateStateInitialized) {
+        activateStateInitialized = true
+        return
+      }
+      // remount
       scrollTo({ top: scrollTopRef.value })
+    })
+    onDeactivated(() => {
+      isDeactivated = true
+      if (!activateStateInitialized) {
+        activateStateInitialized = true
+      }
     })
     const keyIndexMapRef = computed(() => {
       const map = new Map()
@@ -250,6 +265,7 @@ export default defineComponent({
       key: string | number,
       entry: ResizeObserverEntry
     ): void {
+      if (isDeactivated) return
       if (props.ignoreItemResize) return
       if (isHideByVShow(entry.target as HTMLElement)) return
       const { value: ft } = finweckTreeRef
