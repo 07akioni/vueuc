@@ -297,6 +297,7 @@ export default defineComponent({
       if (onScroll !== undefined) onScroll(e)
     }
     function handleListResize (entry: ResizeObserverEntry): void {
+      if (isDeactivated) return
       // List is HTMLElement
       if (isHideByVShow(entry.target as HTMLElement)) return
       // If height is same, return
