@@ -14,10 +14,10 @@ import {
 } from 'vue'
 import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
 import { useMemo } from 'vooks'
+import { useSsrAdapter } from '@css-render/vue3-ssr'
 import { ItemData, VScrollToOptions } from './type'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import VResizeObserver from '../../resize-observer/src'
-import { useSsrAdapter } from '@css-render/vue3-ssr'
 
 const styles = c(
   '.v-vl',
@@ -53,6 +53,7 @@ export interface CommonScrollToOptions {
 }
 
 export interface ScrollTo {
+  (x: number, y: number): void
   (options: { left?: number, top?: number } & CommonScrollToOptions): void
   (options: { index: number } & CommonScrollToOptions): void
   (options: { key: string | number } & CommonScrollToOptions): void
@@ -192,7 +193,11 @@ export default defineComponent({
       }
       return viewportItems
     })
-    const scrollTo: ScrollTo = (options: VScrollToOptions): void => {
+    const scrollTo: ScrollTo = (options: VScrollToOptions | number, y?: number): void => {
+      if (typeof options === 'number') {
+        scrollToPosition(options, y, 'auto')
+        return
+      }
       const {
         left,
         top,
