@@ -24,7 +24,7 @@ export const FocusTrap = defineComponent({
       type: Boolean,
       default: true
     },
-    onEsc: Function as PropType<() => void>,
+    onEsc: Function as PropType<(e: KeyboardEvent) => void>,
     initialFocusTo: String,
     finalFocusTo: String,
     returnFocusOnDeactivated: {
@@ -48,7 +48,7 @@ export const FocusTrap = defineComponent({
     function handleDocumentKeydown (e: KeyboardEvent): void {
       if (e.code === 'Escape') {
         if (isCurrentActive()) {
-          props.onEsc?.()
+          props.onEsc?.(e)
         }
       }
     }
