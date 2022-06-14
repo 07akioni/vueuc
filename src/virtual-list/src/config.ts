@@ -1,18 +1,22 @@
-let maybeTouch: boolean | undefined = undefined
+let maybeTouch: boolean | undefined
 
-export function ensureMaybeTouch(): boolean {
+export function ensureMaybeTouch (): boolean {
   if (maybeTouch === undefined) {
-    maybeTouch = window.matchMedia("(pointer:coarse)").matches
+    if ('matchMedia' in window) {
+      maybeTouch = window.matchMedia('(pointer:coarse)').matches
+    } else {
+      maybeTouch = false
+    }
   }
   return maybeTouch
 }
 
-let wheelScale: number | undefined = undefined
+let wheelScale: number | undefined
 
-export function ensureWheelScale(): number {
+export function ensureWheelScale (): number {
   if (wheelScale === undefined) {
-    wheelScale = 'chrome' in window 
-      ? window.devicePixelRatio 
+    wheelScale = 'chrome' in window
+      ? window.devicePixelRatio
       : 1
   }
   return wheelScale
