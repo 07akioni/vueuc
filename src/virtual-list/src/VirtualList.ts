@@ -10,8 +10,7 @@ import {
   h,
   CSSProperties,
   onActivated,
-  onDeactivated,
-  nextTick
+  onDeactivated
 } from 'vue'
 import { beforeNextFrameOnce, depx, pxfy } from 'seemly'
 import { useMemo } from 'vooks'
@@ -195,7 +194,10 @@ export default defineComponent({
       }
       return viewportItems
     })
-    const scrollTo: ScrollTo = (options: VScrollToOptions | number, y?: number): void => {
+    const scrollTo: ScrollTo = (
+      options: VScrollToOptions | number,
+      y?: number
+    ): void => {
       if (typeof options === 'number') {
         scrollToPosition(options, y, 'auto')
         return
@@ -222,8 +224,8 @@ export default defineComponent({
         scrollToPosition(0, 0, behavior)
       }
     }
-    let anchorIndex: number | undefined = undefined
-    let anchorTimerId: number = 0
+    let anchorIndex: number | undefined
+    let anchorTimerId: number | null = null
     function scrollToIndex (
       index: number,
       behavior: ScrollToOptions['behavior'],
@@ -239,12 +241,12 @@ export default defineComponent({
         })
       } else {
         anchorIndex = index
-        if (anchorTimerId) {
+        if (anchorTimerId !== null) {
           window.clearTimeout(anchorTimerId)
         }
         anchorTimerId = window.setTimeout(() => {
           anchorIndex = undefined
-          anchorTimerId = 0
+          anchorTimerId = null
         }, 16) // use 0 ms may be ealier than resize callback...
         const { scrollTop, offsetHeight } = listElRef.value as HTMLDivElement
         if (targetTop > scrollTop) {
@@ -304,7 +306,7 @@ export default defineComponent({
       if (delta === 0) return
       ft.add(index, delta)
       const listEl = listElRef.value
-      if (listEl) {
+      if (listEl != null) {
         if (anchorIndex === undefined) {
           const previousHeightSum = ft.sum(index)
           if (listEl.scrollTop > previousHeightSum) {
@@ -337,13 +339,14 @@ export default defineComponent({
         syncViewport()
       }
     }
-    function handleListWheel(e: WheelEvent): void {
+    function handleListWheel (e: WheelEvent): void {
       props.onWheel?.(e)
       if (mayUseWheel) {
         e.preventDefault()
         const listEl = listElRef.value
-        if (listEl) {
+        if (listEl != null) {
           listEl.scrollTop += e.deltaY / ensureWheelScale()
+          listEl.scrollLeft += e.deltaX / ensureWheelScale()
           syncViewport()
           wheelCatched = true
           beforeNextFrameOnce(() => {
