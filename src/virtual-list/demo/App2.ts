@@ -8,12 +8,13 @@ import { createId } from 'seemly'
 const styles = c([
 `
   .v-vl {
+    margin: 12px 0;
     max-height: 200px;
-    border: 1px solid blue;
+    box-shadow: 0 0 0 2px blue;
   }
   .item {
     box-sizing: border-box;
-    border: 1px solid green;
+    border: 2px solid green;
     min-height: 34px;
   }
   .wrapper.expand-enter-from, .wrapper.expand-leave-to {
@@ -102,6 +103,7 @@ export default defineComponent({
   setup () {
     onBeforeMount(() => styles.mount({ id: 'vdemo/virtual-list' }))
     return {
+      debounce: ref(false),
       scrollBehavior: ref<'auto' | 'smooth'>('auto'),
       listElRef: ref<any>(null),
       mutableData: ref(Array.from(randomHeightData))
@@ -112,21 +114,21 @@ export default defineComponent({
       h('div', [
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ index: 10, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ index: 10, behavior: this.scrollBehavior, debounce: this.debounce })
           }
         }, [
           'scrollTo({ index: 10 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior, debounce: this.debounce  })
           }
         }, [
           'scrollTo({ key: 2000 })'
         ]),
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ position: 'top', behavior: this.scrollBehavior })
+            this.listElRef.scrollTo({ position: 'top', behavior: this.scrollBehavior, debounce: this.debounce })
           }
         }, [
           'scrollTo({ position: \'top\' })'
@@ -138,6 +140,14 @@ export default defineComponent({
         }, [
           'behavior:',
           this.scrollBehavior
+        ]),
+        h('button', {
+          onClick: () => {
+            this.debounce = !this.debounce
+          }
+        }, [
+          'debounce:',
+          `${this.debounce}`
         ])
       ]),
       h(VirtualList, {

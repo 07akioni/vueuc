@@ -10,14 +10,16 @@ import {
   h,
   CSSProperties,
   onActivated,
-  onDeactivated
+  onDeactivated,
+  nextTick
 } from 'vue'
-import { depx, pxfy, beforeNextFrameOnce } from 'seemly'
+import { depx, pxfy } from 'seemly'
 import { useMemo } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
-import { ItemData, VScrollToOptions } from './type'
+import VResizeObserver from '../../resize-observer/src/VResizeObserver'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
-import VResizeObserver from '../../resize-observer/src'
+import { ItemData, VScrollToOptions } from './type'
+import { ensureMaybeTouch } from './isMobile'
 
 const styles = c(
   '.v-vl',
@@ -152,7 +154,7 @@ export default defineComponent({
       })
       return map
     })
-    const listElRef = ref<null | Element>(null)
+    const listElRef = ref<null | HTMLElement>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const keyToHeightOffset = new Map<string | number, number>()
     const finweckTreeRef = computed(() => {
@@ -187,7 +189,7 @@ export default defineComponent({
         startIndex + Math.ceil(listHeight / itemSize + 1),
         items.length - 1
       )
-      const viewportItems = []
+      const viewportItems: ItemData[] = []
       for (let i = startIndex; i <= endIndex; ++i) {
         viewportItems.push(items[i])
       }
@@ -219,7 +221,12 @@ export default defineComponent({
       } else if (position === 'top') {
         scrollToPosition(0, 0, behavior)
       }
+      if (alwaysUseWheel) {
+        syncViewport()
+      }
     }
+    let anchorIndex: number | undefined = undefined
+    let anchorTimerId: number = 0
     function scrollToIndex (
       index: number,
       behavior: ScrollToOptions['behavior'],
@@ -234,6 +241,14 @@ export default defineComponent({
           behavior
         })
       } else {
+        anchorIndex = index
+        if (anchorTimerId) {
+          window.clearTimeout(anchorTimerId)
+        }
+        anchorTimerId = window.setTimeout(() => {
+          anchorIndex = undefined
+          anchorTimerId = 0
+        }, 16) // use 0 ms may be ealier than resize callback...
         const { scrollTop, offsetHeight } = listElRef.value as HTMLDivElement
         if (targetTop > scrollTop) {
           const itemSize = ft.get(index)
@@ -254,7 +269,6 @@ export default defineComponent({
           })
         }
       }
-      lastScrollAnchorIndex = index
     }
     function scrollToPosition (
       left: number | undefined,
@@ -291,16 +305,45 @@ export default defineComponent({
       // delta height based on finweck tree data
       const delta = height - previousHeight
       if (delta === 0) return
-      if (lastAnchorIndex !== undefined && index <= lastAnchorIndex) {
-        listElRef.value?.scrollBy(0, delta)
-      }
       ft.add(index, delta)
+      const listEl = listElRef.value
+      if (listEl) {
+        if (anchorIndex === undefined) {
+          const previousHeightSum = ft.sum(index)
+          if (listEl.scrollTop > previousHeightSum) {
+            listEl.scrollBy(0, delta)
+          }
+        } else {
+          if (index < anchorIndex) {
+            listEl.scrollBy(0, delta)
+          } else if (index === anchorIndex) {
+            const previousHeightSum = ft.sum(index)
+            if (
+              height + previousHeightSum >
+              // Note, listEl shouldn't have border, nor offsetHeight won't be
+              // correct
+              listEl.scrollTop + listEl.offsetHeight
+            ) {
+              listEl.scrollBy(0, delta)
+            }
+          }
+        }
+        syncViewport()
+      }
       finweckTreeUpdateTrigger.value++
     }
+    const alwaysUseWheel = ensureMaybeTouch()
     function handleListScroll (e: UIEvent): void {
-      beforeNextFrameOnce(syncViewport)
-      const { onScroll } = props
-      if (onScroll !== undefined) onScroll(e)
+      props.onScroll?.(e)
+      if (!alwaysUseWheel) {
+        syncViewport()
+      }
+    }
+    function handleListWheel(e: WheelEvent): void {
+      props.onWheel?.(e)
+      if (alwaysUseWheel) {
+        syncViewport()
+      }
     }
     function handleListResize (entry: ResizeObserverEntry): void {
       if (isDeactivated) return
@@ -312,17 +355,13 @@ export default defineComponent({
       const { onResize } = props
       if (onResize !== undefined) onResize(entry)
     }
-    let lastScrollAnchorIndex: number | undefined
-    let lastAnchorIndex: number | undefined
     function syncViewport (): void {
       const { value: listEl } = listElRef
       // sometime ref el can be null
       // https://github.com/TuSimple/naive-ui/issues/811
       if (listEl == null) return
-      lastAnchorIndex = lastScrollAnchorIndex ?? startIndexRef.value
-      lastScrollAnchorIndex = undefined
-      scrollTopRef.value = (listElRef.value as Element).scrollTop
-      scrollLeft = (listElRef.value as Element).scrollLeft
+      scrollTopRef.value = listEl.scrollTop
+      scrollLeft = listEl.scrollLeft
     }
     function isHideByVShow (el: HTMLElement): boolean {
       let cursor: HTMLElement | null = el
@@ -369,6 +408,7 @@ export default defineComponent({
       scrollTo,
       handleListResize,
       handleListScroll,
+      handleListWheel,
       handleItemResize
     }
   },
@@ -386,7 +426,7 @@ export default defineComponent({
             mergeProps(this.$attrs, {
               class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
               onScroll: this.handleListScroll,
-              onWheel: this.onWheel,
+              onWheel: this.handleListWheel,
               ref: 'listElRef'
             }),
             [

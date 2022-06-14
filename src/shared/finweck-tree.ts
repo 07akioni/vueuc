@@ -51,9 +51,9 @@ export class FinweckTree {
    * @returns the sum of first i elements
    */
   sum (i?: number): number {
-    if (i === 0) return 0
+    if (i === undefined) i = this.l
+    if (i <= 0) return 0
     const { ft, min, l } = this
-    if (i === undefined) i = l
     if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
     let ret = i * min
     while (i > 0) {
