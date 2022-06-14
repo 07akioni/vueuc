@@ -13,13 +13,13 @@ import {
   onDeactivated,
   nextTick
 } from 'vue'
-import { depx, pxfy } from 'seemly'
+import { beforeNextFrameOnce, depx, pxfy } from 'seemly'
 import { useMemo } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 import VResizeObserver from '../../resize-observer/src/VResizeObserver'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
 import { ItemData, VScrollToOptions } from './type'
-import { ensureMaybeTouch } from './isMobile'
+import { ensureMaybeTouch, ensureWheelScale } from './config'
 
 const styles = c(
   '.v-vl',
@@ -221,9 +221,6 @@ export default defineComponent({
       } else if (position === 'top') {
         scrollToPosition(0, 0, behavior)
       }
-      if (alwaysUseWheel) {
-        syncViewport()
-      }
     }
     let anchorIndex: number | undefined = undefined
     let anchorTimerId: number = 0
@@ -332,17 +329,27 @@ export default defineComponent({
       }
       finweckTreeUpdateTrigger.value++
     }
-    const alwaysUseWheel = !ensureMaybeTouch()
+    const mayUseWheel = !ensureMaybeTouch()
+    let wheelCatched = false
     function handleListScroll (e: UIEvent): void {
       props.onScroll?.(e)
-      if (!alwaysUseWheel) {
+      if (!mayUseWheel || !wheelCatched) {
         syncViewport()
       }
     }
     function handleListWheel(e: WheelEvent): void {
       props.onWheel?.(e)
-      if (alwaysUseWheel) {
-        syncViewport()
+      if (mayUseWheel) {
+        e.preventDefault()
+        const listEl = listElRef.value
+        if (listEl) {
+          listEl.scrollTop += e.deltaY / ensureWheelScale()
+          syncViewport()
+          wheelCatched = true
+          beforeNextFrameOnce(() => {
+            wheelCatched = false
+          })
+        }
       }
     }
     function handleListResize (entry: ResizeObserverEntry): void {
