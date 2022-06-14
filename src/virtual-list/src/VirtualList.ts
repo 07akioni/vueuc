@@ -332,7 +332,7 @@ export default defineComponent({
       }
       finweckTreeUpdateTrigger.value++
     }
-    const alwaysUseWheel = ensureMaybeTouch()
+    const alwaysUseWheel = !ensureMaybeTouch()
     function handleListScroll (e: UIEvent): void {
       props.onScroll?.(e)
       if (!alwaysUseWheel) {
