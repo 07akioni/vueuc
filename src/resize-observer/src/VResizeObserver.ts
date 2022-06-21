@@ -1,4 +1,11 @@
-import { defineComponent, renderSlot, PropType } from 'vue'
+import {
+  defineComponent,
+  renderSlot,
+  PropType,
+  getCurrentInstance,
+  onMounted,
+  onBeforeUnmount
+} from 'vue'
 import delegate from './delegate'
 import { warn } from '../../shared'
 
@@ -10,38 +17,39 @@ export default defineComponent({
     onResize: Function as PropType<VResizeObserverOnResize>
   },
   setup (props) {
-    return {
-      registered: false,
-      handleResize (entry: ResizeObserverEntry) {
-        const { onResize } = props
-        if (onResize !== undefined) onResize(entry)
-      }
+    let registered = false
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const proxy = getCurrentInstance()!.proxy!
+    function handleResize (entry: ResizeObserverEntry): void {
+      const { onResize } = props
+      if (onResize !== undefined) onResize(entry)
     }
-  },
-  mounted () {
-    const el = this.$el as Element | undefined
-    if (el === undefined) {
-      warn('resize-observer', '$el does not exist.')
-      return
-    }
-    if (el.nextElementSibling !== el.nextSibling) {
-      if (el.nodeType === 3 && el.nodeValue !== '') {
-        warn(
-          'resize-observer',
-          '$el can not be observed (it may be a text node).'
-        )
+    onMounted(() => {
+      const el = proxy.$el as Element | undefined
+      if (el === undefined) {
+        warn('resize-observer', '$el does not exist.')
         return
       }
-    }
-    if (el.nextElementSibling !== null) {
-      delegate.registerHandler(el.nextElementSibling, this.handleResize)
-      this.registered = true
-    }
-  },
-  beforeUnmount () {
-    if (this.registered) {
-      delegate.unregisterHandler(this.$el.nextElementSibling)
-    }
+      if (el.nextElementSibling !== el.nextSibling) {
+        if (el.nodeType === 3 && el.nodeValue !== '') {
+          warn(
+            'resize-observer',
+            '$el can not be observed (it may be a text node).'
+          )
+          return
+        }
+      }
+      if (el.nextElementSibling !== null) {
+        delegate.registerHandler(el.nextElementSibling, handleResize)
+        registered = true
+      }
+    })
+
+    onBeforeUnmount(() => {
+      if (registered) {
+        delegate.unregisterHandler(proxy.$el.nextElementSibling)
+      }
+    })
   },
   render () {
     return renderSlot(this.$slots, 'default')
