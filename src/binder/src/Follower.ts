@@ -216,6 +216,7 @@ export default defineComponent({
         `${Math.round(offsetTopToStandardPlacement)}px`
       )
       follower.style.transform = `translateX(${left}) translateY(${top}) ${transform}`
+      follower.style.setProperty('--v-transform-origin', properTransformOrigin)
       follower.style.transformOrigin = properTransformOrigin
     }
     watch(mergedEnabledRef, (value) => {
