@@ -342,9 +342,20 @@ export default defineComponent({
     function handleListWheel (e: WheelEvent): void {
       props.onWheel?.(e)
       if (mayUseWheel) {
-        e.preventDefault()
         const listEl = listElRef.value
         if (listEl != null) {
+          if (e.deltaX === 0) {
+            if (listEl.scrollTop === 0 && e.deltaY <= 0) {
+              return
+            }
+            if (
+              listEl.scrollTop + listEl.offsetHeight >= listEl.scrollHeight &&
+              e.deltaY >= 0
+            ) {
+              return
+            }
+          }
+          e.preventDefault()
           listEl.scrollTop += e.deltaY / ensureWheelScale()
           listEl.scrollLeft += e.deltaX / ensureWheelScale()
           syncViewport()
