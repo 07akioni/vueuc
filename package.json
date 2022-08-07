@@ -47,8 +47,8 @@
     "@css-render/vue3-ssr": "^0.15.10",
     "@juggle/resize-observer": "^3.3.1",
     "css-render": "^0.15.10",
-    "evtd": "^0.2.2",
-    "seemly": "^0.3.1",
+    "evtd": "^0.2.4",
+    "seemly": "^0.3.6",
     "vdirs": "^0.1.4",
     "vooks": "^0.2.4"
   },

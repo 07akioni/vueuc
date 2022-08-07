@@ -8,7 +8,7 @@ import {
   PropType,
   watch
 } from 'vue'
-import { createId } from 'seemly'
+import { createId, getPreciseEventTarget } from 'seemly'
 import { on, off } from 'evtd'
 import { focusFirstDescendant, focusLastDescendant } from './utils'
 import { resolveTo } from '../../shared'
@@ -82,7 +82,7 @@ export const FocusTrap = defineComponent({
       if (isCurrentActive()) {
         const mainEl = getMainEl()
         if (mainEl === null) return
-        if (mainEl.contains(e.target as any)) return
+        if (mainEl.contains(getPreciseEventTarget(e) as Node | null)) return
         // I don't handle shift + tab status since it's too tricky to handle
         // Not impossible but I need to sleep
         resetFocusTo('first')
