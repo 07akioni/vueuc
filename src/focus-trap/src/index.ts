@@ -38,7 +38,7 @@ export const FocusTrap = defineComponent({
     const focusableEndRef = ref<HTMLElement | null>(null)
     let activated = false
     let ignoreInternalFocusChange = false
-    const lastFocusedElement: Element | null = document.activeElement
+    const lastFocusedElement: Element | null = typeof document === 'undefined' ? null : document.activeElement
 
     function isCurrentActive (): boolean {
       const currentActiveId = stack[stack.length - 1]
