@@ -1,14 +1,14 @@
-import { ResizeObserver } from '@juggle/resize-observer'
+import { ResizeObserver as PolyfillResizeObserver } from '@juggle/resize-observer'
 
 type ResizeHandler = (entry: ResizeObserverEntry) => void
 
 class ResizeObserverDelegate {
   elHandlersMap: Map<Element, ResizeHandler>
-  observer: ResizeObserver
+  observer: PolyfillResizeObserver
 
   constructor () {
     this.handleResize = this.handleResize.bind(this)
-    this.observer = new ResizeObserver(this.handleResize)
+    this.observer = new (window.ResizeObserver || PolyfillResizeObserver)(this.handleResize)
     this.elHandlersMap = new Map()
   }
 
