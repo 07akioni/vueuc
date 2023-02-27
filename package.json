@@ -24,7 +24,7 @@
     "@css-render/vue3-ssr": "^0.15.10",
     "@types/jasmine": "^3.5.14",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "eslint": "^7.10.0",
+    "eslint": "^8.35.0",
     "eslint-config-standard-with-typescript": "^20.0.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
