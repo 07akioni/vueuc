@@ -36,7 +36,7 @@
     "karma-jasmine": "^4.0.1",
     "karma-spec-reporter": "0.0.32",
     "karma-typescript": "^5.2.0",
-    "puppeteer": "^13.1.1",
+    "puppeteer": "^19.7.3",
     "typescript": "~4.6.0",
     "vite": "^2.0.1",
     "vue": "^3.2.36",
