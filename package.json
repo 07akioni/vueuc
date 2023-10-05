@@ -54,8 +54,5 @@
   },
   "peerDependencies": {
     "vue": "^3.0.11"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
   }
 }
