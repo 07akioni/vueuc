@@ -27,6 +27,7 @@ export default defineComponent({
     getCounter: Function as PropType<() => HTMLElement | null>,
     getTail: Function as PropType<() => HTMLElement | null>,
     updateCounter: Function as PropType<(count: number) => void>,
+    onUpdateCount: Function as PropType<(count: number) => void>,
     onUpdateOverflow: Function as PropType<(overflow: boolean) => void>
   },
   setup (props, { slots }) {
@@ -89,6 +90,8 @@ export default defineComponent({
                   tail.style.maxWidth = ''
                 }
               }
+              const { onUpdateCount } = props
+              if (onUpdateCount) onUpdateCount(restCount)
               break
             }
           }
