@@ -18,7 +18,7 @@ const style = c('[v-hidden]', {
 })
 
 export interface VOverflowInst {
-  sync: () => void
+  sync: (options: { showAllItemsBeforeCalculate: boolean }) => void
 }
 
 export default defineComponent({
@@ -51,7 +51,7 @@ export default defineComponent({
       if (options.showAllItemsBeforeCalculate) {
         for (const child of children) {
           if (child.hasAttribute(hiddenAttr)) {
-            child.setAttribute(hiddenAttr, '')
+            child.removeAttribute(hiddenAttr)
           }
         }
       }
