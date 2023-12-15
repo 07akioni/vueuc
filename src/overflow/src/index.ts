@@ -33,7 +33,9 @@ export default defineComponent({
   setup (props, { slots }) {
     const selfRef = ref<HTMLElement | null>(null)
     const counterRef = ref<HTMLElement | null>(null)
-    function deriveCounter (): void {
+    function deriveCounter (options: {
+      showAllItemsBeforeCalculate: boolean
+    }): void {
       const { value: self } = selfRef
       const { getCounter, getTail } = props
       let counter: HTMLElement | null
@@ -46,6 +48,13 @@ export default defineComponent({
         counter.removeAttribute(hiddenAttr)
       }
       const { children } = self
+      if (options.showAllItemsBeforeCalculate) {
+        for (const child of children) {
+          if (child.hasAttribute(hiddenAttr)) {
+            child.setAttribute(hiddenAttr, '')
+          }
+        }
+      }
       const containerWidth = self.offsetWidth
       const childWidths: number[] = []
       const tail = slots.tail ? getTail?.() : null
@@ -116,7 +125,11 @@ export default defineComponent({
       anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
     })
-    onMounted(deriveCounter)
+    onMounted(() =>
+      deriveCounter({
+        showAllItemsBeforeCalculate: false
+      })
+    )
     // besides onMounted, other case should be manually triggered, or we shoud watch items
     return {
       selfRef,
@@ -127,7 +140,11 @@ export default defineComponent({
   render () {
     const { $slots } = this
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    nextTick(this.sync)
+    nextTick(() =>
+      this.sync({
+        showAllItemsBeforeCalculate: false
+      })
+    )
     // It shouldn't have border
     return h(
       'div',
