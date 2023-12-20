@@ -5,7 +5,10 @@ export {
 } from './virtual-list/src'
 export type {
   VirtualListInst, // deprecated, should use v prefix
-  VirtualListInst as VVirtualListInst
+  VirtualListInst as VVirtualListInst,
+  VirtualListScrollTo,
+  VirtualListScrollOptions,
+  VirtualListItemData
 } from './virtual-list/src'
 export {
   default as LazyTeleport,
