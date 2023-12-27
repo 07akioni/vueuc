@@ -59,6 +59,7 @@ export interface ScrollTo {
   (options: { index: number } & CommonScrollToOptions): void
   (options: { key: string | number } & CommonScrollToOptions): void
   (options: { position: 'top' | 'bottom' } & CommonScrollToOptions): void
+  (options: VScrollToOptions): void
 }
 export interface VirtualListInst {
   listElRef: HTMLElement
