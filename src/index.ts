@@ -7,7 +7,7 @@ export type {
   VirtualListInst, // deprecated, should use v prefix
   VirtualListInst as VVirtualListInst,
   VirtualListScrollTo,
-  VirtualListScrollOptions,
+  VirtualListScrollToOptions,
   VirtualListItemData
 } from './virtual-list/src'
 export {
