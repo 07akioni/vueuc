@@ -121,7 +121,7 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
-            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior, debounce: this.debounce  })
+            this.listElRef.scrollTo({ key: 2000, behavior: this.scrollBehavior, debounce: this.debounce })
           }
         }, [
           'scrollTo({ key: 2000 })'
@@ -147,7 +147,7 @@ export default defineComponent({
           }
         }, [
           'debounce:',
-          `${this.debounce}`
+          ['debounce:', this.debounce ? 'true' : 'false']
         ])
       ]),
       h(VirtualList, {

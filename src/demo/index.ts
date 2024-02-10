@@ -3,7 +3,8 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import {
   VlDemo1,
   VlDemo2,
-  VlDemo3
+  VlDemo3,
+  VlDemo4
 } from '../virtual-list/demo'
 import ResizeObserverDemo from '../resize-observer/demo'
 import BinderDemo from '../binder/demo'
@@ -24,6 +25,10 @@ const routes = [
   {
     path: '/virtual-list-3',
     component: VlDemo3
+  },
+  {
+    path: '/virtual-list-4',
+    component: VlDemo4
   },
   {
     path: '/resize-observer',

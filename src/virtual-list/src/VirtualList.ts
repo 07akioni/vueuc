@@ -10,15 +10,23 @@ import {
   h,
   CSSProperties,
   onActivated,
-  onDeactivated
+  onDeactivated,
+  toRef
 } from 'vue'
 import { beforeNextFrameOnce, depx, pxfy } from 'seemly'
 import { useMemo } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 import VResizeObserver from '../../resize-observer/src/VResizeObserver'
 import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
-import { ItemData, VScrollToOptions } from './type'
+import {
+  ItemData,
+  VScrollToOptions,
+  VVirtualListColumn,
+  VVirtualListRenderCell
+} from './type'
 import { ensureMaybeTouch, ensureWheelScale } from './config'
+import { setupXScroll } from './xScroll'
+import { VirtualListRow } from './VirtualListRow'
 
 const styles = c(
   '.v-vl',
@@ -75,6 +83,11 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
+    columns: {
+      type: Array as PropType<VVirtualListColumn[]>,
+      default: () => []
+    },
+    renderCell: Function as PropType<VVirtualListRenderCell>,
     items: {
       type: Array as PropType<ItemData[]>,
       default: () => []
@@ -138,13 +151,20 @@ export default defineComponent({
         return
       }
       // remount
-      scrollTo({ top: scrollTopRef.value, left: scrollLeft })
+      scrollTo({ top: scrollTopRef.value, left: scrollLeftRef.value })
     })
     onDeactivated(() => {
       isDeactivated = true
       if (!activateStateInitialized) {
         activateStateInitialized = true
       }
+    })
+    const totalWidthRef = useMemo(() => {
+      if (props.renderCell == null) return undefined
+      if (props.columns.length === 0) return undefined
+      let width = 0
+      props.columns.forEach(column => { width += column.width })
+      return width
     })
     const keyIndexMapRef = computed(() => {
       const map = new Map()
@@ -153,6 +173,10 @@ export default defineComponent({
         map.set(item[keyField], index)
       })
       return map
+    })
+    const { scrollLeftRef, setListWidth } = setupXScroll({
+      columnsRef: toRef(props, 'columns'),
+      renderCellRef: toRef(props, 'renderCell')
     })
     const listElRef = ref<null | HTMLElement>(null)
     const listHeightRef = ref<undefined | number>(undefined)
@@ -170,7 +194,6 @@ export default defineComponent({
       return ft
     })
     const finweckTreeUpdateTrigger = ref(0)
-    let scrollLeft: number = 0
     const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
       return Math.max(
@@ -374,6 +397,7 @@ export default defineComponent({
       // If height is same, return
       if (entry.contentRect.height === listHeightRef.value) return
       listHeightRef.value = entry.contentRect.height
+      setListWidth(entry.contentRect.width)
       const { onResize } = props
       if (onResize !== undefined) onResize(entry)
     }
@@ -383,7 +407,7 @@ export default defineComponent({
       // https://github.com/TuSimple/naive-ui/issues/811
       if (listEl == null) return
       scrollTopRef.value = listEl.scrollTop
-      scrollLeft = listEl.scrollLeft
+      scrollLeftRef.value = listEl.scrollLeft
     }
     function isHideByVShow (el: HTMLElement): boolean {
       let cursor: HTMLElement | null = el
@@ -408,6 +432,7 @@ export default defineComponent({
           props.itemsStyle,
           {
             boxSizing: 'content-box',
+            width: pxfy(totalWidthRef.value),
             height: itemResizable ? '' : height,
             minHeight: itemResizable ? height : '',
             paddingTop: pxfy(props.paddingTop),
@@ -471,12 +496,19 @@ export default defineComponent({
                         this.visibleItemsProps
                       ),
                       {
-                        default: () =>
-                          this.viewportItems.map((item) => {
+                        default: () => {
+                          const { renderCell } = this
+                          return this.viewportItems.map((item) => {
                             const key = item[keyField]
                             const index = keyToIndex.get(key)
+                            const cells = (renderCell != null)
+                              ? h(VirtualListRow, {
+                                item
+                              })
+                              : undefined
                             const itemVNode = (this.$slots.default as any)({
                               item,
+                              cells,
                               index
                             })[0]
                             if (itemResizable) {
@@ -495,6 +527,7 @@ export default defineComponent({
                             itemVNode.key = key
                             return itemVNode
                           })
+                        }
                       }
                     )
                   ]
