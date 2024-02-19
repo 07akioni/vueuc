@@ -98,6 +98,7 @@ export default defineComponent({
       required: true
     },
     itemResizable: Boolean,
+    itemsClass: String,
     itemsStyle: [String, Object] as PropType<string | CSSProperties>,
     visibleItemsTag: {
       type: [String, Object] as PropType<string | object>,
@@ -482,7 +483,7 @@ export default defineComponent({
                   'div',
                   {
                     ref: 'itemsElRef',
-                    class: 'v-vl-items',
+                    class: ['v-vl-items', this.itemsClass],
                     style: this.itemsStyle
                   },
                   [
