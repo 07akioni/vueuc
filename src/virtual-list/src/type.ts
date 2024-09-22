@@ -22,8 +22,9 @@ export type VVirtualListRenderCol = (props: {
 }) => VNodeChild
 
 export type VVirtualListRenderItemWithCols = (props: {
-  startIndex: number
-  endIndex: number
+  itemIndex: number
+  startColIndex: number
+  endColIndex: number
   allColumns: VVirtualListColumn[]
   item: ItemData
   getLeft: (index: number) => number

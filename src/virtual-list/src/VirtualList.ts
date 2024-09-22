@@ -506,11 +506,13 @@ export default defineComponent({
                             const index = keyToIndex.get(key)
                             const renderedCols = (renderCol != null)
                               ? h(VirtualListRow, {
+                                index,
                                 item
                               })
                               : undefined
                             const renderedItemWithCols = (renderItemWithCols != null)
                               ? h(VirtualListRow, {
+                                index,
                                 item
                               })
                               : undefined

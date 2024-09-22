@@ -5,6 +5,7 @@ import { ItemData } from './type'
 export const VirtualListRow = defineComponent({
   name: 'VirtualListRow',
   props: {
+    index: { type: Number, required: true },
     item: {
       type: Object as PropType<ItemData>,
       required: true
@@ -28,8 +29,9 @@ export const VirtualListRow = defineComponent({
 
     if (renderItemWithCols != null) {
       return renderItemWithCols({
-        startIndex,
-        endIndex,
+        itemIndex: this.index,
+        startColIndex: startIndex,
+        endColIndex: endIndex,
         allColumns: columns,
         item,
         getLeft

@@ -169,9 +169,9 @@ export default defineComponent({
           items: xData,
           itemResizable: true,
           columns: cols,
-          renderItemWithCols: ({ startIndex, endIndex, allColumns, item, getLeft }) => {
+          renderItemWithCols: ({ startColIndex, endColIndex, allColumns, item, getLeft }) => {
             const items: VNodeChild[] = []
-            for (let i = startIndex; i <= endIndex; ++i) {
+            for (let i = startColIndex; i <= endColIndex; ++i) {
               const column = allColumns[i]
               items.push(
                 h(
