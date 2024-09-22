@@ -6,5 +6,6 @@ export type {
 export type {
   VScrollToOptions as VirtualListScrollToOptions,
   ItemData as VirtualListItemData,
-  VVirtualListColumn
+  VVirtualListColumn,
+  VVirtualListRenderCell
 } from './type'

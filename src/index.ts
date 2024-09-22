@@ -4,12 +4,12 @@ export {
   default as VVirtualList
 } from './virtual-list/src'
 export type {
-  VirtualListInst, // deprecated, should use v prefix
   VirtualListInst as VVirtualListInst,
-  VirtualListScrollTo,
-  VirtualListScrollToOptions,
-  VirtualListItemData,
-  VVirtualListColumn
+  VirtualListScrollTo as VVirtualListScrollTo,
+  VirtualListScrollToOptions as VVirtualListScrollToOptions,
+  VirtualListItemData as VVirtualListItemData,
+  VVirtualListColumn,
+  VVirtualListRenderCell
 } from './virtual-list/src'
 export {
   default as LazyTeleport,
@@ -26,3 +26,11 @@ export type { VXScrollInst } from './x-scroll/src'
 export { VOverflow, Overflow } from './overflow'
 export type { VOverflowInst } from './overflow'
 export { FocusTrap, FocusTrap as VFocusTrap } from './focus-trap'
+
+// deprecated
+export type {
+  VirtualListInst,
+  VirtualListScrollTo,
+  VirtualListScrollToOptions,
+  VirtualListItemData
+} from './virtual-list/src'
