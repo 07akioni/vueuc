@@ -127,7 +127,7 @@ export default defineComponent({
           items: xData,
           itemResizable: true,
           columns: cols,
-          renderCell: ({ column, item, left }) => {
+          renderCol: ({ column, item, left }) => {
             return h(
               'div',
               {

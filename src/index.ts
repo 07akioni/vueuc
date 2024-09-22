@@ -9,7 +9,7 @@ export type {
   VirtualListScrollToOptions as VVirtualListScrollToOptions,
   VirtualListItemData as VVirtualListItemData,
   VVirtualListColumn,
-  VVirtualListRenderCell
+  VVirtualListRenderCol
 } from './virtual-list/src'
 export {
   default as LazyTeleport,

@@ -15,8 +15,16 @@ export interface VVirtualListColumn extends Record<string, any> {
   width: number
 }
 
-export type VVirtualListRenderCell = (props: {
+export type VVirtualListRenderCol = (props: {
   item: ItemData
   column: VVirtualListColumn
   left: number
+}) => VNodeChild
+
+export type VVirtualListRenderColsForRow = (props: {
+  startIndex: number
+  endIndex: number
+  allColumns: VVirtualListColumn[]
+  item: ItemData
+  getLeft: (index: number) => number
 }) => VNodeChild

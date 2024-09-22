@@ -11,25 +11,40 @@ export const VirtualListRow = defineComponent({
     }
   },
   setup () {
-    const { startIndexRef, endIndexRef, columnsRef, getLeft, renderCellRef } =
+    const { startIndexRef, endIndexRef, columnsRef, getLeft, renderColRef, renderColsForRowRef } =
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(xScrollInjextionKey)!
     return {
       startIndex: startIndexRef,
       endIndex: endIndexRef,
       columns: columnsRef,
-      renderCell: renderCellRef,
+      renderCol: renderColRef,
+      renderColsForRow: renderColsForRowRef,
       getLeft
     }
   },
   render () {
-    const { startIndex, endIndex, columns, renderCell, getLeft, item } = this
-    if (renderCell == null) return null
-    const items: VNodeChild[] = []
-    for (let i = startIndex; i <= endIndex; ++i) {
-      const column = columns[i]
-      items.push(renderCell({ column, left: getLeft(i), item }))
+    const { startIndex, endIndex, columns, renderCol, renderColsForRow, getLeft, item } = this
+
+    if (renderColsForRow != null) {
+      return renderColsForRow({
+        startIndex,
+        endIndex,
+        allColumns: columns,
+        item,
+        getLeft
+      })
     }
-    return items
+
+    if (renderCol != null) {
+      const items: VNodeChild[] = []
+      for (let i = startIndex; i <= endIndex; ++i) {
+        const column = columns[i]
+        items.push(renderCol({ column, left: getLeft(i), item }))
+      }
+      return items
+    }
+
+    return null
   }
 })

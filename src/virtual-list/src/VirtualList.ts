@@ -22,7 +22,8 @@ import {
   ItemData,
   VScrollToOptions,
   VVirtualListColumn,
-  VVirtualListRenderCell
+  VVirtualListRenderCol,
+  VVirtualListRenderColsForRow
 } from './type'
 import { ensureMaybeTouch, ensureWheelScale } from './config'
 import { setupXScroll } from './xScroll'
@@ -87,7 +88,8 @@ export default defineComponent({
       type: Array as PropType<VVirtualListColumn[]>,
       default: () => []
     },
-    renderCell: Function as PropType<VVirtualListRenderCell>,
+    renderCol: Function as PropType<VVirtualListRenderCol>,
+    renderColsForRow: Function as PropType<VVirtualListRenderColsForRow>,
     items: {
       type: Array as PropType<ItemData[]>,
       default: () => []
@@ -160,7 +162,7 @@ export default defineComponent({
       }
     })
     const totalWidthRef = useMemo(() => {
-      if (props.renderCell == null) return undefined
+      if (props.renderCol == null) return undefined
       if (props.columns.length === 0) return undefined
       let width = 0
       props.columns.forEach(column => { width += column.width })
@@ -176,7 +178,8 @@ export default defineComponent({
     })
     const { scrollLeftRef, setListWidth } = setupXScroll({
       columnsRef: toRef(props, 'columns'),
-      renderCellRef: toRef(props, 'renderCell')
+      renderColRef: toRef(props, 'renderCol'),
+      renderColsForRowRef: toRef(props, 'renderColsForRow')
     })
     const listElRef = ref<null | HTMLElement>(null)
     const listHeightRef = ref<undefined | number>(undefined)
@@ -497,11 +500,11 @@ export default defineComponent({
                       ),
                       {
                         default: () => {
-                          const { renderCell } = this
+                          const { renderCol } = this
                           return this.viewportItems.map((item) => {
                             const key = item[keyField]
                             const index = keyToIndex.get(key)
-                            const cells = (renderCell != null)
+                            const cells = (renderCol != null)
                               ? h(VirtualListRow, {
                                 item
                               })
