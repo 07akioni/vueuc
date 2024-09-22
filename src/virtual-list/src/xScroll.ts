@@ -1,17 +1,17 @@
 import { Ref, computed, provide, ref } from 'vue'
 import { useMemo } from 'vooks'
 import { FinweckTree } from '../../shared'
-import type { VVirtualListColumn, VVirtualListRenderCol, VVirtualListRenderColsForRow } from './type'
+import type { VVirtualListColumn, VVirtualListRenderCol, VVirtualListRenderItemWithCols } from './type'
 import { xScrollInjextionKey } from './context'
 
 export function setupXScroll ({
   columnsRef,
   renderColRef,
-  renderColsForRowRef
+  renderItemWithColsRef
 }: {
   columnsRef: Ref<VVirtualListColumn[]>
   renderColRef: Ref<VVirtualListRenderCol | undefined>
-  renderColsForRowRef: Ref<VVirtualListRenderColsForRow | undefined>
+  renderItemWithColsRef: Ref<VVirtualListRenderItemWithCols | undefined>
 
 }): {
     setListWidth: (value: number) => void
@@ -62,7 +62,7 @@ export function setupXScroll ({
     endIndexRef,
     columnsRef,
     renderColRef,
-    renderColsForRowRef,
+    renderItemWithColsRef,
     getLeft
   })
   return {

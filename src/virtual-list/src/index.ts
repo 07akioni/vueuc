@@ -8,5 +8,5 @@ export type {
   ItemData as VirtualListItemData,
   VVirtualListColumn,
   VVirtualListRenderCol,
-  VVirtualListRenderColsForRow
+  VVirtualListRenderItemWithCols
 } from './type'

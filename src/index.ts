@@ -10,7 +10,7 @@ export type {
   VirtualListItemData as VVirtualListItemData,
   VVirtualListColumn,
   VVirtualListRenderCol,
-  VVirtualListRenderColsForRow
+  VVirtualListRenderItemWithCols
 } from './virtual-list/src'
 export {
   default as LazyTeleport,

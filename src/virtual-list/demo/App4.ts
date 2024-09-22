@@ -146,7 +146,7 @@ export default defineComponent({
           ref: 'listElRef'
         },
         {
-          default ({ item, cells }: { item: ItemData, cells: VNodeChild[] }) {
+          default ({ item, renderedCols }: { item: ItemData, renderedCols: VNodeChild[] }) {
             return h(
               'div',
               {
@@ -157,8 +157,57 @@ export default defineComponent({
                   minHeight: `${item.height as number}px`
                 }
               },
-              cells
+              renderedCols
             )
+          }
+        }
+      ),
+      h(
+        VirtualList,
+        {
+          itemSize: 34,
+          items: xData,
+          itemResizable: true,
+          columns: cols,
+          renderItemWithCols: ({ startIndex, endIndex, allColumns, item, getLeft }) => {
+            const items: VNodeChild[] = []
+            for (let i = startIndex; i <= endIndex; ++i) {
+              const column = allColumns[i]
+              items.push(
+                h(
+                  'div',
+                  {
+                    key: column.key,
+                    style: {
+                      position: 'absolute',
+                      left: `${getLeft(i)}px`,
+                      top: 0,
+                      bottom: 0,
+                      width: `${column.width}px`
+                    }
+                  },
+                  [item[`col${column.key as number}`]]
+                )
+              )
+            }
+            return h(
+              'div',
+              {
+                class: 'item',
+                key: item.key,
+                style: {
+                  position: 'relative',
+                  minHeight: `${item.height as number}px`
+                }
+              },
+              items
+            )
+          },
+          ref: 'listElRef'
+        },
+        {
+          default ({ renderedItemWithCols }: { item: ItemData, renderedItemWithCols: VNodeChild }) {
+            return renderedItemWithCols
           }
         }
       )

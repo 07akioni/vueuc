@@ -21,7 +21,7 @@ export type VVirtualListRenderCol = (props: {
   left: number
 }) => VNodeChild
 
-export type VVirtualListRenderColsForRow = (props: {
+export type VVirtualListRenderItemWithCols = (props: {
   startIndex: number
   endIndex: number
   allColumns: VVirtualListColumn[]

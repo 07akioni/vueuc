@@ -23,7 +23,7 @@ import {
   VScrollToOptions,
   VVirtualListColumn,
   VVirtualListRenderCol,
-  VVirtualListRenderColsForRow
+  VVirtualListRenderItemWithCols
 } from './type'
 import { ensureMaybeTouch, ensureWheelScale } from './config'
 import { setupXScroll } from './xScroll'
@@ -89,7 +89,7 @@ export default defineComponent({
       default: () => []
     },
     renderCol: Function as PropType<VVirtualListRenderCol>,
-    renderColsForRow: Function as PropType<VVirtualListRenderColsForRow>,
+    renderItemWithCols: Function as PropType<VVirtualListRenderItemWithCols>,
     items: {
       type: Array as PropType<ItemData[]>,
       default: () => []
@@ -162,7 +162,7 @@ export default defineComponent({
       }
     })
     const totalWidthRef = useMemo(() => {
-      if (props.renderCol == null) return undefined
+      if (props.renderCol == null && props.renderItemWithCols == null) return undefined
       if (props.columns.length === 0) return undefined
       let width = 0
       props.columns.forEach(column => { width += column.width })
@@ -179,7 +179,7 @@ export default defineComponent({
     const { scrollLeftRef, setListWidth } = setupXScroll({
       columnsRef: toRef(props, 'columns'),
       renderColRef: toRef(props, 'renderCol'),
-      renderColsForRowRef: toRef(props, 'renderColsForRow')
+      renderItemWithColsRef: toRef(props, 'renderItemWithCols')
     })
     const listElRef = ref<null | HTMLElement>(null)
     const listHeightRef = ref<undefined | number>(undefined)
@@ -500,18 +500,24 @@ export default defineComponent({
                       ),
                       {
                         default: () => {
-                          const { renderCol } = this
+                          const { renderCol, renderItemWithCols } = this
                           return this.viewportItems.map((item) => {
                             const key = item[keyField]
                             const index = keyToIndex.get(key)
-                            const cells = (renderCol != null)
+                            const renderedCols = (renderCol != null)
+                              ? h(VirtualListRow, {
+                                item
+                              })
+                              : undefined
+                            const renderedItemWithCols = (renderItemWithCols != null)
                               ? h(VirtualListRow, {
                                 item
                               })
                               : undefined
                             const itemVNode = (this.$slots.default as any)({
                               item,
-                              cells,
+                              renderedCols,
+                              renderedItemWithCols,
                               index
                             })[0]
                             if (itemResizable) {
