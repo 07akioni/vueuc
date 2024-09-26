@@ -12,9 +12,8 @@ export function setupXScroll ({
   columnsRef: Ref<VVirtualListColumn[]>
   renderColRef: Ref<VVirtualListRenderCol | undefined>
   renderItemWithColsRef: Ref<VVirtualListRenderItemWithCols | undefined>
-
 }): {
-    setListWidth: (value: number) => void
+    listWidthRef: Ref<number>
     scrollLeftRef: Ref<number>
   } {
   const listWidthRef = ref(0)
@@ -66,9 +65,7 @@ export function setupXScroll ({
     getLeft
   })
   return {
-    setListWidth (value: number) {
-      listWidthRef.value = value
-    },
+    listWidthRef,
     scrollLeftRef
   }
 }

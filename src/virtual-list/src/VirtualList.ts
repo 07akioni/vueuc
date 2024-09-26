@@ -162,10 +162,14 @@ export default defineComponent({
       }
     })
     const totalWidthRef = useMemo(() => {
-      if (props.renderCol == null && props.renderItemWithCols == null) return undefined
+      if (props.renderCol == null && props.renderItemWithCols == null) {
+        return undefined
+      }
       if (props.columns.length === 0) return undefined
       let width = 0
-      props.columns.forEach(column => { width += column.width })
+      props.columns.forEach((column) => {
+        width += column.width
+      })
       return width
     })
     const keyIndexMapRef = computed(() => {
@@ -176,7 +180,7 @@ export default defineComponent({
       })
       return map
     })
-    const { scrollLeftRef, setListWidth } = setupXScroll({
+    const { scrollLeftRef, listWidthRef } = setupXScroll({
       columnsRef: toRef(props, 'columns'),
       renderColRef: toRef(props, 'renderCol'),
       renderItemWithColsRef: toRef(props, 'renderItemWithCols')
@@ -398,9 +402,16 @@ export default defineComponent({
       // List is HTMLElement
       if (isHideByVShow(entry.target as HTMLElement)) return
       // If height is same, return
-      if (entry.contentRect.height === listHeightRef.value) return
+      if (props.renderCol == null && props.renderItemWithCols == null) {
+        if (entry.contentRect.height === listHeightRef.value) return
+      } else {
+        if (
+          entry.contentRect.height === listHeightRef.value &&
+          entry.contentRect.width === listWidthRef.value
+        ) { return }
+      }
       listHeightRef.value = entry.contentRect.height
-      setListWidth(entry.contentRect.width)
+      listWidthRef.value = entry.contentRect.width
       const { onResize } = props
       if (onResize !== undefined) onResize(entry)
     }
@@ -504,18 +515,20 @@ export default defineComponent({
                           return this.viewportItems.map((item) => {
                             const key = item[keyField]
                             const index = keyToIndex.get(key)
-                            const renderedCols = (renderCol != null)
-                              ? h(VirtualListRow, {
-                                index,
-                                item
-                              })
-                              : undefined
-                            const renderedItemWithCols = (renderItemWithCols != null)
-                              ? h(VirtualListRow, {
-                                index,
-                                item
-                              })
-                              : undefined
+                            const renderedCols =
+                                renderCol != null
+                                  ? h(VirtualListRow, {
+                                    index,
+                                    item
+                                  })
+                                  : undefined
+                            const renderedItemWithCols =
+                                renderItemWithCols != null
+                                  ? h(VirtualListRow, {
+                                    index,
+                                    item
+                                  })
+                                  : undefined
                             const itemVNode = (this.$slots.default as any)({
                               item,
                               renderedCols,
