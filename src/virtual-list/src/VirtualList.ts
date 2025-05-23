@@ -17,7 +17,7 @@ import { beforeNextFrameOnce, depx, pxfy } from 'seemly'
 import { useMemo } from 'vooks'
 import { useSsrAdapter } from '@css-render/vue3-ssr'
 import VResizeObserver from '../../resize-observer/src/VResizeObserver'
-import { c, cssrAnchorMetaName, FinweckTree } from '../../shared'
+import { c, cssrAnchorMetaName, FenwickTree } from '../../shared'
 import {
   ItemData,
   VScrollToOptions,
@@ -188,9 +188,9 @@ export default defineComponent({
     const listElRef = ref<null | HTMLElement>(null)
     const listHeightRef = ref<undefined | number>(undefined)
     const keyToHeightOffset = new Map<string | number, number>()
-    const finweckTreeRef = computed(() => {
+    const fenwickTreeRef = computed(() => {
       const { items, itemSize, keyField } = props
-      const ft = new FinweckTree(items.length, itemSize)
+      const ft = new FenwickTree(items.length, itemSize)
       items.forEach((item, index) => {
         const key: string | number = item[keyField]
         const heightOffset = keyToHeightOffset.get(key)
@@ -200,11 +200,11 @@ export default defineComponent({
       })
       return ft
     })
-    const finweckTreeUpdateTrigger = ref(0)
+    const fenwickTreeUpdateTrigger = ref(0)
     const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
       return Math.max(
-        finweckTreeRef.value.getBound(
+        fenwickTreeRef.value.getBound(
           scrollTopRef.value - depx(props.paddingTop)
         ) - 1,
         0
@@ -262,7 +262,7 @@ export default defineComponent({
       behavior: ScrollToOptions['behavior'],
       debounce: boolean
     ): void {
-      const { value: ft } = finweckTreeRef
+      const { value: ft } = fenwickTreeRef
       const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
         (listElRef.value as HTMLDivElement).scrollTo({
@@ -318,21 +318,21 @@ export default defineComponent({
       if (isDeactivated) return
       if (props.ignoreItemResize) return
       if (isHideByVShow(entry.target as HTMLElement)) return
-      const { value: ft } = finweckTreeRef
+      const { value: ft } = fenwickTreeRef
       const index = keyIndexMapRef.value.get(key)
       const previousHeight = ft.get(index)
       const height =
         entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height
       if (height === previousHeight) return
       // height offset based on itemSize
-      // used when rebuild the finweck tree
+      // used when rebuild the fenwick tree
       const offset = height - props.itemSize
       if (offset === 0) {
         keyToHeightOffset.delete(key)
       } else {
         keyToHeightOffset.set(key, height - props.itemSize)
       }
-      // delta height based on finweck tree data
+      // delta height based on fenwick tree data
       const delta = height - previousHeight
       if (delta === 0) return
       ft.add(index, delta)
@@ -360,7 +360,7 @@ export default defineComponent({
         }
         syncViewport()
       }
-      finweckTreeUpdateTrigger.value++
+      fenwickTreeUpdateTrigger.value++
     }
     const mayUseWheel = !ensureMaybeTouch()
     let wheelCatched = false
@@ -439,9 +439,9 @@ export default defineComponent({
       keyToIndex: keyIndexMapRef,
       itemsStyle: computed(() => {
         const { itemResizable } = props
-        const height = pxfy(finweckTreeRef.value.sum())
+        const height = pxfy(fenwickTreeRef.value.sum())
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
+        fenwickTreeUpdateTrigger.value
         return [
           props.itemsStyle,
           {
@@ -456,10 +456,10 @@ export default defineComponent({
       }),
       visibleItemsStyle: computed(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
+        fenwickTreeUpdateTrigger.value
         return {
           transform: `translateY(${pxfy(
-            finweckTreeRef.value.sum(startIndexRef.value)
+            fenwickTreeRef.value.sum(startIndexRef.value)
           )})`
         }
       }),

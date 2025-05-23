@@ -1,7 +1,7 @@
 import { ComputedRef, InjectionKey, Ref } from 'vue'
 import { VVirtualListColumn, VVirtualListRenderCol, VVirtualListRenderItemWithCols } from './type'
 
-export const xScrollInjextionKey = 'VVirtualListXScroll' as unknown as InjectionKey<{
+export const xScrollInjectionKey = 'VVirtualListXScroll' as unknown as InjectionKey<{
   startIndexRef: ComputedRef<number>
   endIndexRef: ComputedRef<number>
   columnsRef: Ref<VVirtualListColumn[]>

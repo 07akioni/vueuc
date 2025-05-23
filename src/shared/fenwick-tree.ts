@@ -2,7 +2,7 @@ function lowBit (n: number): number {
   return n & -n
 }
 
-export class FinweckTree {
+export class FenwickTree {
   l: number
   min: number
   ft: number[]
@@ -54,7 +54,7 @@ export class FinweckTree {
     if (i === undefined) i = this.l
     if (i <= 0) return 0
     const { ft, min, l } = this
-    if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
+    if (i > l) throw new Error('[FenwickTree.sum]: `i` is larger than length.')
     let ret = i * min
     while (i > 0) {
       ret += ft[i]
