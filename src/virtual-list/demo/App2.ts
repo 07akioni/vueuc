@@ -135,6 +135,13 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
+            this.listElRef.scrollTo({ position: 'bottom', behavior: this.scrollBehavior, debounce: this.debounce })
+          }
+        }, [
+          'scrollTo({ position: \'bottom\' })'
+        ]),
+        h('button', {
+          onClick: () => {
             this.scrollBehavior === 'auto' ? this.scrollBehavior = 'smooth' : this.scrollBehavior = 'auto'
           }
         }, [
@@ -154,7 +161,10 @@ export default defineComponent({
         itemSize: 34,
         items: randomHeightData,
         itemResizable: true,
-        ref: 'listElRef'
+        ref: 'listElRef',
+        onScroll: (e) => {
+          console.log('onScroll', e)
+        }
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {
