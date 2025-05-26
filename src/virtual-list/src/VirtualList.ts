@@ -250,7 +250,7 @@ export default defineComponent({
         const toIndex = keyIndexMapRef.value.get(key)
         if (toIndex !== undefined) scrollToIndex(toIndex, behavior, debounce)
       } else if (position === 'bottom') {
-        scrollToBottom()
+        scrollToBottom(behavior)
       } else if (position === 'top') {
         scrollToPosition(0, 0, behavior)
       }
@@ -313,7 +313,7 @@ export default defineComponent({
     }
 
     let isScrollingToBottom = false
-    function scrollToBottom (): void {
+    function scrollToBottom (behavior: VScrollToOptions['behavior']): void {
       const listEl = listElRef.value
       if (isScrollingToBottom || listEl === null) return
 
@@ -321,9 +321,9 @@ export default defineComponent({
       const ensureScrollToBottom = (): void => {
         const { scrollHeight, clientHeight } = listEl
         const targetScrollTop = scrollHeight + clientHeight
-        listEl.scrollTop = targetScrollTop
+        scrollToPosition(0, targetScrollTop, behavior)
         requestAnimationFrame(() => {
-          listEl.scrollTop = targetScrollTop
+          scrollToPosition(0, targetScrollTop, behavior)
           const isHeightCalculated = scrollHeight === finweckTreeRef.value.sum()
           if (isHeightCalculated) {
             isScrollingToBottom = false
