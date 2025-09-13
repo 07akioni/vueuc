@@ -62,7 +62,6 @@ function isFocusable (element: HTMLElement): boolean {
         (element as HTMLInputElement).type !== 'hidden' &&
         (element as HTMLInputElement).type !== 'file'
       )
-    case 'BUTTON':
     case 'SELECT':
     case 'TEXTAREA':
       return true
