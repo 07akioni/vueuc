@@ -25,8 +25,8 @@ export const FocusTrap = defineComponent({
       default: true
     },
     onEsc: Function as PropType<(e: KeyboardEvent) => void>,
-    initialFocusTo: String,
-    finalFocusTo: String,
+    initialFocusTo: [String, Function] as PropType<string | (() => HTMLElement | undefined | null)>,
+    finalFocusTo: [String, Function] as PropType<string | (() => HTMLElement | undefined | null)>,
     returnFocusOnDeactivated: {
       type: Boolean,
       default: true
