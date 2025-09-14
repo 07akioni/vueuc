@@ -10,8 +10,8 @@ export {
   getSlot
 } from './v-node'
 export {
-  FinweckTree
-} from './finweck-tree'
+  FenwickTree
+} from './fenwick-tree'
 export {
   resolveTo
 } from './resolve-to'

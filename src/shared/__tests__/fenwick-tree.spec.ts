@@ -1,8 +1,8 @@
-import { FinweckTree } from '../finweck-tree'
+import { FenwickTree } from '../fenwick-tree'
 
-describe('finweck tree', () => {
+describe('fenwick tree', () => {
   it('#sum', () => {
-    const ft = new FinweckTree(10, 5)
+    const ft = new FenwickTree(10, 5)
     expect(ft.sum(0)).toEqual(0)
     expect(ft.sum(1)).toEqual(5)
     expect(ft.sum(9)).toEqual(45)
@@ -10,7 +10,7 @@ describe('finweck tree', () => {
     expect(() => ft.sum(11)).toThrow()
   })
   it('#add', () => {
-    const ft = new FinweckTree(10, 5)
+    const ft = new FenwickTree(10, 5)
     ft.add(0, 1)
     expect(ft.sum(0)).toEqual(0)
     expect(ft.sum(1)).toEqual(6)
@@ -21,7 +21,7 @@ describe('finweck tree', () => {
     expect(() => ft.sum(11)).toThrow()
   })
   it('#threshold', () => {
-    const ft = new FinweckTree(10, 5)
+    const ft = new FenwickTree(10, 5)
     expect(ft.getBound(-1)).toEqual(0)
     expect(ft.getBound(0)).toEqual(0)
     expect(ft.getBound(9.5)).toEqual(1)
