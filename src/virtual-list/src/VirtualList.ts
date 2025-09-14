@@ -250,7 +250,7 @@ export default defineComponent({
         const toIndex = keyIndexMapRef.value.get(key)
         if (toIndex !== undefined) scrollToIndex(toIndex, behavior, debounce)
       } else if (position === 'bottom') {
-        scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
+        scrollToBottom(behavior)
       } else if (position === 'top') {
         scrollToPosition(0, 0, behavior)
       }
@@ -311,6 +311,31 @@ export default defineComponent({
         behavior
       })
     }
+
+    let isScrollingToBottom = false
+    function scrollToBottom (behavior: VScrollToOptions['behavior']): void {
+      const listEl = listElRef.value
+      if (isScrollingToBottom || listEl === null) return
+
+      isScrollingToBottom = true
+      const ensureScrollToBottom = (): void => {
+        const { scrollHeight, clientHeight } = listEl
+        const targetScrollTop = scrollHeight + clientHeight
+        scrollToPosition(0, targetScrollTop, behavior)
+        requestAnimationFrame(() => {
+          scrollToPosition(0, targetScrollTop, behavior)
+          const isHeightCalculated = scrollHeight === finweckTreeRef.value.sum()
+          if (isHeightCalculated) {
+            isScrollingToBottom = false
+            return
+          }
+          requestAnimationFrame(ensureScrollToBottom)
+        })
+      }
+
+      ensureScrollToBottom()
+    }
+
     function handleItemResize (
       key: string | number,
       entry: ResizeObserverEntry

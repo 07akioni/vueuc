@@ -54,6 +54,13 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
+            this.listElRef.scrollTo({ position: 'bottom', behavior: this.scrollBehavior })
+          }
+        }, [
+          'scrollTo({ position: \'bottom\' })'
+        ]),
+        h('button', {
+          onClick: () => {
             this.scrollBehavior === 'auto' ? this.scrollBehavior = 'smooth' : this.scrollBehavior = 'auto'
           }
         }, [
@@ -64,7 +71,10 @@ export default defineComponent({
       h(VirtualList, {
         itemSize: 34,
         items: basicData,
-        ref: 'listElRef'
+        ref: 'listElRef',
+        onScroll: (e) => {
+          console.log(e)
+        }
       }, {
         default ({ item }: { item: ItemData }) {
           return h('div', {
