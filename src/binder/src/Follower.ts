@@ -78,8 +78,8 @@ export default defineComponent({
     internalShift: Boolean,
     x: Number,
     y: Number,
-    width: String as PropType<'target' | string>,
-    minWidth: String as PropType<'target' | string>,
+    width: String as PropType<string>,
+    minWidth: String as PropType<string>,
     containerClass: String,
     teleportDisabled: Boolean,
     zindexable: {

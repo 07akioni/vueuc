@@ -1,0 +1,17 @@
+{
+  "$schema": "https://oxc.rs/schemas/oxlintrc.json",
+  "files": [
+    "src/**/*.ts"
+  ],
+  "ignores": [
+    "node_modules",
+    "lib",
+    "es",
+    "dist",
+    "test/unit/coverage",
+    "src/_deprecated/icons"
+  ],
+  "rules":{
+    "typescript/no-redundant-type-constituents": "error"
+  }
+}

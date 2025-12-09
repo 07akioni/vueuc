@@ -54,7 +54,7 @@ export default defineComponent({
         ]),
         h('button', {
           onClick: () => {
-            this.scrollBehavior === 'auto' ? this.scrollBehavior = 'smooth' : this.scrollBehavior = 'auto'
+            this.scrollBehavior = this.scrollBehavior === 'auto' ? 'smooth' : 'auto'
           }
         }, [
           'behavior:',

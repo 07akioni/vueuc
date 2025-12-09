@@ -14,11 +14,7 @@ export class FinweckTree {
   constructor (l: number, min: number) {
     this.l = l
     this.min = min
-    const ft = new Array(l + 1)
-    for (let i = 0; i < l + 1; ++i) {
-      ft[i] = 0
-    }
-    this.ft = ft
+    this.ft = Array.from({ length: l + 1 }, () => 0)
   }
 
   /**

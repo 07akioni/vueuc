@@ -54,9 +54,7 @@ export default defineComponent({
         'button',
         {
           onClick: () => {
-            this.showPart === 'document'
-              ? (this.showPart = 'nested')
-              : (this.showPart = 'document')
+            this.showPart = this.showPart === 'document' ? 'nested' : 'document'
           }
         },
         ['scroll: ', this.showPart]

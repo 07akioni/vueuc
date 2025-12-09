@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "CommonJS",
+    "module": "ESNext",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": false,
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     },
     "lib": [
@@ -19,7 +18,8 @@
       "dom",
       "dom.iterable",
       "scripthost"
-    ]
+    ],
+    "types": ["vitest/globals"]
   },
   "include": [
     "src/**/*.ts"

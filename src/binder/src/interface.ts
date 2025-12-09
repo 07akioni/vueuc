@@ -56,11 +56,11 @@ export type TransformOrigin =
   | 'bottom left'
   | 'bottom center'
   | 'bottom right'
-  | 'top left'
+   
   | 'center left'
-  | 'bottom left'
-  | 'top right'
+   
+   
   | 'center right'
-  | 'bottom right'
+   
 
 export type FlipLevel = 1 | 2

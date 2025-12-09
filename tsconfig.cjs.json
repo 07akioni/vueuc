@@ -4,6 +4,7 @@
     "declaration": true,
     "outDir": "lib",
     "module": "CommonJS",
+    "moduleResolution": "node",
     "target": "ES6"
   },
   "exclude": [

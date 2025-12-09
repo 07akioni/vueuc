@@ -1,59 +1,49 @@
 {
   "name": "vueuc",
   "version": "0.4.65",
+  "packageManager": "pnpm@10.23.0",
   "description": "Util Components for Vue",
+  "author": "07akioni",
+  "license": "MIT",
+  "sideEffects": false,
   "main": "lib/index.js",
   "module": "es/index.js",
+  "files": [
+    "es",
+    "lib"
+  ],
   "scripts": {
     "start": "vite",
     "build:site": "vite build",
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "clean": "rm -rf lib es site",
-    "release": "npm run clean && npm run build && npm publish",
-    "test": "karma start karma.config.js",
-    "lint": "eslint src/**/*.ts"
-  },
-  "author": "07akioni",
-  "license": "MIT",
-  "sideEffects": false,
-  "files": [
-    "es",
-    "lib"
-  ],
-  "devDependencies": {
-    "@css-render/vue3-ssr": "^0.15.10",
-    "@types/jasmine": "^3.5.14",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "eslint": "^7.10.0",
-    "eslint-config-standard-with-typescript": "^20.0.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^5.0.0",
-    "jasmine": "^3.6.1",
-    "karma": "^6.3.4",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^4.0.1",
-    "karma-spec-reporter": "0.0.32",
-    "karma-typescript": "^5.2.0",
-    "puppeteer": "^13.1.1",
-    "typescript": "~4.6.0",
-    "vite": "^2.0.1",
-    "vue": "^3.2.36",
-    "vue-router": "^4.0.12",
-    "@typescript-eslint/parser": "^4.33.0"
-  },
-  "dependencies": {
-    "@css-render/vue3-ssr": "^0.15.10",
-    "@juggle/resize-observer": "^3.3.1",
-    "css-render": "^0.15.10",
-    "evtd": "^0.2.4",
-    "seemly": "^0.3.6",
-    "vdirs": "^0.1.4",
-    "vooks": "^0.2.4"
+    "release": "pnpm run clean && pnpm run build && pnpm publish",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint --config oxlintrc.json --type-aware",
+    "lint:fix": "oxlint --config oxlintrc.json --type-aware --fix"
   },
   "peerDependencies": {
-    "vue": "^3.0.11"
+    "vue": "^^3.0.11"
+  },
+  "dependencies": {
+    "@css-render/vue3-ssr": "^0.15.14",
+    "@juggle/resize-observer": "^3.4.0",
+    "css-render": "^0.15.14",
+    "evtd": "^0.2.4",
+    "seemly": "^0.3.10",
+    "vdirs": "^0.1.8",
+    "vooks": "^0.2.12"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3",
+    "oxlint": "^1.32.0",
+    "oxlint-tsgolint": "^0.8.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "vitest": "^2.1.8",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

@@ -7,10 +7,10 @@ class ResizeObserverDelegate {
   observer: PolyfillResizeObserver
 
   constructor () {
-    this.handleResize = this.handleResize.bind(this)
+    const callback = (entries: ResizeObserverEntry[]) => this.handleResize(entries)
     this.observer = new ((typeof window !== 'undefined' &&
       window.ResizeObserver) ||
-      PolyfillResizeObserver)(this.handleResize)
+      PolyfillResizeObserver)(callback)
     this.elHandlersMap = new Map()
   }
 
