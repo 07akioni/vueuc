@@ -262,10 +262,12 @@ export default defineComponent({
       behavior: ScrollToOptions['behavior'],
       debounce: boolean
     ): void {
+      const listEl = listElRef.value
+      if (listEl == null) return
       const { value: ft } = finweckTreeRef
       const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
-        (listElRef.value as HTMLDivElement).scrollTo({
+        listEl.scrollTo({
           left: 0,
           top: targetTop,
           behavior
@@ -279,20 +281,20 @@ export default defineComponent({
           anchorIndex = undefined
           anchorTimerId = null
         }, 16) // use 0 ms may be ealier than resize callback...
-        const { scrollTop, offsetHeight } = listElRef.value as HTMLDivElement
+        const { scrollTop, offsetHeight } = listEl
         if (targetTop > scrollTop) {
           const itemSize = ft.get(index)
           if (targetTop + itemSize <= scrollTop + offsetHeight) {
             // do nothing
           } else {
-            (listElRef.value as HTMLDivElement).scrollTo({
+            listEl.scrollTo({
               left: 0,
               top: targetTop + itemSize - offsetHeight,
               behavior
             })
           }
         } else {
-          (listElRef.value as HTMLDivElement).scrollTo({
+          listEl.scrollTo({
             left: 0,
             top: targetTop,
             behavior
@@ -305,7 +307,9 @@ export default defineComponent({
       top: number | undefined,
       behavior: ScrollToOptions['behavior']
     ): void {
-      (listElRef.value as HTMLDivElement).scrollTo({
+      const listEl = listElRef.value
+      if (listEl == null) return
+      listEl.scrollTo({
         left,
         top,
         behavior

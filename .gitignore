@@ -5,3 +5,6 @@ site
 es
 lib
 pnpm-lock.yaml
+test-results
+playwright-report
+blob-report

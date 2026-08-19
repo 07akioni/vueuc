@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { mount, sleepFrame } from '@/test-shared'
 import { defineComponent, h } from 'vue'
 import { VResizeObserver } from '../..'

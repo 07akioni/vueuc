@@ -2,5 +2,5 @@ export function resolveTo (selector: string | (() => HTMLElement | undefined | n
   if (typeof selector === 'string') {
     return document.querySelector(selector)
   }
-  return selector() || null
+  return selector() ?? null
 }
