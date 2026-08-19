@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import {
   defineComponent,
   renderSlot,
@@ -139,7 +138,6 @@ export default defineComponent({
   },
   render () {
     const { $slots } = this
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     nextTick(() =>
       this.sync({
         showAllItemsBeforeCalculate: false

@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:install-browsers": "playwright install chromium",
-    "lint": "eslint src/**/*.ts"
+    "lint": "oxlint src"
   },
   "author": "07akioni",
   "license": "MIT",
@@ -24,17 +24,10 @@
   ],
   "devDependencies": {
     "@css-render/vue3-ssr": "^0.15.10",
-    "@typescript-eslint/eslint-plugin": "^4.4.0",
-    "@typescript-eslint/parser": "^4.33.0",
     "@vitest/browser-playwright": "^4.1.11",
-    "eslint": "^7.10.0",
-    "eslint-config-standard-with-typescript": "^20.0.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^5.0.0",
+    "oxlint": "^1.79.0",
     "playwright": "^1.62.1",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.11",
     "vue": "^3.5.41",

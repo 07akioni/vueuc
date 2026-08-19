@@ -36,10 +36,9 @@ export default defineComponent({
       overflowRef1,
       overflowRef2,
       sync: () => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         nextTick(() => {
-          overflowRef1.value?.sync()
-          overflowRef2.value?.sync()
+          overflowRef1.value?.sync({ showAllItemsBeforeCalculate: false })
+          overflowRef2.value?.sync({ showAllItemsBeforeCalculate: false })
         })
       }
     }

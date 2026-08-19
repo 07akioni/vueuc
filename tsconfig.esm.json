@@ -4,7 +4,7 @@
     "declaration": true,
     "outDir": "es",
     "module": "esnext",
-    "target": "ES6"
+    "target": "ES2015"
   },
   "exclude": [
     "**/__tests__/**",

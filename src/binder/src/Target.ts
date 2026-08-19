@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { defineComponent, inject, withDirectives } from 'vue'
 import { BinderInstance } from './interface'
 import { getFirstVNode } from '../../shared/v-node'

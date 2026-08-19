@@ -39,7 +39,7 @@ export function flatten (
         flatten(vNode.children, filterCommentNode, result)
       }
       // rawSlot
-    } else if (vNode.type !== Comment) {
+    } else if (vNode.type !== Comment || !filterCommentNode) {
       result.push(vNode)
     }
   })

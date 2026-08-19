@@ -18,7 +18,6 @@ export default defineComponent({
   },
   setup (props) {
     let registered = false
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const proxy = getCurrentInstance()!.proxy!
     function handleResize (entry: ResizeObserverEntry): void {
       const { onResize } = props

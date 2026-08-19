@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   defineComponent,
   provide,
@@ -54,7 +53,6 @@ const Binder = defineComponent({
      */
     const setTargetRef = (el: HTMLElement | null): void => {
       targetRef.value = el
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       if (VBinder && props.syncTargetWithParent) {
         VBinder.setTargetRef(el)
       }

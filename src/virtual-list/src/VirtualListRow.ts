@@ -13,7 +13,6 @@ export const VirtualListRow = defineComponent({
   },
   setup () {
     const { startIndexRef, endIndexRef, columnsRef, getLeft, renderColRef, renderItemWithColsRef } =
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       inject(xScrollInjextionKey)!
     return {
       startIndex: startIndexRef,

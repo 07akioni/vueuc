@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 // ref https://www.w3.org/TR/wai-aria-practices-1.1/examples/dialog-modal/js/dialog.js
 
 function isHTMLElement (node: Node): node is HTMLElement {
@@ -35,7 +34,7 @@ function attemptFocus (element: HTMLElement): boolean {
   }
   try {
     element.focus({ preventScroll: true })
-  } catch (e) {}
+  } catch {}
   return document.activeElement === element
 }
 

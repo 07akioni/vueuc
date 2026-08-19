@@ -1,5 +1,3 @@
-/* eslint-disable no-void */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
 import {
   mergeProps,
   computed,
@@ -444,8 +442,7 @@ export default defineComponent({
       itemsStyle: computed(() => {
         const { itemResizable } = props
         const height = pxfy(finweckTreeRef.value.sum())
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
+        void finweckTreeUpdateTrigger.value
         return [
           props.itemsStyle,
           {
@@ -459,8 +456,7 @@ export default defineComponent({
         ]
       }),
       visibleItemsStyle: computed(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        finweckTreeUpdateTrigger.value
+        void finweckTreeUpdateTrigger.value
         return {
           transform: `translateY(${pxfy(
             finweckTreeRef.value.sum(startIndexRef.value)

@@ -3,8 +3,9 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "lib",
-    "module": "CommonJS",
-    "target": "ES6"
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2015"
   },
   "exclude": [
     "**/__tests__/**",
