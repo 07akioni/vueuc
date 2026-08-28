@@ -2,8 +2,12 @@ import { Rect } from './interface'
 
 let viewMeasurer: HTMLElement | null = null
 
+export function elementExists(el: HTMLElement): boolean {
+  return el.clientWidth > 0 || el.clientHeight > 0 || document.contains(viewMeasurer)
+}
+
 export function ensureViewBoundingRect (): DOMRect {
-  if (viewMeasurer === null) {
+  if (viewMeasurer === null || !elementExists(viewMeasurer)) {
     viewMeasurer = document.getElementById('v-binder-view-measurer')
     if (viewMeasurer === null) {
       viewMeasurer = document.createElement('div')
