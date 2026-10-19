@@ -46,6 +46,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: [
+            'src/binder/**/*.spec.ts',
             'src/virtual-list/**/*.spec.ts',
             'src/resize-observer/**/*.spec.ts'
           ],

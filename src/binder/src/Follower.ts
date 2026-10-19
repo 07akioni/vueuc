@@ -42,7 +42,7 @@ const style = c([
     },
     [
       c('> *', {
-        pointerEvents: 'all'
+        pointerEvents: 'auto'
       })
     ]
   )
